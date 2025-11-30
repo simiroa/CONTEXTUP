@@ -23,4 +23,6 @@ tools/realesrgan/
 tools/exiftool/
 tools/ImageMagick/
 tools/Mayo/
+libs/gfpgan/weights/
+
 
