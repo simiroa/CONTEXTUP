@@ -33,7 +33,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 ; Copy the entire project folder
-Source: "*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: ".git,.venv,__pycache__,*.pyc,backups,tests"
+Source: "*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: ".git,.venv,__pycache__,*.pyc,backups,tests,example,tools\blender,tools\ffmpeg,tools\realesrgan,tools\exiftool,tools\ImageMagick,tools\Mayo,tools\python"
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

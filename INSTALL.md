@@ -7,6 +7,11 @@ This guide will help you install and set up the Creator Tools context menu exten
 1.  **Windows 10 or 11**
 2.  **NVIDIA GPU** (Recommended for AI features) with updated drivers.
 3.  **Python 3.10+** installed and added to PATH.
+4.  **Internet Connection** (Required to download tools during setup).
+
+> **Note**: The `example` folder and large tools (Blender, FFmpeg, etc.) are **not included** in the installer to keep it lightweight.
+> *   **Tools**: Will be downloaded automatically by the setup script.
+> *   **Examples**: Please download the "Examples Pack" separately from the [Releases Page](https://github.com/simiroa/CONTEXTUP/releases) if needed.
 
 ## Installation Steps
 

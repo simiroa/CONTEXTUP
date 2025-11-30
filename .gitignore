@@ -8,7 +8,12 @@ env/
 # Project specific
 Output/
 backups/
+# Project specific
+Output/
+backups/
 *.log
+example/
+
 
 # Large Tools (Re-downloadable via setup scripts)
 tools/python/
