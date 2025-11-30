@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Project specific
+Output/
+backups/
+*.log
+
+# Large Tools (Re-downloadable via setup scripts)
+tools/python/
+tools/blender/
+tools/ffmpeg/
+tools/realesrgan/
+tools/exiftool/
+tools/ImageMagick/
+tools/Mayo/
+

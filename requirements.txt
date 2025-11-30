@@ -1,0 +1,27 @@
+# Core Dependencies
+Pillow
+requests
+pywin32
+customtkinter
+packaging
+
+# AI & Image Processing
+torch --index-url https://download.pytorch.org/whl/cu121
+torchvision --index-url https://download.pytorch.org/whl/cu121
+rembg
+# onnxruntime-gpu
+numpy
+
+# Video & Audio
+ffmpeg-python
+faster-whisper
+
+# Google Gemini API
+google-genai
+
+# Optional / Development
+pytest
+piexif
+# basicsr
+# realesrgan
+# gfpgan

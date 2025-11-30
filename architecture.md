@@ -1,0 +1,114 @@
+# System Architecture
+
+This document provides a detailed technical overview of the **Creator Tools v2** codebase. It serves as a map for developers to understand the project structure, key components, and data flow.
+
+## 🏗️ High-Level Architecture
+
+The system operates as a **Windows Context Menu Extension** that dispatches commands to Python scripts. It employs a **Dual-Environment Strategy** to handle conflicting dependencies.
+
+### 1. The Entry Point
+*   **Registry**: Windows Registry keys (created by `manage.py`) invoke a command when the user right-clicks a file.
+*   **Command**: `python src/core/menu.py <item_id> "%1"`
+*   **Dispatcher**: `src/core/menu.py` receives the `item_id` (e.g., `sys_batch_rename`) and the target file path. It then imports and runs the appropriate script from `src/scripts/`.
+
+### 2. Dual Environments
+*   **System Environment (Python 3.14)**:
+    *   **Role**: Orchestrator, GUI, System Tools, Lightweight Processing.
+    *   **Libraries**: `tkinter`, `Pillow`, `pypdf`, `pyperclip`.
+    *   **Location**: Embedded in `tools/python/` or system Python.
+*   **AI Environment (Conda Python 3.10)**:
+    *   **Role**: Heavy AI Inference (CUDA).
+    *   **Libraries**: `torch`, `rembg`, `basicsr` (Real-ESRGAN), `diffusers`.
+    *   **Location**: `libs/ai_tools/` (Conda env).
+    *   **Bridge**: `src/utils/ai_runner.py` activates this environment via `subprocess` to run scripts in `src/scripts/ai_standalone/`.
+
+---
+
+## 📂 Directory Structure & File Roles
+
+### Root Directory
+*   `manage.py`: CLI tool to register/unregister context menu items and run health checks.
+*   `CreatorToolsManager.bat`: Launcher script for the Manager GUI.
+*   `INSTALL.bat` / `tools/setup_python.py`: Setup scripts to initialize the environment.
+*   `config/menu_config.json`: **Configuration Source of Truth**. Defines all menu items, categories, IDs, and icons.
+
+### `src/core/` (Core Logic)
+*   `menu.py`: **Main Dispatcher**. The single entry point called by the Context Menu. Routes commands to specific scripts.
+*   `registry.py`: Handles Windows Registry operations (creating/deleting keys).
+*   `config.py`: Loads and parses `menu_config.json`.
+*   `logger.py`: Centralized logging configuration.
+*   `health.py`: System health check logic (GPU, Python, Dependencies).
+
+### `src/scripts/` (Feature Implementations)
+*   **System & General**:
+    *   `sys_tools.py`: Implements file/folder operations (Move, Clean, Arrange, PDF Merge/Split).
+    *   `manager_gui.py`: The main settings and management interface.
+    *   `rename_tools.py`: Unified GUI for Batch Rename and Renumbering.
+*   **Image**:
+    *   `image_tools.py`: Format conversion, Resize (POT), EXIF removal, EXR tools.
+    *   `upscale_tools.py`: Wrapper for AI upscaling.
+    *   `ai_tools.py`: Wrapper for AI background removal.
+    *   `texture_tools.py`: Gemini-powered texture generation.
+*   **Video & Audio**:
+    *   `video_tools.py`: Video conversion, proxy creation, sequence-to-video.
+    *   `video_convert_gui.py`: Unified GUI for video operations.
+    *   `audio_tools.py`: Audio conversion, volume optimization.
+    *   `video_audio_gui.py`: Unified GUI for audio extraction/separation.
+    *   `frame_interp_tools.py`: Frame interpolation logic.
+    *   `subtitle_tools.py`: Subtitle generation logic.
+*   **3D & CAD**:
+    *   `blender_tools.py`: Bridge to Blender for mesh conversion and texture extraction.
+    *   `mayo_tools.py`: Bridge to Mayo CLI for CAD conversion.
+*   **AI Standalone** (Scripts running in Conda Env):
+    *   `src/scripts/ai_standalone/bg_removal.py`: Actual inference code for RMBG-2.0.
+    *   `src/scripts/ai_standalone/upscale.py`: Actual inference code for Real-ESRGAN.
+
+### `src/utils/` (Shared Utilities)
+*   `ai_runner.py`: **Critical Bridge**. Runs scripts in the Conda AI environment.
+*   `batch_runner.py`: **Debouncing Logic**. Collects multiple process launches into a single batch execution (fixes "multiple windows" issue).
+*   `progress_gui.py`: **Unified Progress UI**. Thread-safe progress bar with Stop button.
+*   `explorer.py`: Utilities to interact with Windows Explorer (selection retrieval).
+*   `external_tools.py`: Locates external binaries (FFmpeg, Blender, Mayo).
+*   `gui.py`: Tkinter helpers (centering windows, common dialogs).
+
+---
+
+## 🔄 Key Data Flows
+
+### 1. Context Menu Execution Flow
+1.  **User Action**: Right-click -> "Creator Tools" -> "Image" -> "Convert Format".
+2.  **Windows**: Executes `python src/core/menu.py image_format_convert "C:\Path\To\Image.png"`.
+3.  **Dispatcher (`menu.py`)**:
+    *   Checks `item_id` (`image_format_convert`).
+    *   Calls `batch_runner.collect_batch_context()` to see if other files were selected.
+    *   If Leader: Imports `src/scripts/image_tools.py`.
+    *   Calls `image_tools.convert_format(path)`.
+4.  **Script (`image_tools.py`)**:
+    *   Opens `BatchProgressGUI`.
+    *   Processes files using `Pillow` or `FFmpeg`.
+    *   Updates UI.
+
+### 2. AI Task Flow (e.g., Background Removal)
+1.  **Dispatcher**: Calls `src/scripts/ai_tools.py`.
+2.  **Wrapper**: `ai_tools.py` collects options via GUI.
+3.  **Bridge**: Calls `src/utils/ai_runner.py`.
+4.  **Subprocess**: `ai_runner` constructs command: `conda run -n ai_tools python src/scripts/ai_standalone/bg_removal.py ...`
+5.  **Inference**: `bg_removal.py` loads PyTorch model, processes image, saves output.
+6.  **Return**: Exit code and stdout returned to Wrapper.
+7.  **UI**: Wrapper updates `BatchProgressGUI`.
+
+---
+
+## 🛠️ Optimization & Extension Guide
+
+*   **Adding a New Tool**:
+    1.  Create script in `src/scripts/`.
+    2.  Add entry to `config/menu_config.json`.
+    3.  Add dispatch logic to `src/core/menu.py`.
+    4.  Run `manage.py register` to update registry.
+*   **Performance**:
+    *   `menu.py` imports are lazy (inside `if` blocks) to keep startup fast.
+    *   Heavy libraries (Torch) are kept in the separate Conda env to avoid slowing down the main menu.
+*   **Debugging**:
+    *   Check `debug.log` in project root.
+    *   Use `sys_analyze_error` to diagnose clipboard errors.
