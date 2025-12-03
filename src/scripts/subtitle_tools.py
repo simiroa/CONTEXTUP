@@ -1,76 +1,77 @@
 """
 Subtitle Generation GUI Tools.
 """
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox, ttk, scrolledtext
+from tkinter import messagebox
 from pathlib import Path
 import threading
+import sys
+
+# Add src to path
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
 from utils.ai_runner import run_ai_script
+from utils.gui_lib import BaseWindow
 
-def _get_root_sub():
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    root.lift()
-    return root
-
-class SubtitleDialog(tk.Toplevel):
-    def __init__(self, parent, video_path):
-        super().__init__(parent)
-        self.title("Subtitle Generation (Whisper)")
-        self.geometry("600x500")
-        self.video_path = video_path
+class SubtitleGUI(BaseWindow):
+    def __init__(self, target_path):
+        super().__init__(title="ContextUp Subtitle Generation", width=700, height=600)
+        self.video_path = Path(target_path)
         
         self.create_widgets()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
     def create_widgets(self):
-        # Top frame: Settings
-        top_frame = ttk.Frame(self, padding="10")
-        top_frame.pack(fill=tk.X)
+        # Header
+        self.add_header(f"File: {self.video_path.name}")
+        
+        # Settings Frame
+        settings_frame = ctk.CTkFrame(self.main_frame)
+        settings_frame.pack(fill="x", padx=20, pady=10)
         
         # Model Selection
-        ttk.Label(top_frame, text="Model:").pack(side=tk.LEFT)
-        self.model_var = tk.StringVar(value="small")
+        ctk.CTkLabel(settings_frame, text="Model:").pack(side="left", padx=(20, 5), pady=10)
+        self.model_var = ctk.StringVar(value="small")
         models = ['tiny', 'base', 'small', 'medium', 'large-v2', 'large-v3']
-        self.model_combo = ttk.Combobox(top_frame, textvariable=self.model_var, values=models, width=10, state="readonly")
-        self.model_combo.pack(side=tk.LEFT, padx=5)
+        self.model_combo = ctk.CTkComboBox(settings_frame, variable=self.model_var, values=models, width=100)
+        self.model_combo.pack(side="left", padx=5)
         
         # Task Selection
-        ttk.Label(top_frame, text="Task:").pack(side=tk.LEFT, padx=(10, 0))
-        self.task_var = tk.StringVar(value="transcribe")
+        ctk.CTkLabel(settings_frame, text="Task:").pack(side="left", padx=(20, 5))
+        self.task_var = ctk.StringVar(value="transcribe")
         tasks = ["transcribe", "translate"]
-        self.task_combo = ttk.Combobox(top_frame, textvariable=self.task_var, values=tasks, width=10, state="readonly")
-        self.task_combo.pack(side=tk.LEFT, padx=5)
+        self.task_combo = ctk.CTkComboBox(settings_frame, variable=self.task_var, values=tasks, width=120)
+        self.task_combo.pack(side="left", padx=5)
         
         # Device Selection
-        ttk.Label(top_frame, text="Device:").pack(side=tk.LEFT, padx=(10, 0))
-        self.device_var = tk.StringVar(value="cuda")
-        self.device_combo = ttk.Combobox(top_frame, textvariable=self.device_var, values=["cuda", "cpu"], width=8, state="readonly")
-        self.device_combo.pack(side=tk.LEFT, padx=5)
+        ctk.CTkLabel(settings_frame, text="Device:").pack(side="left", padx=(20, 5))
+        self.device_var = ctk.StringVar(value="cuda")
+        self.device_combo = ctk.CTkComboBox(settings_frame, variable=self.device_var, values=["cuda", "cpu"], width=80)
+        self.device_combo.pack(side="left", padx=5)
         
         # Run Button
-        self.btn_run = ttk.Button(top_frame, text="Generate", command=self.start_generation)
-        self.btn_run.pack(side=tk.RIGHT, padx=10)
-        
-        # Source Info
-        info_frame = ttk.Frame(self, padding="5")
-        info_frame.pack(fill=tk.X)
-        ttk.Label(info_frame, text=f"File: {Path(self.video_path).name}", foreground="gray").pack(anchor=tk.W, padx=5)
+        self.btn_run = ctk.CTkButton(settings_frame, text="Generate", command=self.start_generation)
+        self.btn_run.pack(side="right", padx=20)
         
         # Log Area
-        self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, font=("Consolas", 9))
-        self.log_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        ctk.CTkLabel(self.main_frame, text="Log Output:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(10, 5))
+        
+        self.log_area = ctk.CTkTextbox(self.main_frame, font=("Consolas", 10))
+        self.log_area.pack(fill="both", expand=True, padx=20, pady=5)
         
         # Bottom frame: Actions
-        btn_frame = ttk.Frame(self, padding="10")
-        btn_frame.pack(fill=tk.X)
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
         
-        ttk.Button(btn_frame, text="Close", command=self.destroy).pack(side=tk.RIGHT, padx=5)
+        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
         
     def start_generation(self):
-        self.btn_run.config(state="disabled")
-        self.log_area.delete(1.0, tk.END)
-        self.log_area.insert(tk.END, "Initializing Whisper... This may take a moment to load the model.\n")
+        self.btn_run.configure(state="disabled", text="Running...")
+        self.log_area.delete("1.0", "end")
+        self.log_area.insert("end", "Initializing Whisper... This may take a moment to load the model.\n")
         
         threading.Thread(target=self.run_generation, daemon=True).start()
         
@@ -85,29 +86,30 @@ class SubtitleDialog(tk.Toplevel):
         self.after(0, lambda: self.show_result(success, output))
         
     def show_result(self, success, output):
-        self.btn_run.config(state="normal")
-        self.log_area.delete(1.0, tk.END)
+        self.btn_run.configure(state="normal", text="Generate")
+        self.log_area.delete("1.0", "end")
         
         if success:
-            self.log_area.insert(tk.END, output)
-            self.log_area.insert(tk.END, "\nDone!")
+            self.log_area.insert("end", output)
+            self.log_area.insert("end", "\nDone!")
             messagebox.showinfo("Success", "Subtitle generation complete!")
         else:
-            self.log_area.insert(tk.END, f"Error:\n{output}")
+            self.log_area.insert("end", f"Error:\n{output}")
             messagebox.showerror("Error", "Subtitle generation failed.")
+
+    def on_closing(self):
+        self.destroy()
 
 def generate_subtitles(target_path: str):
     """
     Open Subtitle Generation dialog.
     """
-    try:
-        if not target_path:
-            return
-            
-        root = _get_root_sub()
-        dialog = SubtitleDialog(root, target_path)
-        root.wait_window(dialog)
-        root.destroy()
-            
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to open subtitle tool: {e}")
+    if not target_path:
+        return
+        
+    app = SubtitleGUI(target_path)
+    app.mainloop()
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        generate_subtitles(sys.argv[1])

@@ -11,7 +11,16 @@ DEFAULT_SETTINGS = {
     "THEME": "light",
     "FFMPEG_PATH": "",
     "BLENDER_PATH": "",
-    "MAYO_PATH": ""
+    "MAYO_PATH": "",
+    "CATEGORY_COLORS": {
+        "Image": "#2ecc71",
+        "Video": "#3498db",
+        "Audio": "#e67e22",
+        "3D": "#9b59b6",
+        "Sys": "#95a5a6",
+        "Document": "#f1c40f",
+        "Custom": "#ecf0f1"
+    }
 }
 
 def load_settings():

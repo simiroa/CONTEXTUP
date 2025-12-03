@@ -2,5 +2,17 @@
     "GEMINI_API_KEY": "AIzaSyCygvKPU0T6ZZKCdWCpPHQqtg7d_RtXAsc",
     "OLLAMA_URL": "http://localhost:11434",
     "PYTHON_PATH": "",
-    "THEME": "light"
+    "THEME": "Dark",
+    "FFMPEG_PATH": "",
+    "BLENDER_PATH": "",
+    "MAYO_PATH": "",
+    "CATEGORY_COLORS": {
+        "Image": "#2ecc71",
+        "Video": "#3498db",
+        "Audio": "#e67e22",
+        "3D": "#9b59b6",
+        "Sys": "#95a5a6",
+        "Document": "#f1c40f",
+        "Custom": "#ecf0f1"
+    }
 }

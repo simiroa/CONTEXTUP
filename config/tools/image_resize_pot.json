@@ -1,0 +1,12 @@
+{
+    "category": "Image",
+    "id": "image_resize_pot",
+    "name": "Resize to Power of 2",
+    "icon": "assets/icons/icon_image_resize_pot.ico",
+    "types": ".jpg;.jpeg;.png;.tga;.bmp;.webp;.tif;.tiff",
+    "scope": "file",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

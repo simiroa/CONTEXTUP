@@ -15,7 +15,7 @@ backups/
 example/
 
 
-# Large Tools (Re-downloadable via setup scripts)
+# Large Tools (Binaries & Environments)
 tools/python/
 tools/blender/
 tools/ffmpeg/
@@ -23,6 +23,22 @@ tools/realesrgan/
 tools/exiftool/
 tools/ImageMagick/
 tools/Mayo/
-libs/gfpgan/weights/
+libs/
+
+# AI Models & Weights (Heavy files)
+*.pth
+*.onnx
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+
+# Temporary & User Data
+Output/
+backups/
+*.log
+.venv_translator/
+bin/
+
 
 

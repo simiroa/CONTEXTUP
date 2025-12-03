@@ -1,0 +1,16 @@
+{
+    "category": "Etc",
+    "id": "video_downloader_gui",
+    "name": "YouTube Downloader",
+    "icon": "assets/icons/icon_video_downloader.ico",
+    "types": "*",
+    "scope": "folder",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system",
+    "dependencies": [
+        "yt-dlp",
+        "ffmpeg-python"
+    ]
+}

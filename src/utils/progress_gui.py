@@ -1,24 +1,29 @@
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 import threading
 import queue
 import time
+from pathlib import Path
+import sys
 
-class BatchProgressGUI(tk.Toplevel):
+# Add src to path to import gui_lib
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
+from utils.gui_lib import setup_theme
+
+class BatchProgressGUI(ctk.CTkToplevel):
     def __init__(self, title, items, process_func, on_complete=None):
         """
-        Generic Batch Progress Window.
-        
-        Args:
-            title (str): Window title.
-            items (list): List of items to process.
-            process_func (callable): Function to process each item. 
-                                     Signature: process_func(item, update_msg_callback) -> (success: bool, error_msg: str)
-            on_complete (callable): Optional callback when done.
+        Generic Batch Progress Window (Modernized).
         """
         super().__init__()
+        setup_theme()
+        
         self.title(title)
-        self.geometry("500x250")
+        self.geometry("600x350")
         self.resizable(False, False)
         self.attributes("-topmost", True)
         
@@ -36,48 +41,57 @@ class BatchProgressGUI(tk.Toplevel):
         self._create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_cancel)
         
+        # Center window
+        self.update_idletasks()
+        width = self.winfo_width()
+        height = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
+        
         # Start processing automatically
         self.start_processing()
         
     def _create_widgets(self):
         # Main container
-        main_frame = ttk.Frame(self, padding="20")
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        
+        main_frame = ctk.CTkFrame(self)
+        main_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        main_frame.grid_columnconfigure(0, weight=1)
         
         # Status Label
-        self.lbl_status = ttk.Label(main_frame, text="Ready...", font=("Segoe UI", 10))
-        self.lbl_status.pack(anchor=tk.W, pady=(0, 10))
+        self.lbl_status = ctk.CTkLabel(main_frame, text="Ready...", font=ctk.CTkFont(size=14, weight="bold"))
+        self.lbl_status.pack(anchor="w", padx=20, pady=(20, 5))
         
         # Progress Bar
-        self.progress_var = tk.DoubleVar()
-        self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, maximum=len(self.items))
-        self.progress_bar.pack(fill=tk.X, pady=(0, 5))
+        self.progress_bar = ctk.CTkProgressBar(main_frame)
+        self.progress_bar.pack(fill="x", padx=20, pady=(5, 5))
+        self.progress_bar.set(0)
         
         # Counter Label
-        self.lbl_counter = ttk.Label(main_frame, text=f"0 / {len(self.items)}", font=("Segoe UI", 9), foreground="gray")
-        self.lbl_counter.pack(anchor=tk.E, pady=(0, 15))
+        self.lbl_counter = ctk.CTkLabel(main_frame, text=f"0 / {len(self.items)}", text_color="gray")
+        self.lbl_counter.pack(anchor="e", padx=20, pady=(0, 10))
         
-        # Log Area (for current item or errors)
-        self.log_text = tk.Text(main_frame, height=5, width=60, font=("Consolas", 9), state=tk.DISABLED, bg="#f0f0f0")
-        self.log_text.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        # Log Area
+        self.log_text = ctk.CTkTextbox(main_frame, height=100, state="disabled")
+        self.log_text.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         
         # Buttons
-        btn_frame = ttk.Frame(main_frame)
-        btn_frame.pack(fill=tk.X)
-        
-        self.btn_cancel = ttk.Button(btn_frame, text="Stop", command=self.on_cancel)
-        self.btn_cancel.pack(side=tk.RIGHT)
+        self.btn_cancel = ctk.CTkButton(main_frame, text="Stop", fg_color="#C0392B", hover_color="#E74C3C", command=self.on_cancel)
+        self.btn_cancel.pack(side="right", padx=20, pady=(0, 20))
         
     def log(self, message):
-        self.log_text.config(state=tk.NORMAL)
-        self.log_text.insert(tk.END, message + "\n")
-        self.log_text.see(tk.END)
-        self.log_text.config(state=tk.DISABLED)
+        self.log_text.configure(state="normal")
+        self.log_text.insert("end", message + "\n")
+        self.log_text.see("end")
+        self.log_text.configure(state="disabled")
         
     def start_processing(self):
         self.is_running = True
-        self.btn_cancel.config(text="Stop")
-        self.lbl_status.config(text="Processing...")
+        self.btn_cancel.configure(text="Stop")
+        self.lbl_status.configure(text="Processing...")
         
         # Start thread
         threading.Thread(target=self._worker, daemon=True).start()
@@ -95,7 +109,6 @@ class BatchProgressGUI(tk.Toplevel):
             
             try:
                 # Run processing
-                # Pass a lambda to allow the worker to update status message dynamically
                 def update_msg(msg):
                     self.queue.put(("msg", msg))
                     
@@ -117,16 +130,19 @@ class BatchProgressGUI(tk.Toplevel):
                     idx, item = data
                     name = str(item)
                     if hasattr(item, 'name'): name = item.name
-                    self.lbl_status.config(text=f"Processing: {name}")
-                    self.progress_var.set(idx)
+                    self.lbl_status.configure(text=f"Processing: {name}")
+                    self.progress_bar.set(idx / len(self.items))
                     
                 elif msg_type == "msg":
-                    self.lbl_status.config(text=data)
+                    self.lbl_status.configure(text=data)
                     
                 elif msg_type == "end_item":
                     success, error_msg = data
-                    self.progress_var.set(self.progress_var.get() + 1)
-                    self.lbl_counter.config(text=f"{int(self.progress_var.get())} / {len(self.items)}")
+                    current_val = self.progress_bar.get()
+                    # Approximate progress update (exact calculation is tricky with float)
+                    # Just rely on start_item for main progress, or update here
+                    
+                    self.lbl_counter.configure(text=f"{self.success_count + (1 if success else 0) + len(self.errors)} / {len(self.items)}")
                     
                     if success:
                         self.success_count += 1
@@ -149,20 +165,20 @@ class BatchProgressGUI(tk.Toplevel):
         if self.is_running:
             if messagebox.askyesno("Stop", "Are you sure you want to stop the process?"):
                 self.is_cancelled = True
-                self.lbl_status.config(text="Stopping...")
-                self.btn_cancel.config(state=tk.DISABLED)
+                self.lbl_status.configure(text="Stopping...")
+                self.btn_cancel.configure(state="disabled")
         else:
             self.destroy()
             
     def _finish(self):
-        self.progress_var.set(len(self.items))
-        self.btn_cancel.config(text="Close", state=tk.NORMAL, command=self.destroy)
+        self.progress_bar.set(1.0)
+        self.btn_cancel.configure(text="Close", state="normal", fg_color="gray", hover_color="gray", command=self.destroy)
         
         if self.is_cancelled:
-            self.lbl_status.config(text="Stopped by user.", foreground="orange")
+            self.lbl_status.configure(text="Stopped by user.", text_color="orange")
             self.log("Process stopped by user.")
         else:
-            self.lbl_status.config(text="Completed.", foreground="green")
+            self.lbl_status.configure(text="Completed.", text_color="green")
             self.log("Process completed.")
             
         # Show summary
@@ -182,18 +198,23 @@ def run_batch_gui(title, items, process_func, parent=None):
     """Helper to run the GUI."""
     if not items: return
     
-    # Ensure root exists
-    root = parent
-    if not root:
-        try:
-            # Check if root already exists
-            if tk._default_root:
-                root = tk._default_root
-            else:
-                root = tk.Tk()
-                root.withdraw()
-        except:
-            root = None
-        
+    # We don't need a hidden root with CTk usually, but good to have app context
+    # If parent is provided, use it?
+    # For standalone scripts, we create a dummy app if needed, but CTkToplevel needs a root CTk
+    
+    # Check if we have a running CTk app
+    # If not, we might need to create one.
+    # But run_batch_gui is often called from scripts that just have 'tk.Tk()' hidden.
+    
+    # Strategy: Create a hidden CTk root if none exists
+    root = None
+    try:
+        if ctk.CTk._root_window is None:
+             root = ctk.CTk()
+             root.withdraw()
+    except:
+        pass
+
     app = BatchProgressGUI(title, items, process_func)
     app.mainloop()
+

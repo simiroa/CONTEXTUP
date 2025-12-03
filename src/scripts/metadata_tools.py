@@ -1,57 +1,78 @@
 """
 Metadata Tagger GUI Tools.
 """
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox, ttk, scrolledtext
+from tkinter import messagebox
 from pathlib import Path
 import threading
+import sys
+
+# Add src to path
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
 from utils.ai_runner import run_ai_script
 from utils.explorer import get_selection_from_explorer
+from utils.gui_lib import BaseWindow
 
-def _get_root_tag():
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    root.lift()
-    return root
-
-class TaggingDialog(tk.Toplevel):
-    def __init__(self, parent, file_paths):
-        super().__init__(parent)
-        self.title(f"Metadata Tagger ({len(file_paths)} files)")
-        self.geometry("600x500")
-        self.file_paths = file_paths
+class TaggingGUI(BaseWindow):
+    def __init__(self, target_path):
+        super().__init__(title="ContextUp Metadata Tagger", width=600, height=500)
+        
+        # Get selection
+        selection = get_selection_from_explorer(target_path)
+        if not selection:
+            selection = [target_path]
+            
+        # Filter images
+        img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.tiff'}
+        self.file_paths = [f for f in selection if Path(f).suffix.lower() in img_exts]
+        
+        if not self.file_paths:
+            messagebox.showinfo("Info", "No valid images selected.")
+            self.destroy()
+            return
+            
+        self.title(f"ContextUp Metadata Tagger ({len(self.file_paths)} files)")
         
         self.create_widgets()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
     def create_widgets(self):
+        # Header
+        self.add_header(f"Tagging {len(self.file_paths)} Images")
+        
         # Top frame
-        top_frame = ttk.Frame(self, padding="10")
-        top_frame.pack(fill=tk.X)
+        top_frame = ctk.CTkFrame(self.main_frame)
+        top_frame.pack(fill="x", padx=20, pady=10)
         
-        ttk.Label(top_frame, text="Model:").pack(side=tk.LEFT)
-        self.model_var = tk.StringVar(value="qwen3-vl:8b")
-        self.model_combo = ttk.Combobox(top_frame, textvariable=self.model_var, values=["qwen3-vl:8b", "llava", "moondream"], width=15)
-        self.model_combo.pack(side=tk.LEFT, padx=5)
+        ctk.CTkLabel(top_frame, text="Model:").pack(side="left", padx=(20, 5), pady=10)
+        self.model_var = ctk.StringVar(value="qwen3-vl:8b")
+        self.model_combo = ctk.CTkComboBox(top_frame, variable=self.model_var, values=["qwen3-vl:8b", "llava", "moondream"], width=150)
+        self.model_combo.pack(side="left", padx=5)
         
-        self.btn_run = ttk.Button(top_frame, text="Start Tagging", command=self.start_tagging)
-        self.btn_run.pack(side=tk.RIGHT, padx=10)
+        self.btn_run = ctk.CTkButton(top_frame, text="Start Tagging", command=self.start_tagging)
+        self.btn_run.pack(side="right", padx=20)
         
         # File List / Log
-        self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, font=("Consolas", 9))
-        self.log_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-        self.log_area.insert(tk.END, f"Ready to tag {len(self.file_paths)} images.\n")
+        ctk.CTkLabel(self.main_frame, text="Log Output:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(10, 5))
+        
+        self.log_area = ctk.CTkTextbox(self.main_frame, font=("Consolas", 10))
+        self.log_area.pack(fill="both", expand=True, padx=20, pady=5)
+        self.log_area.insert("end", f"Ready to tag {len(self.file_paths)} images.\n")
         for p in self.file_paths:
-            self.log_area.insert(tk.END, f"- {Path(p).name}\n")
+            self.log_area.insert("end", f"- {Path(p).name}\n")
             
         # Bottom
-        btn_frame = ttk.Frame(self, padding="10")
-        btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Close", command=self.destroy).pack(side=tk.RIGHT)
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
+        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
         
     def start_tagging(self):
-        self.btn_run.config(state="disabled")
-        self.log_area.insert(tk.END, "\nStarting batch processing...\n")
+        self.btn_run.configure(state="disabled", text="Running...")
+        self.log_area.insert("end", "\nStarting batch processing...\n")
         
         threading.Thread(target=self.run_batch, daemon=True).start()
         
@@ -72,34 +93,26 @@ class TaggingDialog(tk.Toplevel):
         self.enable_button()
         
     def update_log(self, message):
-        self.after(0, lambda: self.log_area.insert(tk.END, message + "\n"))
-        self.after(0, lambda: self.log_area.see(tk.END))
+        self.after(0, lambda: self.log_area.insert("end", message + "\n"))
+        self.after(0, lambda: self.log_area.see("end"))
         
     def enable_button(self):
-        self.after(0, lambda: self.btn_run.config(state="normal"))
+        self.after(0, lambda: self.btn_run.configure(state="normal", text="Start Tagging"))
+
+    def on_closing(self):
+        self.destroy()
 
 def tag_images(target_path: str):
     """
     Open Tagging dialog.
     """
     try:
-        # Get selection
-        selection = get_selection_from_explorer(target_path)
-        if not selection:
-            selection = [target_path]
-            
-        # Filter images
-        img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.tiff'}
-        valid_files = [f for f in selection if Path(f).suffix.lower() in img_exts]
-        
-        if not valid_files:
-            messagebox.showinfo("Info", "No valid images selected.")
-            return
-            
-        root = _get_root_tag()
-        dialog = TaggingDialog(root, valid_files)
-        root.wait_window(dialog)
-        root.destroy()
+        app = TaggingGUI(target_path)
+        app.mainloop()
             
     except Exception as e:
         messagebox.showerror("Error", f"Failed to open tagger: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        tag_images(sys.argv[1])

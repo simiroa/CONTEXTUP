@@ -1,0 +1,12 @@
+{
+    "category": "Sys",
+    "id": "sys_arrange_sequences",
+    "name": "Folder: Arrange Sequences",
+    "icon": "assets/icons/icon_sys_arrange_sequences.ico",
+    "types": "*",
+    "scope": "folder",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

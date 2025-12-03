@@ -25,9 +25,12 @@ def move_to_new_folder(target_path: str, selection=None):
             from utils.explorer import get_selection_from_explorer
             selection = get_selection_from_explorer(target_path)
             if not selection:
-                selection = [Path(target_path)]
-            else:
-                selection = [Path(p) for p in selection]
+                # If still no selection, check if target_path itself is a file
+                p = Path(target_path)
+                if p.is_file():
+                    selection = [p]
+                else:
+                    return
         
         # Ensure selection is list of Path
         selection = [Path(p) for p in selection]
@@ -37,34 +40,49 @@ def move_to_new_folder(target_path: str, selection=None):
         # Use parent of the first item as base
         base_dir = selection[0].parent
         
-        root = _get_root()
-        folder_name = simpledialog.askstring("New Folder", "Enter folder name:", parent=root)
-        if not folder_name: return
-        
+        # Auto-generate name: "New Folder", "New Folder (2)", etc.
+        folder_name = "New Folder"
         new_folder = base_dir / folder_name
         
-        # Collision check with suggestion
         if new_folder.exists():
-            suggested_name = f"{folder_name}_1"
-            if messagebox.askyesno("Folder Exists", 
-                                 f"Folder '{folder_name}' already exists.\nCreate '{suggested_name}' instead?"):
-                new_folder = base_dir / suggested_name
-                if new_folder.exists():
-                    messagebox.showerror("Error", f"Folder '{suggested_name}' also exists. Aborting.")
-                    return
-            else:
-                return
+            idx = 2
+            while True:
+                new_folder = base_dir / f"New Folder ({idx})"
+                if not new_folder.exists():
+                    break
+                idx += 1
             
         new_folder.mkdir()
         
         count = 0
+        errors = []
         for item in selection:
-            if item.exists():
-                shutil.move(str(item), str(new_folder / item.name))
-                count += 1
+            try:
+                if item.exists():
+                    # Check if we are trying to move the new folder into itself (unlikely but possible if selection included parent?)
+                    # Also check if destination exists
+                    dest = new_folder / item.name
+                    if dest.exists():
+                        # Rename if collision? Or skip?
+                        # Windows usually renames to "Name - Copy" or similar, or asks.
+                        # For "Immediate" mode, let's try to rename automatically or skip.
+                        # Let's skip and report error for now to be safe.
+                        errors.append(f"{item.name} (Destination exists)")
+                        continue
+                        
+                    shutil.move(str(item), str(dest))
+                    count += 1
+            except Exception as e:
+                errors.append(f"{item.name}: {e}")
                 
-        # Open the new folder? Optional.
-        # os.startfile(new_folder)
+        if errors:
+            msg = f"Moved {count} items.\n\nErrors:\n" + "\n".join(errors[:5])
+            if len(errors) > 5: msg += "\n..."
+            messagebox.showwarning("Move Result", msg)
+        
+        # Trigger Rename on the new folder
+        from utils.explorer import select_and_rename
+        select_and_rename(new_folder)
         
     except Exception as e:
         logger.error(f"Move failed: {e}")
@@ -238,29 +256,37 @@ def create_symlink(target_path: str, selection=None):
             
         if not files: return
         
-        # If single file, ask for name
+        # If single file, create link immediately and trigger rename
         if len(files) == 1:
             src_path = files[0]
-            root = _get_root()
-            default_name = f"{src_path.stem} - Link{src_path.suffix}"
-            link_name = simpledialog.askstring("Create Symlink", "Enter name for the symlink:", initialvalue=default_name, parent=root)
-            if not link_name: return
             
+            # Auto-generate name
+            link_name = f"{src_path.stem} - Link{src_path.suffix}"
             link_path = src_path.parent / link_name
+            
+            # Collision check
             if link_path.exists():
-                messagebox.showerror("Error", "Target file already exists.")
-                return
-                
+                idx = 2
+                while True:
+                    link_name = f"{src_path.stem} - Link ({idx}){src_path.suffix}"
+                    link_path = src_path.parent / link_name
+                    if not link_path.exists(): break
+                    idx += 1
+            
             try:
                 os.symlink(src_path, link_path)
-                messagebox.showinfo("Success", f"Created symlink: {link_path.name}")
+                
+                # Trigger Rename
+                from utils.explorer import select_and_rename
+                select_and_rename(link_path)
+                
             except OSError as e:
                 if hasattr(e, 'winerror') and e.winerror == 1314:
                     messagebox.showerror("Error", "Privilege not held. Enable Developer Mode or run as Admin.")
                 else:
                     messagebox.showerror("Error", str(e))
         else:
-            # Batch mode: Create links with default suffix
+            # Batch mode: Create links with default suffix (No rename trigger for batch)
             count = 0
             errors = []
             for src_path in files:

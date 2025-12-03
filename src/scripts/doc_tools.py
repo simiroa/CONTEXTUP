@@ -1,64 +1,78 @@
 """
 Document Analysis GUI Tools.
 """
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox, ttk, scrolledtext
+from tkinter import messagebox
 from pathlib import Path
 import threading
+import sys
+
+# Add src to path
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
 from utils.ai_runner import run_ai_script
+from utils.gui_lib import BaseWindow
 
-def _get_root_doc():
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    root.lift()
-    return root
-
-class OllamaDocDialog(tk.Toplevel):
-    def __init__(self, parent, file_path):
-        super().__init__(parent)
-        self.title("Document Analysis (Ollama)")
-        self.geometry("600x600")
-        self.file_path = file_path
+class DocAnalysisGUI(BaseWindow):
+    def __init__(self, target_path):
+        super().__init__(title="ContextUp Document Analysis", width=700, height=800)
+        self.file_path = Path(target_path)
         
         self.create_widgets()
         self.load_models()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
     def create_widgets(self):
-        self.action_combo = ttk.Combobox(top_frame, textvariable=self.action_var, values=actions, width=15, state="readonly")
-        self.action_combo.pack(side=tk.LEFT, padx=5)
-        self.action_combo.bind("<<ComboboxSelected>>", self.on_action_change)
+        # Header
+        self.add_header(f"Analyzing: {self.file_path.name}")
+        
+        # Options Frame
+        opt_frame = ctk.CTkFrame(self.main_frame)
+        opt_frame.pack(fill="x", padx=20, pady=10)
+        
+        # Action Selection
+        ctk.CTkLabel(opt_frame, text="Action:").pack(side="left", padx=10, pady=10)
+        self.action_var = ctk.StringVar(value="summarize")
+        actions = ["summarize", "translate", "explain", "analyze_tone"]
+        self.action_combo = ctk.CTkComboBox(opt_frame, variable=self.action_var, values=actions, width=150, command=self.on_action_change)
+        self.action_combo.pack(side="left", padx=5)
         
         # Language Input (Hidden by default)
-        self.lang_frame = ttk.Frame(top_frame)
-        ttk.Label(self.lang_frame, text="To:").pack(side=tk.LEFT)
-        self.lang_var = tk.StringVar(value="Korean")
-        self.lang_entry = ttk.Entry(self.lang_frame, textvariable=self.lang_var, width=10)
-        self.lang_entry.pack(side=tk.LEFT, padx=5)
+        self.lang_frame = ctk.CTkFrame(opt_frame, fg_color="transparent")
+        ctk.CTkLabel(self.lang_frame, text="To:").pack(side="left", padx=5)
+        self.lang_var = ctk.StringVar(value="Korean")
+        self.lang_entry = ctk.CTkEntry(self.lang_frame, textvariable=self.lang_var, width=100)
+        self.lang_entry.pack(side="left", padx=5)
         
-        # Analyze Button
-        self.btn_analyze = ttk.Button(top_frame, text="Run", command=self.start_analysis)
-        self.btn_analyze.pack(side=tk.RIGHT, padx=10)
+        # Model Selection
+        ctk.CTkLabel(opt_frame, text="Model:").pack(side="left", padx=(20, 10))
+        self.model_var = ctk.StringVar(value="llama3")
+        self.model_combo = ctk.CTkComboBox(opt_frame, variable=self.model_var, values=["llama3", "mistral"], width=150)
+        self.model_combo.pack(side="left", padx=5)
         
-        # Source Info
-        info_frame = ttk.Frame(self, padding="5")
-        info_frame.pack(fill=tk.X)
-        ttk.Label(info_frame, text=f"File: {Path(self.file_path).name}", foreground="gray").pack(anchor=tk.W, padx=5)
+        # Run Button
+        self.btn_analyze = ctk.CTkButton(opt_frame, text="Run Analysis", command=self.start_analysis)
+        self.btn_analyze.pack(side="right", padx=10)
         
         # Result Area
-        self.result_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, font=("Consolas", 10))
-        self.result_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        ctk.CTkLabel(self.main_frame, text="Analysis Result:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(10, 5))
         
-        # Bottom frame: Actions
-        btn_frame = ttk.Frame(self, padding="10")
-        btn_frame.pack(fill=tk.X)
+        self.result_area = ctk.CTkTextbox(self.main_frame, font=("Consolas", 14))
+        self.result_area.pack(fill="both", expand=True, padx=20, pady=5)
         
-        ttk.Button(btn_frame, text="Copy to Clipboard", command=self.copy_result).pack(side=tk.RIGHT)
-        ttk.Button(btn_frame, text="Close", command=self.destroy).pack(side=tk.RIGHT, padx=5)
+        # Bottom Actions
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
         
-    def on_action_change(self, event=None):
-        if self.action_var.get() == "translate":
-            self.lang_frame.pack(side=tk.LEFT, padx=5)
+        ctk.CTkButton(btn_frame, text="Copy to Clipboard", command=self.copy_result).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
+        
+    def on_action_change(self, choice):
+        if choice == "translate":
+            self.lang_frame.pack(side="left", padx=5)
         else:
             self.lang_frame.pack_forget()
             
@@ -73,7 +87,7 @@ class OllamaDocDialog(tk.Toplevel):
                         models.append(line.strip("- ").strip())
                 
                 if models:
-                    self.model_combo['values'] = models
+                    self.model_combo.configure(values=models)
                     if "llama3" in models:
                         self.model_combo.set("llama3")
                     elif "mistral" in models:
@@ -81,14 +95,14 @@ class OllamaDocDialog(tk.Toplevel):
                     else:
                         self.model_combo.set(models[0])
             else:
-                self.result_area.insert(tk.END, "Error: Could not list models. Is Ollama running?\n")
+                self.result_area.insert("end", "Error: Could not list models. Is Ollama running?\n")
                 
         threading.Thread(target=_load, daemon=True).start()
         
     def start_analysis(self):
-        self.btn_analyze.config(state="disabled")
-        self.result_area.delete(1.0, tk.END)
-        self.result_area.insert(tk.END, "Processing... Please wait.\n")
+        self.btn_analyze.configure(state="disabled", text="Running...")
+        self.result_area.delete("1.0", "end")
+        self.result_area.insert("end", "Processing... Please wait.\n")
         
         threading.Thread(target=self.run_analysis, daemon=True).start()
         
@@ -105,33 +119,34 @@ class OllamaDocDialog(tk.Toplevel):
         self.after(0, lambda: self.show_result(success, output))
         
     def show_result(self, success, output):
-        self.btn_analyze.config(state="normal")
-        self.result_area.delete(1.0, tk.END)
+        self.btn_analyze.configure(state="normal", text="Run Analysis")
+        self.result_area.delete("1.0", "end")
         
         if success:
-            self.result_area.insert(tk.END, output)
+            self.result_area.insert("end", output)
         else:
-            self.result_area.insert(tk.END, f"Error:\n{output}")
+            self.result_area.insert("end", f"Error:\n{output}")
 
     def copy_result(self):
-        text = self.result_area.get(1.0, tk.END).strip()
+        text = self.result_area.get("1.0", "end").strip()
         if text:
             self.clipboard_clear()
             self.clipboard_append(text)
             messagebox.showinfo("Copied", "Result copied to clipboard!")
 
+    def on_closing(self):
+        self.destroy()
+
 def analyze_document(target_path: str):
     """
     Open Document Analysis dialog.
     """
-    try:
-        if not target_path:
-            return
-            
-        root = _get_root_doc()
-        dialog = OllamaDocDialog(root, target_path)
-        root.wait_window(dialog)
-        root.destroy()
-            
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to open document tool: {e}")
+    if not target_path:
+        return
+        
+    app = DocAnalysisGUI(target_path)
+    app.mainloop()
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        analyze_document(sys.argv[1])

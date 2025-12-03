@@ -1,0 +1,12 @@
+{
+    "category": "Image",
+    "id": "image_upscale_ai",
+    "name": "AI Upscale (2x/4x)",
+    "icon": "assets/icons/icon_image_upscale_ai.ico",
+    "types": ".jpg;.jpeg;.png;.webp;.bmp",
+    "scope": "file",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "ai"
+}

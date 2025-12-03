@@ -1,0 +1,12 @@
+{
+    "category": "Audio",
+    "id": "audio_convert_format",
+    "name": "Convert Audio Format",
+    "icon": "assets/icons/icon_audio_convert_format.ico",
+    "types": ".wav;.mp3;.ogg;.flac;.m4a",
+    "scope": "file",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

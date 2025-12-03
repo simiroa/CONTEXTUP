@@ -1,5 +1,6 @@
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from pathlib import Path
 import sys
 import subprocess
@@ -12,12 +13,11 @@ sys.path.append(str(src_dir))
 
 from utils.external_tools import get_ffmpeg
 from utils.explorer import get_selection_from_explorer
+from utils.gui_lib import BaseWindow, FileListFrame
 
-class AudioConvertGUI(tk.Tk):
+class AudioConvertGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__()
-        self.title("Audio Converter")
-        self.geometry("500x450")
+        super().__init__(title="ContextUp Audio Converter", width=600, height=650)
         
         self.target_path = target_path
         self.selection = get_selection_from_explorer(target_path)
@@ -34,68 +34,66 @@ class AudioConvertGUI(tk.Tk):
             self.destroy()
             return
 
+        self.var_new_folder = ctk.BooleanVar(value=True) # Default ON
         self.create_widgets()
-        self.eval('tk::PlaceWindow . center')
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def create_widgets(self):
-        # File List
-        lbl_files = ttk.Label(self, text=f"Selected {len(self.files)} files:")
-        lbl_files.pack(pady=5, padx=10, anchor="w")
+        # 1. Header & File List
+        self.add_header(f"Selected Files ({len(self.files)})")
         
-        file_frame = ttk.Frame(self)
-        file_frame.pack(fill="x", padx=10, pady=5)
+        self.file_scroll = FileListFrame(self.main_frame, self.files)
+        self.file_scroll.pack(fill="x", padx=20, pady=5)
         
-        file_list = tk.Listbox(file_frame, height=5)
-        file_list.pack(side="left", fill="x", expand=True)
-        scrollbar = ttk.Scrollbar(file_frame, orient="vertical", command=file_list.yview)
-        scrollbar.pack(side="right", fill="y")
-        file_list.config(yscrollcommand=scrollbar.set)
+        # 2. Options
+        opt_frame = ctk.CTkFrame(self.main_frame)
+        opt_frame.pack(fill="x", padx=20, pady=20)
+        opt_frame.grid_columnconfigure(1, weight=1)
         
-        for f in self.files:
-            file_list.insert(tk.END, f.name)
-
-        # Options Frame
-        opt_frame = ttk.LabelFrame(self, text="Conversion Options")
-        opt_frame.pack(fill="x", padx=10, pady=10)
+        ctk.CTkLabel(opt_frame, text="Conversion Options", font=ctk.CTkFont(size=14, weight="bold")).grid(row=0, column=0, columnspan=2, sticky="w", padx=15, pady=15)
         
         # Format
-        ttk.Label(opt_frame, text="Format:").grid(row=0, column=0, padx=5, pady=5, sticky="e")
-        self.fmt_var = tk.StringVar(value="MP3")
+        ctk.CTkLabel(opt_frame, text="Format:").grid(row=1, column=0, padx=15, pady=10, sticky="w")
+        self.fmt_var = ctk.StringVar(value="MP3")
         formats = ["MP3", "WAV", "OGG", "FLAC", "M4A"]
-        self.fmt_combo = ttk.Combobox(opt_frame, textvariable=self.fmt_var, values=formats, state="readonly")
-        self.fmt_combo.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.fmt_combo = ctk.CTkComboBox(opt_frame, variable=self.fmt_var, values=formats)
+        self.fmt_combo.grid(row=1, column=1, padx=15, pady=10, sticky="ew")
         
         # Metadata
-        self.var_meta = tk.BooleanVar(value=True)
-        self.chk_meta = tk.Checkbutton(opt_frame, text="Copy Metadata (Tags)", variable=self.var_meta)
-        self.chk_meta.grid(row=1, column=1, padx=5, pady=5, sticky="w")
+        self.var_meta = ctk.BooleanVar(value=True)
+        self.chk_meta = ctk.CTkCheckBox(opt_frame, text="Copy Metadata (Tags)", variable=self.var_meta)
+        self.chk_meta.grid(row=2, column=1, padx=15, pady=10, sticky="w")
         
-        # Quality (for lossy)
-        ttk.Label(opt_frame, text="Quality:").grid(row=2, column=0, padx=5, pady=5, sticky="e")
-        self.qual_var = tk.StringVar(value="High")
+        # Quality
+        ctk.CTkLabel(opt_frame, text="Quality:").grid(row=3, column=0, padx=15, pady=10, sticky="w")
+        self.qual_var = ctk.StringVar(value="High")
         qualities = ["High", "Medium", "Low"]
-        self.qual_combo = ttk.Combobox(opt_frame, textvariable=self.qual_var, values=qualities, state="readonly")
-        self.qual_combo.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        self.qual_combo = ctk.CTkComboBox(opt_frame, variable=self.qual_var, values=qualities)
+        self.qual_combo.grid(row=3, column=1, padx=15, pady=10, sticky="ew")
 
-        opt_frame.columnconfigure(1, weight=1)
+        # 3. Progress & Actions
+        # Output Option
+        out_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        out_frame.pack(fill="x", padx=40, pady=(0, 5))
+        ctk.CTkCheckBox(out_frame, text="Save to 'Converted_Audio' folder", variable=self.var_new_folder).pack(side="left")
 
-        # Progress
-        self.progress = ttk.Progressbar(self, orient="horizontal", mode="determinate")
-        self.progress.pack(fill="x", padx=10, pady=10)
+        self.progress = ctk.CTkProgressBar(self.main_frame)
+        self.progress.pack(fill="x", padx=40, pady=(10, 5))
+        self.progress.set(0)
         
-        self.lbl_status = ttk.Label(self, text="Ready")
-        self.lbl_status.pack(pady=5)
-
-        # Buttons
-        btn_frame = ttk.Frame(self)
-        btn_frame.pack(fill="x", padx=10, pady=10)
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray")
+        self.lbl_status.pack(pady=(0, 20))
         
-        ttk.Button(btn_frame, text="Close", command=self.destroy).pack(side="right", padx=5)
-        self.btn_convert = ttk.Button(btn_frame, text="Convert", command=self.start_convert)
-        self.btn_convert.pack(side="right", padx=5)
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
+        
+        self.btn_convert = ctk.CTkButton(btn_frame, text="Convert", height=40, font=ctk.CTkFont(size=14, weight="bold"), command=self.start_convert)
+        self.btn_convert.pack(side="right", padx=10)
+        
+        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", height=40, command=self.destroy).pack(side="right", padx=10)
 
     def start_convert(self):
-        self.btn_convert.config(state="disabled")
+        self.btn_convert.configure(state="disabled", text="Converting...")
         threading.Thread(target=self.run_conversion, daemon=True).start()
 
     def run_conversion(self):
@@ -105,19 +103,26 @@ class AudioConvertGUI(tk.Tk):
         quality = self.qual_var.get()
         
         total = len(self.files)
-        self.progress["maximum"] = total
-        
         success = 0
         errors = []
         
         for i, path in enumerate(self.files):
-            self.lbl_status.config(text=f"Processing {i+1}/{total}: {path.name}")
-            self.progress["value"] = i
+            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {path.name}")
+            self.progress.set(i / total)
             
             try:
-                cmd = [ffmpeg, "-i", str(path)]
+                # Determine output directory
+                if self.var_new_folder.get():
+                    out_dir = path.parent / "Converted_Audio"
+                    out_dir.mkdir(exist_ok=True)
+                    out_name = f"{path.stem}.{fmt}"
+                else:
+                    out_dir = path.parent
+                    out_name = f"{path.stem}_conv.{fmt}"
                 
-                output_path = path.with_suffix(f".{fmt}")
+                output_path = out_dir / out_name
+                
+                cmd = [ffmpeg, "-i", str(path)]
                 
                 # Codec & Quality
                 if fmt == "mp3":
@@ -143,10 +148,6 @@ class AudioConvertGUI(tk.Tk):
                 # Metadata
                 if not copy_meta:
                     cmd.extend(["-map_metadata", "-1"])
-                else:
-                    # Default is usually to copy, but let's be explicit if needed?
-                    # FFmpeg usually copies by default for compatible containers.
-                    pass
                 
                 cmd.extend(["-y", str(output_path)])
                 
@@ -154,11 +155,11 @@ class AudioConvertGUI(tk.Tk):
                 success += 1
                 
             except Exception as e:
-                errors.append(f"{path.name}: {e}")
+                errors.append(f"{path.name}: {str(e)}")
                 
-        self.progress["value"] = total
-        self.lbl_status.config(text="Done")
-        self.btn_convert.config(state="normal")
+        self.progress.set(1.0)
+        self.lbl_status.configure(text="Done")
+        self.btn_convert.configure(state="normal", text="Convert")
         
         msg = f"Converted {success}/{total} files."
         if errors:
@@ -168,6 +169,9 @@ class AudioConvertGUI(tk.Tk):
             messagebox.showinfo("Success", msg)
             self.destroy()
 
+    def on_closing(self):
+        self.destroy()
+
 def run_gui(target_path):
     app = AudioConvertGUI(target_path)
     app.mainloop()
@@ -175,3 +179,6 @@ def run_gui(target_path):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         run_gui(sys.argv[1])
+    else:
+        # Debug
+        run_gui(str(Path.home() / "Music"))

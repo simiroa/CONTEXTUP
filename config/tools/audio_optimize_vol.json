@@ -1,0 +1,12 @@
+{
+    "category": "Audio",
+    "id": "audio_optimize_vol",
+    "name": "Optimize Volume (Loudnorm)",
+    "icon": "assets/icons/icon_audio_optimize_vol.ico",
+    "types": ".wav;.mp3;.ogg;.flac;.m4a",
+    "scope": "file",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

@@ -1,0 +1,12 @@
+{
+    "category": "Etc",
+    "id": "sys_translator",
+    "name": "Real-time Translator",
+    "icon": "assets/icons/icon_sys_translator.ico",
+    "types": "*",
+    "scope": "folder",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

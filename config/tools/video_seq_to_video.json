@@ -1,0 +1,12 @@
+{
+    "category": "Video",
+    "id": "video_seq_to_video",
+    "name": "Sequence to Video",
+    "icon": "assets/icons/icon_video_seq_to_video.ico",
+    "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff",
+    "scope": "both",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

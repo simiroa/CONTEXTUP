@@ -45,6 +45,26 @@ def main():
             batch_selection = [Path(target_path)]
 
         # Load config to find the script handler
+        logger.debug("Loading config...")
+        config = MenuConfig()
+        item_config = config.get_item_by_id(item_id)
+        
+        # 1. Custom Command Dispatch
+        if item_config and item_config.get('command'):
+            cmd_template = item_config['command']
+            logger.info(f"Executing custom command: {cmd_template}")
+            
+            # Replace placeholders
+            # %1 -> target_path
+            # %V -> target_path (verbose/standard)
+            cmd = cmd_template.replace("%1", str(target_path)).replace("%V", str(target_path))
+            
+            # Execute
+            import subprocess
+            subprocess.Popen(cmd, shell=True)
+            return
+
+        # 2. Legacy Hardcoded Dispatch
         logger.debug("Importing scripts...")
         from scripts import image_tools, sys_tools, video_tools, audio_tools, mayo_tools, upscale_tools
         
@@ -68,17 +88,31 @@ def main():
             elif item_id == "image_analyze_ollama":
                 from scripts import ollama_tools
                 ollama_tools.analyze_image(target_path)
-            elif item_id == "image_smart_tag":
-                from scripts import metadata_tools
-                metadata_tools.tag_images(target_path)
-            elif item_id == "image_texture_tools":
-                from scripts.ai_standalone import texture_gen
-                texture_gen.TextureGenGUI().mainloop()
+
             else:
                 logger.warning(f"Unknown image tool: {item_id}")
 
+        elif item_id.startswith("ai_"):
+            from scripts.ai_standalone import gemini_img_tools
+            
+            start_tab = "Style"
+            if item_id == "ai_gemini_tools": start_tab = "Style"
+            elif item_id == "ai_style_change": start_tab = "Style"
+            elif item_id == "ai_pbr_gen": start_tab = "PBR Gen"
+            elif item_id == "ai_maketile": start_tab = "Tileable"
+            elif item_id == "ai_weathering": start_tab = "Weathering"
+            elif item_id == "ai_to_prompt": start_tab = "Analysis"
+            elif item_id == "ai_outpaint": start_tab = "Outpaint"
+            elif item_id == "ai_inpaint": start_tab = "Inpaint"
+            
+            gemini_img_tools.GeminiImageToolsGUI(target_path, start_tab=start_tab).mainloop()
+
         elif item_id.startswith("sys_") or item_id.startswith("cad_") or item_id.startswith("doc_"):
-            if item_id == "sys_pdf_merge":
+            if item_id == "sys_manager_gui":
+                manager_script = src_dir / "scripts" / "manager_gui.py"
+                import subprocess
+                subprocess.Popen([sys.executable, str(manager_script)])
+            elif item_id == "sys_pdf_merge":
                 sys_tools.pdf_merge(target_path, selection=batch_selection)
             elif item_id == "sys_pdf_split":
                 sys_tools.pdf_split(target_path)
@@ -90,29 +124,23 @@ def main():
                 sys_tools.arrange_sequences(target_path, selection=batch_selection)
             elif item_id == "sys_find_missing_frames":
                 sys_tools.find_missing_frames(target_path, selection=batch_selection)
-            elif item_id == "sys_analyze_clipboard":
-                from scripts import ollama_tools
-                ollama_tools.analyze_clipboard_image(target_path)
+            elif item_id == "sys_clipboard_ai":
+                script_path = src_dir / "scripts" / "ai_standalone" / "clipboard_ai_tool.py"
+                import subprocess
+                subprocess.Popen([sys.executable, str(script_path)])
             elif item_id == "sys_save_clipboard":
                 sys_tools.save_clipboard_image(target_path)
-            elif item_id == "sys_analyze_error":
-                from scripts import ollama_tools
-                ollama_tools.analyze_error(target_path)
-            elif item_id == "sys_manager_gui":
-                from scripts import manager_gui
-                manager_gui.ManagerGUI().mainloop()
-            elif item_id == "sys_batch_rename":
-                from scripts import rename_tools
-                rename_tools.run_rename_gui(target_path)
-            elif item_id == "sys_renumber":
-                from scripts import rename_tools
-                rename_tools.run_renumber_gui(target_path)
-            elif item_id == "cad_convert_obj":
-                from scripts import mayo_tools
-                mayo_tools.convert_to_obj(target_path)
             elif item_id == "doc_analyze_ollama":
                 from scripts import ollama_tools
                 ollama_tools.analyze_document(target_path)
+            elif item_id == "sys_open_recent":
+                recent_script = src_dir / "scripts" / "sys_open_last.py"
+                import subprocess
+                subprocess.Popen([sys.executable, str(recent_script)])
+            elif item_id == "sys_translator":
+                trans_script = src_dir / "scripts" / "sys_translator.py"
+                import subprocess
+                subprocess.Popen([sys.executable, str(trans_script)])
             else:
                 logger.warning(f"Unknown sys tool: {item_id}")
                 
@@ -131,14 +159,17 @@ def main():
                 subtitle_tools.generate_subtitles(target_path)
             elif item_id == "video_audio_tools":
                 # Unified GUI for Extract/Remove/Separate
-                from scripts import video_audio_gui
-                video_audio_gui.run_gui(target_path)
+                script_path = src_dir / "scripts" / "audio_studio_gui.py"
+                subprocess.Popen([sys.executable, str(script_path), str(target_path), "--tab", "video"])
             else:
                 logger.warning(f"Unknown video tool: {item_id}")
                 
         elif item_id.startswith("audio_"):
+            script_path = src_dir / "scripts" / "audio_studio_gui.py"
             if item_id == "audio_convert_format":
-                audio_tools.convert_format(target_path)
+                subprocess.Popen([sys.executable, str(script_path), str(target_path), "--tab", "convert"])
+            elif item_id == "audio_separate":
+                subprocess.Popen([sys.executable, str(script_path), str(target_path), "--tab", "separate"])
             elif item_id == "audio_optimize_vol":
                 audio_tools.optimize_volume(target_path)
             else:
@@ -148,6 +179,10 @@ def main():
             from scripts import blender_tools
             if item_id == "mesh_convert_format":
                 blender_tools.convert_mesh(target_path)
+            elif item_id == "mesh_auto_lod":
+                script_path = src_dir / "scripts" / "mesh_lod_gui.py"
+                import subprocess
+                subprocess.Popen([sys.executable, str(script_path), str(target_path)])
             elif item_id == "mesh_extract_textures":
                 blender_tools.extract_textures(target_path)
             else:

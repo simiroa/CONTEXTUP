@@ -1,0 +1,12 @@
+{
+    "category": "Sys",
+    "id": "sys_manager_gui",
+    "name": "Open ContextUp Manager",
+    "icon": "assets/icons/icon_sys_manager_gui.ico",
+    "types": "*",
+    "scope": "folder",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

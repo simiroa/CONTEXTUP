@@ -29,11 +29,12 @@ def get_video_info(input_path):
         str(input_path)
     ]
     
+    info = {'fps': 30.0, 'width': 0, 'height': 0, 'has_audio': False}
+    
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         lines = result.stdout.strip().split('\n')
         
-        info = {}
         for line in lines:
             if '=' in line:
                 key, value = line.split('=')
@@ -43,15 +44,25 @@ def get_video_info(input_path):
         if 'r_frame_rate' in info:
             num, den = info['r_frame_rate'].split('/')
             if float(den) > 0:
-                fps = float(num) / float(den)
-                info['fps'] = fps
-            else:
-                info['fps'] = 30.0
-        
+                info['fps'] = float(num) / float(den)
+                
+        # Check for audio stream
+        cmd_audio = [
+            ffprobe,
+            "-v", "error",
+            "-select_streams", "a:0",
+            "-show_entries", "stream=codec_type",
+            "-of", "default=noprint_wrappers=1",
+            str(input_path)
+        ]
+        result_audio = subprocess.run(cmd_audio, capture_output=True, text=True)
+        if "codec_type=audio" in result_audio.stdout:
+            info['has_audio'] = True
+            
         return info
     except Exception as e:
         print(f"Warning: Failed to get video info: {e}")
-        return {'fps': 30.0, 'width': 0, 'height': 0}
+        return info
 
 def interpolate_video_ffmpeg(input_path, output_path, target_fps=60, method="mci"):
     """
@@ -66,8 +77,9 @@ def interpolate_video_ffmpeg(input_path, output_path, target_fps=60, method="mci
     input_fps = info.get('fps', 30)
     width = info.get('width', 'unknown')
     height = info.get('height', 'unknown')
+    has_audio = info.get('has_audio', False)
     
-    print(f"Input: {input_fps:.2f} FPS, {width}x{height}")
+    print(f"Input: {input_fps:.2f} FPS, {width}x{height}, Audio: {has_audio}")
     print(f"Target: {target_fps} FPS")
     print(f"Method: {method.upper()}")
     
@@ -81,9 +93,6 @@ def interpolate_video_ffmpeg(input_path, output_path, target_fps=60, method="mci
         filter_complex = f"minterpolate=fps={target_fps}:mi_mode=blend"
     
     # Build FFmpeg command
-    # Removed -hwaccel cuda because minterpolate is CPU-only and mixing them can cause stability issues
-    # or "moov atom not found" if the pipeline breaks.
-    # We stick to software decoding for stability with this complex filter.
     cmd = [
         ffmpeg,
         "-i", str(input_path),
@@ -91,10 +100,14 @@ def interpolate_video_ffmpeg(input_path, output_path, target_fps=60, method="mci
         "-c:v", "libx264",            # Use CPU encoding for maximum compatibility
         "-preset", "medium",
         "-crf", "20",                 # High quality
-        "-c:a", "copy",
-        "-y",
-        str(output_path)
+        "-pix_fmt", "yuv420p",        # Ensure compatibility
+        "-y"
     ]
+    
+    if has_audio:
+        cmd.extend(["-c:a", "copy"])
+    
+    cmd.append(str(output_path))
     
     print(f"\nProcessing (this may take a while)...")
     
@@ -107,11 +120,11 @@ def interpolate_video_ffmpeg(input_path, output_path, target_fps=60, method="mci
             text=True
         )
         
-        print(f"✓ Success: {output_path}")
+        print(f"[OK] Success: {output_path}")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"✗ FFmpeg error:")
+        print(f"[Error] FFmpeg error:")
         print(e.stderr)
         return False
 

@@ -1,0 +1,15 @@
+{
+    "category": "3D",
+    "id": "mesh_auto_lod",
+    "name": "Auto LOD Generator (PyMeshLab)",
+    "icon": "assets/icons/icon_mesh_lod.ico",
+    "types": ".obj;.ply;.stl;.off;.gltf;.glb;.fbx",
+    "scope": "file",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system",
+    "dependencies": [
+        "pymeshlab"
+    ]
+}

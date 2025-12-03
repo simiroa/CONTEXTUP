@@ -1,0 +1,12 @@
+{
+    "category": "Sys",
+    "id": "sys_find_missing_frames",
+    "name": "Folder: Find Missing Frames",
+    "icon": "assets/icons/icon_sys_find_missing_frames.ico",
+    "types": "*",
+    "scope": "folder",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

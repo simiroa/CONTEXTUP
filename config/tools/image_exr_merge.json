@@ -1,0 +1,12 @@
+{
+    "category": "Image",
+    "id": "image_exr_merge",
+    "name": "Merge to EXR",
+    "icon": "assets/icons/icon_image_exr_merge.ico",
+    "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr",
+    "scope": "both",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

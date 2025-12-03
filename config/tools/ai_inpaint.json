@@ -1,0 +1,12 @@
+{
+    "category": "AI",
+    "id": "ai_inpaint",
+    "name": "Object Removal / Replace",
+    "icon": "assets/icons/icon_ai_inpaint.ico",
+    "types": ".jpg;.jpeg;.png;.webp;.tga;.tif;.tiff",
+    "scope": "file",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "ai"
+}

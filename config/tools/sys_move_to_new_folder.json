@@ -1,0 +1,12 @@
+{
+    "category": "Sys",
+    "id": "sys_move_to_new_folder",
+    "name": "Folder: Move to New...",
+    "icon": "assets/icons/icon_sys_move_to_new_folder.ico",
+    "types": "*",
+    "scope": "both",
+    "status": "COMPLETE",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "environment": "system"
+}

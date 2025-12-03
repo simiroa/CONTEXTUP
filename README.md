@@ -1,33 +1,3 @@
-# Creator Tools v2
-
-**Creator Tools v2** is a powerful Windows Context Menu extension designed for content creators, developers, and power users. It integrates advanced AI features, system utilities, and media processing tools directly into your right-click menu, streamlining your workflow.
-
-## 🚀 Getting Started
-
-### Installation
-
-1.  **Download**: Clone or download this repository to a permanent location (e.g., `C:\Tools\CreatorTools`).
-2.  **Setup**: Run `INSTALL.bat` (or `python tools/setup_python.py`) to initialize the environment.
-    *   This will set up the embedded Python environment and install necessary dependencies.
-3.  **Register**: Run `manage.py register` (or use the **Manager GUI**) to add the tools to your Windows Context Menu.
-    *   *Note: You may need to restart Explorer or sign out/in for changes to take effect.*
-
-### Usage
-
-1.  **Right-Click**: Select any file or folder in Windows Explorer.
-2.  **Navigate**: Go to the **Creator Tools** menu item.
-3.  **Select Tool**: Choose the desired tool from the categorized submenus (Image, Video, Audio, System, etc.).
-
-### Configuration
-
-*   **Manager Launcher**: Run `CreatorToolsManager.bat` in the project root to open the **Creator Tools Manager**.
-*   **Context Menu**: You can also access "Open Creator Tools Manager" directly from the System submenu.
-*   **Rename & Sort**: Use the Manager GUI to rename tools (click the ✎ icon). This allows you to customize the sort order in the context menu.
-
----
-
-## ✨ Feature Specifications
-
 ### 🛠️ System Utilities
 *   **Folder: Move to New...**: Moves selected files to a new folder. Handles naming collisions automatically.
 *   **Folder: Remove Empty**: Recursively removes empty subdirectories within the selected folder.
@@ -55,20 +25,41 @@
 *   **Remove Background (AI)**: Uses **RMBG-2.0** (via isolated AI environment) to instantly remove backgrounds.
 *   **Upscale (AI)**: Uses **Real-ESRGAN** to upscale images (x4) with high fidelity.
 *   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
-*   **Auto Tag Metadata**: Automatically generates and embeds metadata tags for images using AI.
+*   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
 *   **Texture Tools**: Generates PBR texture maps (Normal, Roughness, etc.) or weathering effects using Gemini API.
 
 ### 🎥 Video Tools
 *   **Convert / Proxy**: A unified GUI to convert videos (MP4, MOV, etc.) or create 1/2 resolution proxies for editing.
 *   **Sequence to Video**: Converts an image sequence into a video file. Includes "Skip First Frame" option for Unreal Engine exports.
-*   **Audio Tools**: A unified GUI to extract audio, remove audio, or separate Voice/BGM using AI.
-*   **Frame Interpolation**: Increases video frame rate using AI (RIFE) or simple frame blending.
+*   **Audio Studio**: A comprehensive GUI for all audio needs:
+    *   **Converter**: Batch convert audio formats (MP3, WAV, FLAC, etc.).
+    *   **AI Separator**: Isolate vocals and accompaniment using **Spleeter**.
+    *   **Video Audio**: Extract or remove audio tracks from video files.
+*   **Frame Interpolation (RIFE)**: Uses **RIFE (Real-Time Intermediate Flow Estimation)** to smooth videos by generating intermediate frames (e.g., 30fps -> 60fps).
 *   **Generate Subtitles**: Uses **Faster-Whisper** to automatically generate `.srt` subtitles for videos.
+
+### 🌐 System Tools
+*   **Real-time Translator**: A minimalist, always-on-top translator (Google Translate) with Auto-Clipboard detection. Features a compact UI, opacity control, and click-to-copy workflow.
 
 ### 🧊 3D Tools
 *   **Convert Mesh**: Converts 3D models between OBJ, FBX, GLTF, and PLY formats using Blender.
 *   **Extract Textures**: Extracts embedded textures from 3D model files.
 *   **Convert CAD**: Converts STEP/IGES CAD files to OBJ mesh format using Mayo.
+
+### 🛠️ Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/ContextUp.git
+    cd ContextUp
+    ```
+2.  **Run Setup**:
+    ```bash
+    python setup_all.py
+    ```
+    This will download necessary binaries (like RIFE) and prepare the environment.
+3.  **Register Menu**:
+    Run `ContextUpManager.bat` and click **"Register Menu"**.
 
 ---
 
@@ -85,3 +76,23 @@ This project uses a **Dual-Environment Architecture** to balance performance and
     *   Automatically activated only when needed via `src/utils/ai_runner.py`.
 
 For a detailed code map and file responsibilities, please refer to [**architecture.md**](architecture.md).
+
+## 📚 Documentation
+
+- **User Guide**:
+    - [Features List](docs/user/FEATURES.md)
+    - [Icon Reference](docs/user/ICONS.md)
+    - [User Testing Guide](docs/user/USER_TESTING.md)
+
+- **Installation**:
+    - [Conda Environment Setup](docs/install/INSTALL_CONDA.md)
+    - [Python Environment Guide](docs/install/PYTHON_ENV_GUIDE.md)
+
+- **Development**:
+    - [Contributing](docs/dev/CONTRIBUTING.md)
+    - [Development Guide](docs/dev/DEVELOPMENT.md)
+    - [GUI Guidelines](docs/dev/GUI_GUIDELINES.md)
+    - [Embedded Python & Tkinter](docs/dev/EMBEDDED_PYTHON_TKINTER_GUIDE.md)
+
+- **Support**:
+    - [Troubleshooting](docs/troubleshooting/TROUBLESHOOTING.md)

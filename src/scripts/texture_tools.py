@@ -1,90 +1,79 @@
 """
 Texture Tools GUI.
 """
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import messagebox, ttk, scrolledtext
+from tkinter import messagebox
 from pathlib import Path
 import threading
 import os
+import sys
+
+# Add src to path
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
 from utils.ai_runner import run_ai_script
+from utils.gui_lib import BaseWindow
 
-def _get_root_tex():
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    root.lift()
-    return root
-
-class TextureDialog(tk.Toplevel):
-    def __init__(self, parent, image_path):
-        super().__init__(parent)
-        self.title("Texture Tools")
-        self.geometry("600x500")
-        self.image_path = image_path
+class TextureGUI(BaseWindow):
+    def __init__(self, target_path):
+        super().__init__(title="ContextUp Texture Tools", width=700, height=600)
+        self.image_path = Path(target_path)
         
         self.create_widgets()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
     def create_widgets(self):
-        # Top Info
-        info_frame = ttk.Frame(self, padding="10")
-        info_frame.pack(fill=tk.X)
-        ttk.Label(info_frame, text=f"File: {Path(self.image_path).name}", font=("Segoe UI", 10, "bold")).pack(anchor=tk.W)
+        # Header
+        self.add_header(f"File: {self.image_path.name}")
         
         # API Key Check
         if not os.environ.get('GEMINI_API_KEY'):
-            ttk.Label(info_frame, text="Warning: GEMINI_API_KEY not found in environment variables.", foreground="red").pack(anchor=tk.W)
+            ctk.CTkLabel(self.main_frame, text="Warning: GEMINI_API_KEY not found in environment variables.", text_color="#E74C3C").pack(anchor="w", padx=20)
         
         # Tabs
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        self.tab_view = ctk.CTkTabview(self.main_frame)
+        self.tab_view.pack(fill="both", expand=True, padx=20, pady=10)
         
-        # Tab 1: PBR Generation
-        self.tab_pbr = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_pbr, text="PBR Generation")
+        self.tab_pbr = self.tab_view.add("PBR Generation")
+        self.tab_analyze = self.tab_view.add("Analyze (Gemini)")
+        
         self.setup_pbr_tab()
-        
-        # Tab 2: Analysis (Gemini)
-        self.tab_analyze = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_analyze, text="Analyze (Gemini)")
         self.setup_analyze_tab()
         
         # Close Button
-        btn_frame = ttk.Frame(self, padding="10")
-        btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Close", command=self.destroy).pack(side=tk.RIGHT)
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
+        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
 
     def setup_pbr_tab(self):
-        frame = ttk.Frame(self.tab_pbr, padding="20")
-        frame.pack(fill=tk.BOTH, expand=True)
+        ctk.CTkLabel(self.tab_pbr, text="Generate Normal, Roughness, and Displacement maps.").pack(anchor="w", padx=20, pady=10)
         
-        ttk.Label(frame, text="Generate Normal, Roughness, and Displacement maps.").pack(anchor=tk.W, pady=10)
+        self.btn_pbr = ctk.CTkButton(self.tab_pbr, text="Generate PBR Maps", command=self.run_pbr)
+        self.btn_pbr.pack(anchor="w", padx=20, pady=10)
         
-        self.btn_pbr = ttk.Button(frame, text="Generate PBR Maps", command=self.run_pbr)
-        self.btn_pbr.pack(anchor=tk.W, pady=10)
-        
-        self.log_pbr = scrolledtext.ScrolledText(frame, height=10, width=60, font=("Consolas", 9))
-        self.log_pbr.pack(fill=tk.BOTH, expand=True, pady=10)
+        self.log_pbr = ctk.CTkTextbox(self.tab_pbr, font=("Consolas", 10))
+        self.log_pbr.pack(fill="both", expand=True, padx=20, pady=10)
 
     def setup_analyze_tab(self):
-        frame = ttk.Frame(self.tab_analyze, padding="20")
-        frame.pack(fill=tk.BOTH, expand=True)
+        ctk.CTkLabel(self.tab_analyze, text="Analyze texture properties using Gemini Vision.").pack(anchor="w", padx=20, pady=10)
         
-        ttk.Label(frame, text="Analyze texture properties using Gemini Vision.").pack(anchor=tk.W, pady=10)
+        self.btn_analyze = ctk.CTkButton(self.tab_analyze, text="Analyze Texture", command=self.run_analyze)
+        self.btn_analyze.pack(anchor="w", padx=20, pady=10)
         
-        self.btn_analyze = ttk.Button(frame, text="Analyze Texture", command=self.run_analyze)
-        self.btn_analyze.pack(anchor=tk.W, pady=10)
-        
-        self.log_analyze = scrolledtext.ScrolledText(frame, height=10, width=60, font=("Consolas", 9))
-        self.log_analyze.pack(fill=tk.BOTH, expand=True, pady=10)
+        self.log_analyze = ctk.CTkTextbox(self.tab_analyze, font=("Consolas", 10))
+        self.log_analyze.pack(fill="both", expand=True, padx=20, pady=10)
 
     def run_pbr(self):
-        self.btn_pbr.config(state="disabled")
-        self.log_pbr.insert(tk.END, "Generating PBR maps...\n")
+        self.btn_pbr.configure(state="disabled", text="Generating...")
+        self.log_pbr.insert("end", "Generating PBR maps...\n")
         threading.Thread(target=self._run_script, args=("pbr", self.log_pbr, self.btn_pbr), daemon=True).start()
 
     def run_analyze(self):
-        self.btn_analyze.config(state="disabled")
-        self.log_analyze.insert(tk.END, "Analyzing with Gemini...\n")
+        self.btn_analyze.configure(state="disabled", text="Analyzing...")
+        self.log_analyze.insert("end", "Analyzing with Gemini...\n")
         threading.Thread(target=self._run_script, args=("analyze", self.log_analyze, self.btn_analyze), daemon=True).start()
 
     def _run_script(self, action, log_widget, btn_widget):
@@ -94,25 +83,29 @@ class TextureDialog(tk.Toplevel):
         self.after(0, lambda: self.update_ui(success, output, log_widget, btn_widget))
 
     def update_ui(self, success, output, log_widget, btn_widget):
-        btn_widget.config(state="normal")
+        btn_widget.configure(state="normal")
+        if action := "Generate PBR Maps" if btn_widget == self.btn_pbr else "Analyze Texture":
+             btn_widget.configure(text=action)
+             
         if success:
-            log_widget.insert(tk.END, output + "\nDone.\n")
+            log_widget.insert("end", output + "\nDone.\n")
         else:
-            log_widget.insert(tk.END, f"Error:\n{output}\n")
-        log_widget.see(tk.END)
+            log_widget.insert("end", f"Error:\n{output}\n")
+        log_widget.see("end")
+
+    def on_closing(self):
+        self.destroy()
 
 def open_texture_tools(target_path: str):
     """
     Open Texture Tools dialog.
     """
-    try:
-        if not target_path:
-            return
-            
-        root = _get_root_tex()
-        dialog = TextureDialog(root, target_path)
-        root.wait_window(dialog)
-        root.destroy()
-            
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to open texture tools: {e}")
+    if not target_path:
+        return
+        
+    app = TextureGUI(target_path)
+    app.mainloop()
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        open_texture_tools(sys.argv[1])

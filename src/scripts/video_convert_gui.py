@@ -1,5 +1,6 @@
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from pathlib import Path
 import sys
 import subprocess
@@ -12,18 +13,16 @@ sys.path.append(str(src_dir))
 
 from utils.external_tools import get_ffmpeg
 from utils.explorer import get_selection_from_explorer
+from utils.gui_lib import BaseWindow, FileListFrame
 
-class VideoConvertGUI(tk.Tk):
+class VideoConvertGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__()
-        self.title("Video Converter")
-        self.geometry("600x550")
+        super().__init__(title="ContextUp Video Converter", width=700, height=750)
         
         self.target_path = target_path
         self.selection = get_selection_from_explorer(target_path)
         
         if not self.selection:
-            # Fallback
             self.selection = [target_path]
             
         # Filter video files
@@ -35,33 +34,27 @@ class VideoConvertGUI(tk.Tk):
             self.destroy()
             return
 
+        self.var_new_folder = ctk.BooleanVar(value=True) # Default ON
         self.create_widgets()
-        self.eval('tk::PlaceWindow . center')
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def create_widgets(self):
-        # File List
-        lbl_files = ttk.Label(self, text=f"Selected {len(self.files)} files:")
-        lbl_files.pack(pady=5, padx=10, anchor="w")
+        # 1. Header & File List
+        self.add_header(f"Selected Files ({len(self.files)})")
         
-        file_frame = ttk.Frame(self)
-        file_frame.pack(fill="x", padx=10, pady=5)
+        self.file_scroll = FileListFrame(self.main_frame, self.files)
+        self.file_scroll.pack(fill="x", padx=20, pady=5)
         
-        file_list = tk.Listbox(file_frame, height=5)
-        file_list.pack(side="left", fill="x", expand=True)
-        scrollbar = ttk.Scrollbar(file_frame, orient="vertical", command=file_list.yview)
-        scrollbar.pack(side="right", fill="y")
-        file_list.config(yscrollcommand=scrollbar.set)
+        # 2. Options
+        opt_frame = ctk.CTkFrame(self.main_frame)
+        opt_frame.pack(fill="x", padx=20, pady=20)
+        opt_frame.grid_columnconfigure(1, weight=1)
         
-        for f in self.files:
-            file_list.insert(tk.END, f.name)
-
-        # Options Frame
-        opt_frame = ttk.LabelFrame(self, text="Conversion Options")
-        opt_frame.pack(fill="x", padx=10, pady=10)
+        ctk.CTkLabel(opt_frame, text="Conversion Options", font=ctk.CTkFont(size=14, weight="bold")).grid(row=0, column=0, columnspan=2, sticky="w", padx=15, pady=15)
         
         # Format
-        ttk.Label(opt_frame, text="Format:").grid(row=0, column=0, padx=5, pady=5, sticky="e")
-        self.fmt_var = tk.StringVar(value="MP4 (H.264)")
+        ctk.CTkLabel(opt_frame, text="Format:").grid(row=1, column=0, padx=15, pady=10, sticky="w")
+        self.fmt_var = ctk.StringVar(value="MP4 (H.264)")
         formats = [
             "MP4 (H.264 High)", 
             "MP4 (H.264 Low/Proxy)", 
@@ -70,91 +63,86 @@ class VideoConvertGUI(tk.Tk):
             "MOV (DNxHD)",
             "MKV (Copy Stream)"
         ]
-        self.fmt_combo = ttk.Combobox(opt_frame, textvariable=self.fmt_var, values=formats, state="readonly")
-        self.fmt_combo.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-        self.fmt_combo.bind("<<ComboboxSelected>>", self.on_fmt_change)
+        self.fmt_combo = ctk.CTkComboBox(opt_frame, variable=self.fmt_var, values=formats, command=self.on_fmt_change)
+        self.fmt_combo.grid(row=1, column=1, padx=15, pady=10, sticky="ew")
         
         # Scale
-        ttk.Label(opt_frame, text="Scale:").grid(row=1, column=0, padx=5, pady=5, sticky="e")
-        self.scale_var = tk.StringVar(value="100%")
+        ctk.CTkLabel(opt_frame, text="Scale:").grid(row=2, column=0, padx=15, pady=10, sticky="w")
+        self.scale_var = ctk.StringVar(value="100%")
         scales = ["100%", "50%", "25%", "Custom Width"]
-        self.scale_combo = ttk.Combobox(opt_frame, textvariable=self.scale_var, values=scales, state="readonly")
-        self.scale_combo.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-        self.scale_combo.bind("<<ComboboxSelected>>", self.on_scale_change)
+        self.scale_combo = ctk.CTkComboBox(opt_frame, variable=self.scale_var, values=scales, command=self.on_scale_change)
+        self.scale_combo.grid(row=2, column=1, padx=15, pady=10, sticky="ew")
         
-        # Custom Width Entry (Hidden by default)
-        self.lbl_width = ttk.Label(opt_frame, text="Width:")
-        self.entry_width = ttk.Entry(opt_frame, width=10)
+        # Custom Width (Hidden initially)
+        self.entry_width = ctk.CTkEntry(opt_frame, placeholder_text="Width (px)")
         
         # Quality (CRF)
-        self.lbl_crf = ttk.Label(opt_frame, text="Quality (CRF):")
-        self.lbl_crf.grid(row=2, column=0, padx=5, pady=5, sticky="e")
+        self.lbl_crf = ctk.CTkLabel(opt_frame, text="Quality (CRF):")
+        self.lbl_crf.grid(row=3, column=0, padx=15, pady=10, sticky="w")
         
         self.crf_var = tk.IntVar(value=23)
-        self.scale_crf = ttk.Scale(opt_frame, from_=0, to=51, variable=self.crf_var, orient="horizontal")
-        self.scale_crf.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        self.slider_crf = ctk.CTkSlider(opt_frame, from_=0, to=51, number_of_steps=51, variable=self.crf_var, command=self.update_crf_label)
+        self.slider_crf.grid(row=3, column=1, padx=15, pady=10, sticky="ew")
         
-        self.lbl_crf_val = ttk.Label(opt_frame, text="23")
-        self.lbl_crf_val.grid(row=2, column=2, padx=5, pady=5)
-        self.scale_crf.configure(command=lambda v: self.lbl_crf_val.configure(text=f"{int(float(v))}"))
+        self.lbl_crf_val = ctk.CTkLabel(opt_frame, text="23", width=30)
+        self.lbl_crf_val.grid(row=3, column=2, padx=15, pady=10)
 
-        opt_frame.columnconfigure(1, weight=1)
+        # 3. Progress & Actions
+        # Output Option
+        out_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        out_frame.pack(fill="x", padx=40, pady=(0, 5))
+        ctk.CTkCheckBox(out_frame, text="Save to 'Converted' folder", variable=self.var_new_folder).pack(side="left")
 
-        # Progress
-        self.progress = ttk.Progressbar(self, orient="horizontal", mode="determinate")
-        self.progress.pack(fill="x", padx=10, pady=10)
+        self.progress = ctk.CTkProgressBar(self.main_frame)
+        self.progress.pack(fill="x", padx=40, pady=(10, 5))
+        self.progress.set(0)
         
-        self.lbl_status = ttk.Label(self, text="Ready")
-        self.lbl_status.pack(pady=5)
-
-        # Buttons
-        btn_frame = ttk.Frame(self)
-        btn_frame.pack(fill="x", padx=10, pady=10)
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready to convert", text_color="gray")
+        self.lbl_status.pack(pady=(0, 20))
         
-        ttk.Button(btn_frame, text="Close", command=self.destroy).pack(side="right", padx=5)
-        self.btn_convert = ttk.Button(btn_frame, text="Convert", command=self.start_convert)
-        self.btn_convert.pack(side="right", padx=5)
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
+        
+        self.btn_convert = ctk.CTkButton(btn_frame, text="Start Conversion", height=40, font=ctk.CTkFont(size=14, weight="bold"), command=self.start_convert)
+        self.btn_convert.pack(side="right", padx=10)
+        
+        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color="gray", height=40, command=self.destroy).pack(side="right", padx=10)
 
-    def on_fmt_change(self, event):
-        fmt = self.fmt_var.get()
-        if "H.264" in fmt:
-            self.scale_crf.state(["!disabled"])
-            self.lbl_crf.state(["!disabled"])
-            if "High" in fmt: self.crf_var.set(18)
+    def update_crf_label(self, value):
+        self.lbl_crf_val.configure(text=str(int(value)))
+
+    def on_fmt_change(self, choice):
+        if "H.264" in choice:
+            self.slider_crf.configure(state="normal")
+            if "High" in choice: self.crf_var.set(18)
             else: self.crf_var.set(28)
-            self.lbl_crf_val.configure(text=f"{self.crf_var.get()}")
         else:
-            self.scale_crf.state(["disabled"])
-            self.lbl_crf.state(["disabled"])
-            
-    def on_scale_change(self, event):
-        scale = self.scale_var.get()
-        if scale == "Custom Width":
-            self.lbl_width.grid(row=1, column=2, padx=5, pady=5)
-            self.entry_width.grid(row=1, column=3, padx=5, pady=5)
+            self.slider_crf.configure(state="disabled")
+        self.update_crf_label(self.crf_var.get())
+
+    def on_scale_change(self, choice):
+        if choice == "Custom Width":
+            self.entry_width.grid(row=2, column=2, padx=5, pady=10)
         else:
-            self.lbl_width.grid_forget()
             self.entry_width.grid_forget()
 
     def start_convert(self):
-        self.btn_convert.config(state="disabled")
+        self.btn_convert.configure(state="disabled", text="Converting...")
         threading.Thread(target=self.run_conversion, daemon=True).start()
 
     def run_conversion(self):
         ffmpeg = get_ffmpeg()
         fmt = self.fmt_var.get()
         scale = self.scale_var.get()
-        crf = self.crf_var.get()
+        crf = int(self.crf_var.get())
         
         total = len(self.files)
-        self.progress["maximum"] = total
-        
         success = 0
         errors = []
         
         for i, path in enumerate(self.files):
-            self.lbl_status.config(text=f"Processing {i+1}/{total}: {path.name}")
-            self.progress["value"] = i
+            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {path.name}")
+            self.progress.set(i / total)
             
             try:
                 cmd = [ffmpeg, "-i", str(path)]
@@ -165,8 +153,16 @@ class VideoConvertGUI(tk.Tk):
                 elif "MOV" in fmt: suffix = ".mov"
                 elif "MKV" in fmt: suffix = ".mkv"
                 
-                out_name = f"{path.stem}_conv{suffix}"
-                output_path = path.parent / out_name
+                # Determine output directory
+                if self.var_new_folder.get():
+                    out_dir = path.parent / "Converted"
+                    out_dir.mkdir(exist_ok=True)
+                    out_name = f"{path.stem}{suffix}" # Clean name in new folder
+                else:
+                    out_dir = path.parent
+                    out_name = f"{path.stem}_conv{suffix}" # Suffix in same folder
+                
+                output_path = out_dir / out_name
                 
                 # Video Codec
                 if "H.264" in fmt:
@@ -183,31 +179,30 @@ class VideoConvertGUI(tk.Tk):
                 
                 # Scaling
                 vf = []
-                if scale == "50%":
-                    vf.append("scale=iw/2:-2")
-                elif scale == "25%":
-                    vf.append("scale=iw/4:-2")
+                if scale == "50%": vf.append("scale=iw/2:-2")
+                elif scale == "25%": vf.append("scale=iw/4:-2")
                 elif scale == "Custom Width":
                     try:
                         w = int(self.entry_width.get())
                         vf.append(f"scale={w}:-2")
-                    except:
-                        pass
+                    except: pass
                 
-                if vf:
-                    cmd.extend(["-vf", ",".join(vf)])
+                if vf: cmd.extend(["-vf", ",".join(vf)])
                 
                 cmd.extend(["-y", str(output_path)])
                 
-                subprocess.run(cmd, check=True, capture_output=True)
+                # Run without startupinfo for now to debug 0xC0000135
+                result = subprocess.run(cmd, check=True, capture_output=True, text=True)
                 success += 1
                 
+            except subprocess.CalledProcessError as e:
+                errors.append(f"{path.name}: {e.stderr}")
             except Exception as e:
-                errors.append(f"{path.name}: {e}")
+                errors.append(f"{path.name}: {str(e)}")
                 
-        self.progress["value"] = total
-        self.lbl_status.config(text="Done")
-        self.btn_convert.config(state="normal")
+        self.progress.set(1.0)
+        self.lbl_status.configure(text="Conversion Complete")
+        self.btn_convert.configure(state="normal", text="Start Conversion")
         
         msg = f"Converted {success}/{total} files."
         if errors:
@@ -217,6 +212,9 @@ class VideoConvertGUI(tk.Tk):
             messagebox.showinfo("Success", msg)
             self.destroy()
 
+    def on_closing(self):
+        self.destroy()
+
 def run_gui(target_path):
     app = VideoConvertGUI(target_path)
     app.mainloop()
@@ -224,3 +222,6 @@ def run_gui(target_path):
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         run_gui(sys.argv[1])
+    else:
+        # Debug mode
+        run_gui(str(Path.home() / "Videos"))

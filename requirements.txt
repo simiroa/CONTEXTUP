@@ -17,7 +17,7 @@ ffmpeg-python
 faster-whisper
 
 # Google Gemini API
-google-genai
+google-generativeai
 
 # Optional / Development
 pytest

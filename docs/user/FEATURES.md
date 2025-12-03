@@ -34,6 +34,7 @@
 | **3D** | Convert Mesh | `mesh_convert_format` | ✅ Ready | OBJ, FBX, GLTF (Blender) |
 | | Extract Textures | `mesh_extract_textures` | ✅ Ready | (Blender) |
 | | Convert CAD | `cad_convert_obj` | ✅ Ready | Uses Mayo (STEP/IGES -> OBJ) |
+| | Auto LOD Generator | `mesh_auto_lod` | ✅ Ready | PyMeshLab + Blender Baking |
 
 > [!NOTE]
 > **Custom Sorting**: You can rename any feature in the **Creator Tools Manager** (click the ✎ icon) to customize the sort order in the context menu.

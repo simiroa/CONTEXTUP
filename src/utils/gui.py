@@ -1,40 +1,56 @@
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import simpledialog, ttk
+from pathlib import Path
+import sys
+
+# Add src to path to import gui_lib
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
+from utils.gui_lib import setup_theme
 
 def ask_selection(title: str, prompt: str, options: list):
     """
     Shows a dialog with a combobox to select an option.
     Returns the selected string or None if cancelled.
     """
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    
-    dialog = tk.Toplevel(root)
+    # Ensure we have a root app for CTk
+    root = None
+    try:
+        if ctk.CTk._root_window is None:
+             root = ctk.CTk()
+             root.withdraw()
+    except:
+        pass
+
+    setup_theme()
+
+    dialog = ctk.CTkToplevel()
     dialog.title(title)
-    dialog.geometry("300x150")
+    dialog.geometry("400x200")
     dialog.resizable(False, False)
+    dialog.attributes("-topmost", True)
     
     # Center the dialog
-    root.update_idletasks()
+    dialog.update_idletasks()
     width = dialog.winfo_width()
     height = dialog.winfo_height()
     x = (dialog.winfo_screenwidth() // 2) - (width // 2)
     y = (dialog.winfo_screenheight() // 2) - (height // 2)
     dialog.geometry(f"+{x}+{y}")
     
-    dialog.attributes("-topmost", True)
     dialog.focus_force()
     
-    tk.Label(dialog, text=prompt, pady=10).pack()
+    # Content
+    ctk.CTkLabel(dialog, text=prompt, font=ctk.CTkFont(size=14)).pack(pady=(20, 10), padx=20)
     
-    selection = tk.StringVar()
+    selection = ctk.StringVar()
     if options:
         selection.set(options[0])
         
-    combo = ttk.Combobox(dialog, textvariable=selection, values=options, state="readonly")
-    combo.pack(pady=5, padx=20, fill=tk.X)
-    combo.focus_set()
+    combo = ctk.CTkComboBox(dialog, variable=selection, values=options, state="readonly", width=250)
+    combo.pack(pady=10, padx=20)
     
     result = None
     
@@ -46,16 +62,15 @@ def ask_selection(title: str, prompt: str, options: list):
     def on_cancel():
         dialog.destroy()
         
-    btn_frame = tk.Frame(dialog)
+    btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
     btn_frame.pack(pady=20)
     
-    tk.Button(btn_frame, text="OK", width=10, command=on_ok).pack(side=tk.LEFT, padx=5)
-    tk.Button(btn_frame, text="Cancel", width=10, command=on_cancel).pack(side=tk.LEFT, padx=5)
+    ctk.CTkButton(btn_frame, text="OK", width=100, command=on_ok).pack(side="left", padx=10)
+    ctk.CTkButton(btn_frame, text="Cancel", width=100, fg_color="transparent", border_width=1, border_color="gray", command=on_cancel).pack(side="left", padx=10)
     
     dialog.protocol("WM_DELETE_WINDOW", on_cancel)
     dialog.bind('<Return>', lambda e: on_ok())
     dialog.bind('<Escape>', lambda e: on_cancel())
     
-    root.wait_window(dialog)
-    root.destroy()
+    dialog.wait_window()
     return result

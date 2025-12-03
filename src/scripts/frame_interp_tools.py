@@ -1,35 +1,55 @@
 """
 GUI wrapper for AI frame interpolation.
 """
-from pathlib import Path
-from tkinter import messagebox
+import customtkinter as ctk
 import tkinter as tk
-import tkinter.simpledialog
+from tkinter import messagebox
+from pathlib import Path
+import threading
+import sys
+
+# Add src to path
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
 from utils.ai_runner import run_ai_script
 from utils.explorer import get_selection_from_explorer
+from utils.gui_lib import BaseWindow
 
-def _get_root_fi():
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    root.lift()
-    return root
+class FrameInterpolationGUI(BaseWindow):
+    def __init__(self, target_path):
+        super().__init__(title="ContextUp Frame Interpolation", width=500, height=500)
+        self.target_path = target_path
+        
+        self.selection = get_selection_from_explorer(target_path)
+        if not self.selection:
+            self.selection = [target_path]
+        
+        # Filter for video files
+        video_exts = {'.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv'}
+        self.files_to_process = [Path(p) for p in self.selection if Path(p).suffix.lower() in video_exts]
+        
+        if not self.files_to_process:
+            messagebox.showinfo("Info", "No video files selected.")
+            self.destroy()
+            return
 
-class FrameInterpolationDialog(tk.simpledialog.Dialog):
-    """Dialog for frame interpolation settings."""
-    
-    def __init__(self, parent, title="Frame Interpolation"):
-        self.result = None
-        super().__init__(parent, title)
-    
-    def body(self, master):
-        # Title
-        tk.Label(master, text="Frame Interpolation Settings", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
+        self.create_widgets()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def create_widgets(self):
+        # Header
+        self.add_header(f"Interpolating {len(self.files_to_process)} Videos")
+        
+        # Settings Frame
+        settings_frame = ctk.CTkFrame(self.main_frame)
+        settings_frame.pack(fill="x", padx=20, pady=10)
         
         # Multiplier selection
-        tk.Label(master, text="Interpolation Multiplier:", font=("Arial", 9)).grid(row=1, column=0, sticky=tk.W, pady=(0, 5))
+        ctk.CTkLabel(settings_frame, text="Interpolation Multiplier:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(15, 5))
         
-        self.multiplier = tk.IntVar(value=2)
+        self.multiplier_var = ctk.IntVar(value=2)
         
         multipliers = [
             (2, "2x (30fps → 60fps, 24fps → 48fps)"),
@@ -37,57 +57,52 @@ class FrameInterpolationDialog(tk.simpledialog.Dialog):
             (4, "4x (30fps → 120fps, 24fps → 96fps)")
         ]
         
-        for i, (value, desc) in enumerate(multipliers):
-            frame = tk.Frame(master)
-            frame.grid(row=i+2, column=0, sticky=tk.W, padx=20, pady=2)
-            
-            tk.Radiobutton(frame, text=f"{value}x", variable=self.multiplier, value=value, font=("Arial", 9, "bold")).pack(anchor=tk.W)
-            tk.Label(frame, text=desc, font=("Arial", 8), fg="gray").pack(anchor=tk.W, padx=20)
+        for value, desc in multipliers:
+            frame = ctk.CTkFrame(settings_frame, fg_color="transparent")
+            frame.pack(anchor="w", padx=30, pady=2)
+            ctk.CTkRadioButton(frame, text=f"{value}x", variable=self.multiplier_var, value=value).pack(side="left")
+            ctk.CTkLabel(frame, text=desc, text_color="gray", font=ctk.CTkFont(size=11)).pack(side="left", padx=10)
         
         # Info
-        tk.Label(master, text="Quality: Highest (Motion Compensated)", font=("Arial", 8), fg="blue").grid(row=5, column=0, sticky=tk.W, padx=20, pady=(10, 0))
-        tk.Label(master, text="Acceleration: GPU (NVENC) Enabled", font=("Arial", 8), fg="green").grid(row=6, column=0, sticky=tk.W, padx=20, pady=(2, 0))
-        tk.Label(master, text="Note: Processing may take time depending on video length", font=("Arial", 8), fg="gray").grid(row=7, column=0, sticky=tk.W, padx=20, pady=(2, 0))
+        info_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        info_frame.pack(fill="x", padx=40, pady=10)
         
-        return None
-    
-    def apply(self):
-        self.result = {
-            'multiplier': self.multiplier.get()
-        }
+        ctk.CTkLabel(info_frame, text="Quality: Highest (Motion Compensated)", text_color="#3498DB").pack(anchor="w")
+        ctk.CTkLabel(info_frame, text="Acceleration: GPU (NVENC) Enabled", text_color="#2ECC71").pack(anchor="w")
+        ctk.CTkLabel(info_frame, text="Note: Processing may take time depending on video length", text_color="gray", font=ctk.CTkFont(size=11)).pack(anchor="w", pady=(5, 0))
+        
+        # Progress
+        self.progress = ctk.CTkProgressBar(self.main_frame)
+        self.progress.pack(fill="x", padx=40, pady=(20, 5))
+        self.progress.set(0)
+        
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray")
+        self.lbl_status.pack(pady=(0, 10))
 
-def interpolate_frames(target_path: str):
-    """
-    Interpolate video frames using FFmpeg/AI.
-    """
-    try:
-        selection = get_selection_from_explorer(target_path)
+        # Buttons
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
         
-        if not selection:
-            selection = [target_path]
+        self.btn_run = ctk.CTkButton(btn_frame, text="Start Interpolation", command=self.start_interpolation)
+        self.btn_run.pack(side="right", padx=5)
         
-        # Filter for video files
-        video_exts = {'.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv'}
-        files_to_process = [Path(p) for p in selection if Path(p).suffix.lower() in video_exts]
+        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
+
+    def start_interpolation(self):
+        self.btn_run.configure(state="disabled", text="Processing...")
+        threading.Thread(target=self.run_interpolation, daemon=True).start()
+
+    def run_interpolation(self):
+        multiplier = self.multiplier_var.get()
         
-        if not files_to_process:
-            messagebox.showinfo("Info", "No video files selected.")
-            return
-        
-        # Show settings dialog
-        root = _get_root_fi()
-        dialog = FrameInterpolationDialog(root)
-        
-        if not dialog.result:
-            return
-        
-        multiplier = dialog.result['multiplier']
-        
-        # Process files
         success_count = 0
         errors = []
+        total = len(self.files_to_process)
         
-        for video_path in files_to_process:
+        for i, video_path in enumerate(self.files_to_process):
+            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {video_path.name}")
+            self.progress.set(i / total)
+            
             try:
                 # Build arguments
                 args = [
@@ -97,20 +112,24 @@ def interpolate_frames(target_path: str):
                     "--method", "mci"  # Always use highest quality
                 ]
                 
-                # Run AI script in Conda environment
+                # Run AI script
                 success, output = run_ai_script(*args)
                 
                 if success:
                     success_count += 1
                 else:
-                    errors.append(f"{video_path.name}: {output[:100]}")
+                    errors.append(f"{video_path.name}: {output[:500]}")
                     
             except Exception as e:
-                errors.append(f"{video_path.name}: {str(e)[:100]}")
+                errors.append(f"{video_path.name}: {str(e)[:500]}")
+        
+        self.progress.set(1.0)
+        self.lbl_status.configure(text="Done")
+        self.btn_run.configure(state="normal", text="Start Interpolation")
         
         # Show results
         if errors:
-            msg = f"Processed {success_count}/{len(files_to_process)} videos.\n\nMultiplier: {multiplier}x\n\nErrors:\n" + "\n".join(errors[:5])
+            msg = f"Processed {success_count}/{total} videos.\n\nMultiplier: {multiplier}x\n\nErrors:\n" + "\n".join(errors[:5])
             if len(errors) > 5:
                 msg += "\n..."
             messagebox.showwarning("Completed with Errors", msg)
@@ -120,14 +139,22 @@ def interpolate_frames(target_path: str):
                 f"Multiplier: {multiplier}x\n"
                 f"Quality: Highest (Motion Compensated)\n"
                 f"Output: *_{multiplier}x.mp4")
+            self.destroy()
+
+    def on_closing(self):
+        self.destroy()
+
+def interpolate_frames(target_path: str):
+    """
+    Interpolate video frames using FFmpeg/AI.
+    """
+    try:
+        app = FrameInterpolationGUI(target_path)
+        app.mainloop()
             
-    except FileNotFoundError as e:
-        messagebox.showerror("Setup Required", 
-            f"Conda environment not properly configured.\n\n"
-            "Please run: python tools/fix_ai_env.py")
     except Exception as e:
-        # Show clean error message without traceback
-        error_msg = str(e)
-        if len(error_msg) > 200:
-            error_msg = error_msg[:200] + "..."
-        messagebox.showerror("Error", f"Frame interpolation failed:\n\n{error_msg}")
+        messagebox.showerror("Error", f"Frame interpolation failed: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        interpolate_frames(sys.argv[1])

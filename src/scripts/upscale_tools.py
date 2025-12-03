@@ -2,37 +2,55 @@
 Advanced AI Upscaling tools.
 Uses Real-ESRGAN and GFPGAN via Conda environment.
 """
-import subprocess
-from pathlib import Path
-from tkinter import messagebox
+import customtkinter as ctk
 import tkinter as tk
-import tkinter.simpledialog
+from tkinter import messagebox
+from pathlib import Path
+import threading
+import sys
+
+# Add src to path
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent
+sys.path.append(str(src_dir))
+
 from utils.ai_runner import run_ai_script
 from utils.explorer import get_selection_from_explorer
+from utils.gui_lib import BaseWindow
 
-def _get_root_up():
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    root.lift()
-    return root
+class UpscaleGUI(BaseWindow):
+    def __init__(self, target_path):
+        super().__init__(title="ContextUp AI Upscale", width=500, height=650)
+        self.target_path = target_path
+        
+        self.selection = get_selection_from_explorer(target_path)
+        if not self.selection:
+            self.selection = [target_path]
+        
+        # Filter for image files
+        img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'}
+        self.files_to_process = [Path(p) for p in self.selection if Path(p).suffix.lower() in img_exts]
+        
+        if not self.files_to_process:
+            messagebox.showinfo("Info", "No image files selected.")
+            self.destroy()
+            return
 
-class UpscaleDialog(tk.simpledialog.Dialog):
-    """Dialog for upscale settings."""
-    
-    def __init__(self, parent, title="AI Upscale"):
-        self.result = None
-        self.face_enhance = None
-        super().__init__(parent, title)
-    
-    def body(self, master):
-        # Title
-        tk.Label(master, text="Advanced AI Upscaling", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky=tk.W, pady=(0, 10))
+        self.create_widgets()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def create_widgets(self):
+        # Header
+        self.add_header(f"Upscaling {len(self.files_to_process)} Images")
         
-        # Scale selection
-        tk.Label(master, text="Scale Factor:", font=("Arial", 9)).grid(row=1, column=0, sticky=tk.W, pady=(0, 5))
+        # Settings Frame
+        settings_frame = ctk.CTkFrame(self.main_frame)
+        settings_frame.pack(fill="x", padx=20, pady=10)
         
-        self.scale = tk.IntVar(value=4)
+        # Scale Factor
+        ctk.CTkLabel(settings_frame, text="Scale Factor:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(15, 5))
+        
+        self.scale_var = ctk.IntVar(value=4)
         
         scales = [
             (2, "2x (Fast)"),
@@ -40,60 +58,49 @@ class UpscaleDialog(tk.simpledialog.Dialog):
             (4, "4x (Best Quality)")
         ]
         
-        scale_frame = tk.Frame(master)
-        scale_frame.grid(row=2, column=0, sticky=tk.W, padx=20, pady=2)
-        
         for value, desc in scales:
-            tk.Radiobutton(scale_frame, text=desc, variable=self.scale, value=value, font=("Arial", 9)).pack(anchor=tk.W)
-        
+            ctk.CTkRadioButton(settings_frame, text=desc, variable=self.scale_var, value=value).pack(anchor="w", padx=30, pady=5)
+            
         # Face Enhancement
-        tk.Label(master, text="Enhancement:", font=("Arial", 9)).grid(row=3, column=0, sticky=tk.W, pady=(10, 5))
+        ctk.CTkLabel(settings_frame, text="Enhancement:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(15, 5))
         
-        self.face_enhance_var = tk.BooleanVar(value=False)
-        tk.Checkbutton(master, text="Face Enhancement (GFPGAN)", variable=self.face_enhance_var, font=("Arial", 9)).grid(row=4, column=0, sticky=tk.W, padx=20, pady=2)
-        tk.Label(master, text="Restores faces in portraits/photos", font=("Arial", 8), fg="gray").grid(row=5, column=0, sticky=tk.W, padx=40, pady=0)
+        self.face_enhance_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(settings_frame, text="Face Enhancement (GFPGAN)", variable=self.face_enhance_var).pack(anchor="w", padx=30, pady=5)
+        ctk.CTkLabel(settings_frame, text="Restores faces in portraits/photos", text_color="gray", font=ctk.CTkFont(size=11)).pack(anchor="w", padx=55, pady=0)
         
-        return None
-    
-    def apply(self):
-        self.result = {
-            'scale': self.scale.get(),
-            'face_enhance': self.face_enhance_var.get()
-        }
+        # Progress
+        self.progress = ctk.CTkProgressBar(self.main_frame)
+        self.progress.pack(fill="x", padx=40, pady=(20, 5))
+        self.progress.set(0)
+        
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray")
+        self.lbl_status.pack(pady=(0, 10))
 
-def upscale_image(target_path: str):
-    """
-    Upscale image using AI.
-    """
-    try:
-        selection = get_selection_from_explorer(target_path)
+        # Buttons
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=10)
         
-        if not selection:
-            selection = [target_path]
+        self.btn_run = ctk.CTkButton(btn_frame, text="Start Upscale", command=self.start_upscale)
+        self.btn_run.pack(side="right", padx=5)
         
-        # Filter for image files
-        img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'}
-        files_to_process = [Path(p) for p in selection if Path(p).suffix.lower() in img_exts]
+        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
+
+    def start_upscale(self):
+        self.btn_run.configure(state="disabled", text="Processing...")
+        threading.Thread(target=self.run_upscale, daemon=True).start()
+
+    def run_upscale(self):
+        scale = self.scale_var.get()
+        face_enhance = self.face_enhance_var.get()
         
-        if not files_to_process:
-            messagebox.showinfo("Info", "No image files selected.")
-            return
-        
-        # Show settings dialog
-        root = _get_root_up()
-        dialog = UpscaleDialog(root)
-        
-        if not dialog.result:
-            return
-        
-        scale = dialog.result['scale']
-        face_enhance = dialog.result['face_enhance']
-        
-        # Process files
         success_count = 0
         errors = []
+        total = len(self.files_to_process)
         
-        for img_path in files_to_process:
+        for i, img_path in enumerate(self.files_to_process):
+            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {img_path.name}")
+            self.progress.set(i / total)
+            
             try:
                 # Build arguments
                 args = [
@@ -105,7 +112,7 @@ def upscale_image(target_path: str):
                 if face_enhance:
                     args.append("--face-enhance")
                 
-                # Run AI script in Conda environment
+                # Run AI script
                 success, output = run_ai_script(*args)
                 
                 if success:
@@ -116,9 +123,13 @@ def upscale_image(target_path: str):
             except Exception as e:
                 errors.append(f"{img_path.name}: {str(e)[:100]}")
         
+        self.progress.set(1.0)
+        self.lbl_status.configure(text="Done")
+        self.btn_run.configure(state="normal", text="Start Upscale")
+        
         # Show results
         if errors:
-            msg = f"Processed {success_count}/{len(files_to_process)} images.\n\nErrors:\n" + "\n".join(errors[:5])
+            msg = f"Processed {success_count}/{total} images.\n\nErrors:\n" + "\n".join(errors[:5])
             if len(errors) > 5:
                 msg += "\n..."
             messagebox.showwarning("Completed with Errors", msg)
@@ -127,14 +138,22 @@ def upscale_image(target_path: str):
             if face_enhance:
                 msg += "\nFace Enhancement: On"
             messagebox.showinfo("Success", msg)
+            self.destroy()
+
+    def on_closing(self):
+        self.destroy()
+
+def upscale_image(target_path: str):
+    """
+    Upscale image using AI.
+    """
+    try:
+        app = UpscaleGUI(target_path)
+        app.mainloop()
             
-    except FileNotFoundError as e:
-        messagebox.showerror("Setup Required", 
-            f"Conda environment not properly configured.\n\n"
-            "Please run: python tools/fix_ai_env.py")
     except Exception as e:
-        # Show clean error message without traceback
-        error_msg = str(e)
-        if len(error_msg) > 200:
-            error_msg = error_msg[:200] + "..."
-        messagebox.showerror("Error", f"Upscaling failed:\n\n{error_msg}")
+        messagebox.showerror("Error", f"Upscaling failed: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        upscale_image(sys.argv[1])
