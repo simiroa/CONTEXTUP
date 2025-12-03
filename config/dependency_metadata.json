@@ -27,7 +27,21 @@
         "pip_name": "torch",
         "description": "PyTorch Deep Learning Library. Required for AI features.",
         "approx_size": "2.5 GB",
-        "is_critical": false
+        "is_critical": false,
+        "install_args": [
+            "--index-url",
+            "https://download.pytorch.org/whl/cu121"
+        ]
+    },
+    "torchvision": {
+        "pip_name": "torchvision",
+        "description": "PyTorch Vision. Required for AI image processing.",
+        "approx_size": "50 MB",
+        "is_critical": false,
+        "install_args": [
+            "--index-url",
+            "https://download.pytorch.org/whl/cu121"
+        ]
     },
     "pymeshlab": {
         "pip_name": "pymeshlab",
@@ -52,5 +66,11 @@
         "description": "HTTP library for making API calls.",
         "approx_size": "1 MB",
         "is_critical": true
+    },
+    "deep-translator": {
+        "pip_name": "deep-translator",
+        "description": "Python tool to translate between different languages.",
+        "approx_size": "1 MB",
+        "is_critical": false
     }
 }

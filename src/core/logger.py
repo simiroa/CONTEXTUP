@@ -6,13 +6,15 @@ from datetime import datetime
 
 # Paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-LOG_FILE = PROJECT_ROOT / "debug.log"
+LOG_DIR = PROJECT_ROOT / "logs"
+LOG_DIR.mkdir(exist_ok=True)
 
 # Log Levels
 LEVEL_MAP = {
     "Debug (All)": logging.DEBUG,
-    "Minimal (Errors Only)": logging.ERROR,
-    "Disabled": 100  # Higher than CRITICAL
+    "Info (Standard)": logging.INFO,
+    "Errors Only": logging.ERROR,
+    "Disabled": 100
 }
 
 def setup_logger(log_level_str="Debug (All)"):
@@ -32,18 +34,20 @@ def setup_logger(log_level_str="Debug (All)"):
     # Formatter
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     
-    # File Handler (if not disabled)
+    # File Handler (Daily Log)
     if level < 100:
         try:
-            file_handler = logging.FileHandler(LOG_FILE, encoding='utf-8')
+            date_str = datetime.now().strftime("%Y-%m-%d")
+            log_file = LOG_DIR / f"debug_{date_str}.log"
+            
+            file_handler = logging.FileHandler(log_file, encoding='utf-8')
             file_handler.setLevel(level)
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
         except Exception as e:
             print(f"Failed to setup file logging: {e}")
 
-    # Console Handler (Always Debug for dev, or match file?)
-    # For now, let's keep console output for immediate feedback if running in terminal
+    # Console Handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO) # Keep console clean
     console_handler.setFormatter(formatter)
@@ -51,8 +55,7 @@ def setup_logger(log_level_str="Debug (All)"):
     
     return logger
 
-# Global instance (can be re-configured)
-# Default to Debug until settings load
+# Global instance
 logger = setup_logger()
 
 def log_execution(tool_name, args=None):

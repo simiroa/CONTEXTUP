@@ -8,5 +8,5 @@
     "status": "COMPLETE",
     "enabled": true,
     "submenu": "ContextUp",
-    "environment": "ai"
+    "environment": "system"
 }

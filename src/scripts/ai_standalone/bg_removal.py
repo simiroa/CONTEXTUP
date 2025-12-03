@@ -179,6 +179,26 @@ def apply_background(image_rgba, transparency=True):
     background.paste(image_rgba, mask=image_rgba.split()[-1])
     return background
 
+def get_unique_path(path: Path) -> Path:
+    """
+    Returns a unique path by appending a counter if the file already exists.
+    E.g., image.png -> image_01.png -> image_02.png
+    """
+    if not path.exists():
+        return path
+    
+    stem = path.stem
+    suffix = path.suffix
+    parent = path.parent
+    counter = 1
+    
+    while True:
+        new_name = f"{stem}_{counter:02d}{suffix}"
+        new_path = parent / new_name
+        if not new_path.exists():
+            return new_path
+        counter += 1
+
 def main():
     parser = argparse.ArgumentParser(description='AI Background Removal (Fixed)')
     parser.add_argument('image_path', help='Input image path')
@@ -201,6 +221,9 @@ def main():
         output_path = Path(args.output)
     else:
         output_path = image_path.with_name(f"{image_path.stem}_removed.png")
+    
+    # Enforce unique path policy
+    output_path = get_unique_path(output_path)
     
     try:
         # Select model function

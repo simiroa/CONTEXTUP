@@ -9,7 +9,7 @@
 | | Clipboard: Save Image | `sys_save_clipboard` | ✅ Ready | |
 | | Clipboard: Analyze Image | `sys_analyze_clipboard` | ✅ Ready | Uses Ollama Vision |
 | | Clipboard: Analyze Error | `sys_analyze_error` | ✅ Ready | Uses LLM for analysis |
-| | Open Creator Tools Manager | `sys_manager_gui` | ✅ Ready | Manage settings, registry, health |
+| | Open Creator Tools Manager | `sys_manager_gui` | ✅ Ready | **v3.2**: Smart Dependency Manager, Updates Tab, Library Cleaner |
 | **Rename** | Batch Rename... | `sys_batch_rename` | ✅ Ready | **Unified GUI** with Preview |
 | | Renumber... | `sys_renumber` | ✅ Ready | **Unified GUI** (Selection/Folder) |
 | **Document** | Merge PDFs | `sys_pdf_merge` | ✅ Ready | |

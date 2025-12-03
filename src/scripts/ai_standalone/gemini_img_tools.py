@@ -32,8 +32,10 @@ from PIL import Image, ImageTk
 import customtkinter as ctk
 import threading
 import time
-from tkinter import messagebox, Canvas
+from tkinter import messagebox, Canvas, filedialog
 import io
+
+from PIL import ImageGrab
 
 # Add src to path
 current_dir = Path(__file__).parent
@@ -67,6 +69,59 @@ def imread_unicode(path):
     except Exception as e:
         logger.error(f"imread_unicode failed for {path}: {e}")
         return None
+
+def get_unique_path(path: Path) -> Path:
+    """Returns a unique path by appending a counter if the file already exists."""
+    if not path.exists(): return path
+    stem, suffix, parent = path.stem, path.suffix, path.parent
+    counter = 1
+    while True:
+        new_path = parent / f"{stem}_{counter:02d}{suffix}"
+        if not new_path.exists(): return new_path
+        counter += 1
+
+class HistoryManager:
+    def __init__(self, cache_dir: Path):
+        self.cache_dir = cache_dir
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.history = [] # List of image paths
+        self.current_index = -1
+        
+    def add(self, image: np.ndarray):
+        # Save to cache
+        timestamp = int(time.time() * 1000)
+        filename = f"history_{timestamp}.png"
+        path = self.cache_dir / filename
+        cv2.imwrite(str(path), image)
+        
+        # If we are in the middle of history, truncate future
+        if self.current_index < len(self.history) - 1:
+            self.history = self.history[:self.current_index + 1]
+            
+        self.history.append(path)
+        self.current_index = len(self.history) - 1
+        
+    def undo(self):
+        if self.can_undo():
+            self.current_index -= 1
+            return self._load_current()
+        return None
+        
+    def redo(self):
+        if self.can_redo():
+            self.current_index += 1
+            return self._load_current()
+        return None
+        
+    def _load_current(self):
+        if 0 <= self.current_index < len(self.history):
+            path = self.history[self.current_index]
+            if path.exists():
+                return imread_unicode(str(path))
+        return None
+        
+    def can_undo(self): return self.current_index > 0
+    def can_redo(self): return self.current_index < len(self.history) - 1
 
 # --- Core Logic Functions (CV2 PBR) ---
 
@@ -142,6 +197,11 @@ class ImageViewer(ctk.CTkFrame):
         self.canvas.bind("<MouseWheel>", self.on_zoom)
         self.canvas.bind("<Button-4>", self.on_zoom) # Linux scroll
         self.canvas.bind("<Button-5>", self.on_zoom) # Linux scroll
+        self.canvas.bind("<Configure>", self.on_resize)
+
+    def on_resize(self, event):
+        if self.image:
+            self.redraw()
 
     def load_image(self, cv_img):
         self.image = Image.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
@@ -239,9 +299,26 @@ class GeminiImageToolsGUI(BaseWindow):
             return
 
         self.create_widgets()
+        
+        # History Init
+        cache_dir = current_dir / ".cache"
+        self.history = HistoryManager(cache_dir)
+        self.history.add(self.cv_img)
+        
         # Force update to ensure canvas has dimensions before loading image
         self.update() 
         self.viewer.load_image(self.cv_img)
+        self.update_info_header()
+        
+        # Initial Prompt Update
+        self.update_prompt_from_ui()
+        
+
+            
+        # Clipboard Bind
+        self.bind("<Control-v>", self.paste_from_clipboard)
+
+
 
     def refresh_preview(self, event=None):
         # Renamed from update_pbr_preview to avoid potential conflicts
@@ -290,13 +367,41 @@ class GeminiImageToolsGUI(BaseWindow):
         self.right_panel = ctk.CTkFrame(self.content_frame)
         self.right_panel.grid(row=0, column=1, sticky="nsew", padx=(5, 0), pady=0)
         
-        # Status Label
-        self.status_label = ctk.CTkLabel(self.right_panel, text="Ready", text_color="gray", font=("Arial", 12))
-        self.status_label.pack(side="top", anchor="ne", padx=10, pady=5)
+        # Info Header
+        self.info_frame = ctk.CTkFrame(self.right_panel, height=30, fg_color="transparent")
+        self.info_frame.pack(side="top", fill="x", padx=10, pady=(5, 0))
+        
+        self.lbl_info = ctk.CTkLabel(self.info_frame, text="", text_color="gray", font=("Arial", 12, "bold"))
+        self.lbl_info.pack(side="top", anchor="center")
         
         # Image Viewer
         self.viewer = ImageViewer(self.right_panel)
-        self.viewer.pack(fill="both", expand=True)
+        self.viewer.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        
+        # Navigation Bar (Bottom of Right Panel)
+        self.nav_frame = ctk.CTkFrame(self.right_panel, fg_color="transparent", height=30)
+        self.nav_frame.pack(side="bottom", fill="x", pady=(0, 5))
+        
+        # Centered Navigation Container
+        self.nav_container = ctk.CTkFrame(self.nav_frame, fg_color="transparent")
+        self.nav_container.pack(side="top", anchor="center")
+        
+        # Open Button
+        self.btn_open = ctk.CTkButton(self.nav_container, text="📂", width=30, height=24, command=self.open_file_dialog, fg_color="transparent", text_color="gray", hover_color="#333333")
+        self.btn_open.pack(side="left", padx=5)
+        
+        self.btn_prev_arrow = ctk.CTkButton(self.nav_container, text="<", width=30, height=24, command=self.do_undo, state="disabled")
+        self.btn_prev_arrow.pack(side="left", padx=5)
+        
+        self.lbl_counter = ctk.CTkLabel(self.nav_container, text="1 / 1", font=("Arial", 12), text_color="gray")
+        self.lbl_counter.pack(side="left", padx=10)
+        
+        self.btn_next_arrow = ctk.CTkButton(self.nav_container, text=">", width=30, height=24, command=self.do_redo, state="disabled")
+        self.btn_next_arrow.pack(side="left", padx=5)
+        
+        # Clear/Close Button
+        self.btn_clear = ctk.CTkButton(self.nav_container, text="🗑️", width=30, height=24, command=self.close_image, fg_color="transparent", text_color="gray", hover_color="#333333")
+        self.btn_clear.pack(side="left", padx=5)
 
         # Global Image Type Selector
         ctk.CTkLabel(self.left_panel, text="Image Type:", font=ctk.CTkFont(weight="bold")).pack(pady=(10, 5), padx=10, anchor="w")
@@ -323,9 +428,6 @@ class GeminiImageToolsGUI(BaseWindow):
         self.setup_outpaint_tab()
         self.setup_inpaint_tab()
         
-        self.setup_outpaint_tab()
-        self.setup_inpaint_tab()
-        
         # Set initial tab
         if self.start_tab:
             try:
@@ -346,8 +448,14 @@ class GeminiImageToolsGUI(BaseWindow):
         btn_frame = ctk.CTkFrame(self.bottom_bar, fg_color="transparent")
         btn_frame.pack(fill="x", padx=10, pady=5)
         
-        ctk.CTkButton(btn_frame, text="Reset to Original", command=self.reset_image, fg_color="gray", width=120).pack(side="left", padx=5)
+        # Left Side: Generate -> Reset -> Status
         ctk.CTkButton(btn_frame, text="Generate (Gemini 2.5)", command=self.run_ai_request, fg_color="#1f6aa5", width=150).pack(side="left", padx=5)
+        ctk.CTkButton(btn_frame, text="Reset to Original", command=self.reset_image, fg_color="gray", width=120).pack(side="left", padx=5)
+        
+        self.status_label = ctk.CTkLabel(btn_frame, text="Ready", text_color="gray", font=("Arial", 12))
+        self.status_label.pack(side="left", padx=15)
+        
+        # Right Side: Save
         ctk.CTkButton(btn_frame, text="Save Result", command=self.save_result, fg_color="green", width=120).pack(side="right", padx=5)
 
     def setup_style_tab(self):
@@ -396,17 +504,52 @@ class GeminiImageToolsGUI(BaseWindow):
         ctk.CTkLabel(self.tab_pbr, text="* Select a map type to enable AI generation button", font=ctk.CTkFont(size=10), text_color="gray").pack()
 
     def setup_tile_tab(self):
-        ctk.CTkLabel(self.tab_tile, text="Make Tileable", font=ctk.CTkFont(weight="bold")).pack(pady=10)
-        ctk.CTkLabel(self.tab_tile, text="Method: Offset & Blur (Local)").pack(pady=5)
-        ctk.CTkButton(self.tab_tile, text="Apply Offset", command=self.apply_offset).pack(pady=10)
+        ctk.CTkLabel(self.tab_tile, text="Make Tileable (AI)", font=ctk.CTkFont(weight="bold")).pack(pady=10)
         
-        ctk.CTkLabel(self.tab_tile, text="AI Infill / Scale:").pack(pady=(20, 5))
-        self.var_ai_infill = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(self.tab_tile, text="Enable AI Infill", variable=self.var_ai_infill, command=self.update_prompt_from_ui).pack(pady=5)
-        
-        self.slider_tile_scale = ctk.CTkSlider(self.tab_tile, from_=0.1, to=10.0, number_of_steps=100, command=self.update_prompt_from_ui)
+        ctk.CTkLabel(self.tab_tile, text="Texture Scale Factor:", anchor="w").pack(fill="x", padx=10, pady=(10, 0))
+        self.slider_tile_scale = ctk.CTkSlider(self.tab_tile, from_=0.5, to=2.0, number_of_steps=30, command=self.update_prompt_from_ui)
         self.slider_tile_scale.set(1.0)
-        self.slider_tile_scale.pack(fill="x", padx=10)
+        self.slider_tile_scale.pack(fill="x", padx=10, pady=5)
+        
+        # Scale Labels
+        scale_frame = ctk.CTkFrame(self.tab_tile, fg_color="transparent")
+        scale_frame.pack(fill="x", padx=10)
+        ctk.CTkLabel(scale_frame, text="0.5x (Zoom Out)", font=("", 10)).pack(side="left")
+        ctk.CTkLabel(scale_frame, text="2.0x (Zoom In)", font=("", 10)).pack(side="right")
+        
+        ctk.CTkLabel(self.tab_tile, text="Description / Context (Optional):", anchor="w").pack(fill="x", padx=10, pady=(20, 0))
+        self.entry_tile_desc = ctk.CTkEntry(self.tab_tile, placeholder_text="e.g. Concrete wall, Fabric pattern...")
+        self.entry_tile_desc.pack(fill="x", padx=10, pady=5)
+        self.entry_tile_desc.pack(fill="x", padx=10, pady=5)
+        self.entry_tile_desc.bind("<KeyRelease>", self.update_prompt_from_ui)
+        
+        # Check Tiling Button
+        self.btn_check_tile = ctk.CTkButton(self.tab_tile, text="🔍 Check Tiling (Offset 50%)", command=self.toggle_tiling_check, fg_color="transparent", border_width=1, text_color="gray")
+        self.btn_check_tile.pack(pady=15)
+
+    def toggle_tiling_check(self):
+        if self.cv_img is None: return
+        
+        if not hasattr(self, 'is_tiling_check'): self.is_tiling_check = False
+        
+        if self.is_tiling_check:
+            # Restore
+            self.viewer.load_image(self.cv_img)
+            self.is_tiling_check = False
+            self.btn_check_tile.configure(text="🔍 Check Tiling (Offset 50%)", fg_color="transparent", text_color="gray")
+        else:
+            # Apply Offset
+            h, w = self.cv_img.shape[:2]
+            img_roll = np.roll(self.cv_img, w // 2, axis=1)
+            img_roll = np.roll(img_roll, h // 2, axis=0)
+            
+            # Draw crosshair to show seam
+            cv2.line(img_roll, (w//2, 0), (w//2, h), (0, 255, 0), 1)
+            cv2.line(img_roll, (0, h//2), (w, h//2), (0, 255, 0), 1)
+            
+            self.viewer.load_image(img_roll)
+            self.is_tiling_check = True
+            self.btn_check_tile.configure(text="🔙 Restore View", fg_color="#2b2b2b", text_color="white")
 
     def setup_weather_tab(self):
         ctk.CTkLabel(self.tab_weather, text="AI Weathering", font=ctk.CTkFont(weight="bold")).pack(pady=10)
@@ -473,6 +616,9 @@ class GeminiImageToolsGUI(BaseWindow):
 
     def update_prompt_from_ui(self, event=None):
         tab = self.tab_view.get()
+        # Debug print to check if tab is correct
+        # print(f"DEBUG: Current Tab: {tab}")
+        
         prompt = ""
         
         # Global Type Context
@@ -484,17 +630,31 @@ class GeminiImageToolsGUI(BaseWindow):
             strength = self.slider_style_strength.get()
             # Convert strength to descriptive text for better AI adherence
             str_desc = "subtle" if strength < 0.3 else "moderate" if strength < 0.7 else "strong"
-            prompt = f"{type_context} Transform this texture into {style} style. Style strength: {str_desc} ({strength:.1f}). Maintain the original structure and composition."
+            prompt = f"{type_context} Transform this texture into {style} style. Style strength: {str_desc} ({strength:.1f}). Preserve the underlying pattern, geometry, and composition while applying the artistic style. The result should look like a high-quality texture."
             
         elif tab == "PBR Gen":
             ai_target = self.pbr_ai_target.get()
             if ai_target == "None (Local Only)":
                 prompt = "AI Generation is disabled in this mode. Use 'Generate PBR Maps (Local)' button above, or select a map type to generate via AI."
             else:
-                prompt = f"{type_context} Generate a high-quality {ai_target} for this texture. Ensure it is accurate and aligned with the original details."
+                tech_spec = ""
+                if "Normal" in ai_target:
+                    tech_spec = "Generate a tangent space normal map (purple/blue base). High frequency details should be crisp and defined. The map should accurately represent the surface depth."
+                elif "Roughness" in ai_target:
+                    tech_spec = "Generate a grayscale roughness map. White represents rough areas, Black represents glossy/smooth areas. Ensure high contrast where necessary."
+                elif "Displacement" in ai_target:
+                    tech_spec = "Generate a grayscale height/displacement map. White represents high points, Black represents low points. Smooth transitions for gradients."
+                elif "Occlusion" in ai_target:
+                    tech_spec = "Generate an ambient occlusion map. Darken crevices, corners, and deep areas. The rest should be white."
+                
+                prompt = f"{type_context} Generate a high-quality {ai_target} for this texture. {tech_spec} Ensure it is accurate and aligned with the original details."
+
+        elif tab == "Tileable":
             scale = self.slider_tile_scale.get()
-            infill = "Enable AI Infill to generate missing details and expand borders." if self.var_ai_infill.get() else ""
-            prompt = f"{type_context} Make this texture seamless and tileable. Scale pattern by {scale:.1f}x. Fix edges and blend seams naturally. {infill}"
+            desc = self.entry_tile_desc.get().strip()
+            desc_text = f"Context: {desc}." if desc else ""
+            
+            prompt = f"{type_context} {desc_text} Generate a seamless tileable texture based on this image. The texture should represent the surface material shown. Scale the details by a factor of {scale:.1f}x (where >1 means zoom in/larger details, <1 means zoom out/smaller details). The result MUST be seamlessly tileable on all sides (x and y axes). Eliminate any visible seams or borders. Maintain a consistent texture density. Output the texture only."
             
         elif tab == "Weathering":
              mode = self.weather_mode.get()
@@ -508,7 +668,7 @@ class GeminiImageToolsGUI(BaseWindow):
             elif style == "Flux Prompt":
                 instruction = "Analyze this texture and write a natural language prompt optimized for Flux.1 models. Describe the texture flow, details, and atmosphere vividly."
             elif style == "ComfyUI Prompt":
-                instruction = "Analyze this texture and provide a comma-separated list of keywords (tags) suitable for Stable Diffusion/ComfyUI positive prompt. Include material tags, quality tags, and lighting tags."
+                instruction = "Analyze this texture and provide a comma-separated list of keywords (tags) suitable for Stable Diffusion/ComfyUI positive prompt. Use Danbooru-style tags where applicable. Include material tags, quality tags, and lighting tags."
             else:
                 instruction = "Analyze this texture in detail. Describe its material, pattern, roughness, and suggest PBR settings."
             
@@ -517,7 +677,7 @@ class GeminiImageToolsGUI(BaseWindow):
         elif tab == "Outpaint":
             direction = self.outpaint_dir.get()
             scale = self.slider_outpaint.get()
-            prompt = f"{type_context} Outpaint this image. Expand the canvas in {direction} direction(s) by {scale:.1f}x. Fill the new areas naturally matching the existing texture."
+            prompt = f"{type_context} Outpaint this image. The input image is a crop. Generate a larger, zoomed-out view of this texture/scene, extending the patterns seamlessly in {direction} direction(s) by {scale:.1f}x. Maintain the same resolution and detail level. Fill the new areas naturally matching the existing texture."
 
         elif tab == "Inpaint":
             target = self.entry_inpaint_target.get()
@@ -545,7 +705,44 @@ class GeminiImageToolsGUI(BaseWindow):
     def reset_image(self):
         self.cv_img = self.original_img.copy()
         self.viewer.load_image(self.cv_img)
+        self.history.add(self.cv_img)
+        self.update_history_buttons()
         self.status_label.configure(text="Reset to Original", text_color="green")
+        
+    def update_info_header(self):
+        if self.cv_img is None: return
+        h, w = self.cv_img.shape[:2]
+        filename = self.current_image_path.name
+        folder = self.current_image_path.parent.name
+        self.lbl_info.configure(text=f"File: {filename} | Folder: {folder} | Res: {w}x{h}")
+        
+    def do_undo(self):
+        img = self.history.undo()
+        if img is not None:
+            self.cv_img = img
+            self.viewer.load_image(self.cv_img)
+            self.update_history_buttons()
+            self.update_info_header()
+            
+    def do_redo(self):
+        img = self.history.redo()
+        if img is not None:
+            self.cv_img = img
+            self.viewer.load_image(self.cv_img)
+            self.update_history_buttons()
+            self.update_info_header()
+            
+    def update_history_buttons(self):
+        can_undo = self.history.can_undo()
+        can_redo = self.history.can_redo()
+        
+        self.btn_prev_arrow.configure(state="normal" if can_undo else "disabled")
+        self.btn_next_arrow.configure(state="normal" if can_redo else "disabled")
+        
+        # Update Counter
+        current = self.history.current_index + 1
+        total = len(self.history.history)
+        self.lbl_counter.configure(text=f"{current} / {total}")
 
     def run_ai_request(self):
         if not self.check_rate_limit(): return
@@ -562,21 +759,30 @@ class GeminiImageToolsGUI(BaseWindow):
 
         def _process():
             try:
-                self.status_label.configure(text="Sending to Gemini 2.5...", text_color="yellow")
+                # Determine Model based on Tab
+                current_tab = self.tab_view.get()
+                if current_tab == "Analysis":
+                    # Analysis requires a multimodal understanding model
+                    model_name = "gemini-2.5-flash"
+                else:
+                    # Generation/Editing requires an image generation model
+                    model_name = "gemini-2.5-flash-image"
                 
-                # Prepare Image
-                rgb_img = cv2.cvtColor(self.cv_img, cv2.COLOR_BGR2RGB)
-                pil_img = Image.fromarray(rgb_img)
-                
-                # Call Gemini 2.5 Flash Image
+                self.status_label.configure(text=f"Sending to {model_name}...", text_color="yellow")
+
+                # Call Gemini API
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash-image",
-                    contents=[prompt, pil_img]
+                    model=model_name,
+                    contents=[
+                        prompt,
+                        types.Part.from_bytes(data=img_bytes, mime_type="image/png")
+                    ]
                 )
                 
                 # Handle Response Parts
                 text_output = ""
                 image_found = False
+                new_cv_img = None
                 
                 if response.parts:
                     for part in response.parts:
@@ -588,33 +794,49 @@ class GeminiImageToolsGUI(BaseWindow):
                             image = Image.open(io.BytesIO(image_data))
                             
                             # Convert back to CV2 for internal state
-                            self.cv_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-                            self.viewer.load_image(self.cv_img)
-                            self.processed_img = self.cv_img
+                            new_cv_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
                             image_found = True
-                            self.status_label.configure(text="Image Generated", text_color="green")
                 
-                if text_output:
-                    if self.tab_view.get() == "Analysis":
-                        self.txt_analysis.delete("1.0", "end")
-                        self.txt_analysis.insert("1.0", text_output)
-                        self.status_label.configure(text="Analysis Complete", text_color="green")
-                    elif not image_found:
-                        # If we expected an image but got text (e.g. refusal or description)
-                        messagebox.showinfo("AI Response", f"Model returned text:\n\n{text_output}")
-                        self.status_label.configure(text="Text Response Received", text_color="green")
+                # Schedule UI update on main thread
+                self.after(0, lambda: self._handle_ai_response(text_output, new_cv_img, image_found))
 
             except Exception as e:
                 err_msg = str(e)
-                if "429" in err_msg or "Quota" in err_msg or "ResourceExhausted" in err_msg:
-                    self.status_label.configure(text="Error: Quota Exceeded", text_color="red")
-                    messagebox.showerror("API Error", "Gemini API Quota Exceeded.\nPlease wait a minute or check your plan.")
-                else:
-                    self.status_label.configure(text="Error: API Failed", text_color="red")
-                    print(f"API Error: {e}")
-                    messagebox.showerror("API Error", f"An error occurred:\n{err_msg[:200]}...")
+                self.after(0, lambda: self._handle_ai_error(err_msg))
         
         threading.Thread(target=_process, daemon=True).start()
+
+    def _handle_ai_response(self, text_output, new_cv_img, image_found):
+        if image_found and new_cv_img is not None:
+            self.cv_img = new_cv_img
+            self.viewer.load_image(self.cv_img)
+            self.processed_img = self.cv_img
+            
+            # Add to history
+            self.history.add(self.cv_img)
+            self.update_history_buttons()
+            self.update_info_header()
+            
+            self.status_label.configure(text="Image Generated", text_color="green")
+        
+        if text_output:
+            if self.tab_view.get() == "Analysis":
+                self.txt_analysis.delete("1.0", "end")
+                self.txt_analysis.insert("1.0", text_output)
+                self.status_label.configure(text="Analysis Complete", text_color="green")
+            elif not image_found:
+                # If we expected an image but got text (e.g. refusal or description)
+                messagebox.showinfo("AI Response", f"Model returned text:\n\n{text_output}")
+                self.status_label.configure(text="Text Response Received", text_color="green")
+
+    def _handle_ai_error(self, err_msg):
+        if "429" in err_msg or "Quota" in err_msg or "ResourceExhausted" in err_msg:
+            self.status_label.configure(text="Error: Quota Exceeded", text_color="red")
+            messagebox.showerror("API Error", "Gemini API Quota Exceeded.\nPlease wait a minute or check your plan.")
+        else:
+            self.status_label.configure(text="Error: API Failed", text_color="red")
+            print(f"API Error: {err_msg}")
+            messagebox.showerror("API Error", f"An error occurred:\n{err_msg[:200]}...")
 
     def run_analysis(self):
         # Switch to Analysis tab to ensure output is visible
@@ -629,10 +851,81 @@ class GeminiImageToolsGUI(BaseWindow):
              self.processed_img = self.cv_img
              
         from tkinter import filedialog
-        path = filedialog.asksaveasfilename(defaultextension=".png", initialfile=f"{self.current_image_path.stem}_edited.png")
+        initial_name = f"{self.current_image_path.stem}_edited.png"
+        path = filedialog.asksaveasfilename(defaultextension=".png", initialfile=initial_name)
         if path:
-            cv2.imwrite(path, self.processed_img)
-            messagebox.showinfo("Saved", f"Saved to {path}")
+            # Use unique path if file exists (though dialog usually handles this, we enforce policy)
+            save_path = Path(path)
+            if save_path.exists():
+                save_path = get_unique_path(save_path)
+                
+            cv2.imwrite(str(save_path), self.processed_img)
+            messagebox.showinfo("Saved", f"Saved to {save_path.name}")
+
+
+
+    def close_image(self):
+        self.cv_img = None
+        self.original_img = None
+        self.viewer.image = None
+        self.viewer.canvas.delete("all")
+        self.lbl_info.configure(text="No Image Loaded")
+        self.lbl_counter.configure(text="- / -")
+        self.status_label.configure(text="Image Closed", text_color="gray")
+        # Clear history
+        self.history = HistoryManager(current_dir / ".cache")
+        self.update_history_buttons()
+
+    def paste_from_clipboard(self, event=None):
+        try:
+            img = ImageGrab.grabclipboard()
+            if isinstance(img, Image.Image):
+                # Convert to CV2
+                cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                self.load_new_image_from_cv(cv_img, "Clipboard_Image")
+            elif isinstance(img, list): # File paths
+                self.load_new_image(img[0])
+        except Exception as e:
+            print(f"Clipboard error: {e}")
+
+    def open_file_dialog(self):
+        path = filedialog.askopenfilename(filetypes=[("Images", "*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.tga")])
+        if path:
+            self.load_new_image(path)
+
+    def load_new_image(self, path):
+        print(f"DEBUG: Loading new image from {path}")
+        try:
+            cv_img = imread_unicode(str(path))
+            if cv_img is None:
+                print("DEBUG: Failed to read image (None result)")
+                messagebox.showerror("Error", "Failed to load image.\nFormat not supported or file corrupted.")
+                return
+                
+            self.current_image_path = Path(path)
+            self.load_new_image_from_cv(cv_img, self.current_image_path.name)
+            
+        except Exception as e:
+            print(f"ERROR in load_new_image: {e}")
+            traceback.print_exc()
+            messagebox.showerror("Error", f"Failed to load image: {e}")
+
+    def load_new_image_from_cv(self, cv_img, name="Image"):
+        self.cv_img = cv_img
+        self.original_img = cv_img.copy()
+        
+        # Reset History for new image
+        self.history = HistoryManager(current_dir / ".cache")
+        self.history.add(self.cv_img)
+        
+        self.viewer.load_image(self.cv_img)
+        self.update_history_buttons()
+        
+        # Update Info
+        h, w = self.cv_img.shape[:2]
+        folder = self.current_image_path.parent.name if hasattr(self, 'current_image_path') else "Clipboard"
+        self.lbl_info.configure(text=f"File: {name} | Folder: {folder} | Res: {w}x{h}")
+        self.status_label.configure(text="Image Loaded", text_color="green")
 
     def generate_all_pbr(self):
         # Create a new folder for PBR maps
@@ -641,46 +934,56 @@ class GeminiImageToolsGUI(BaseWindow):
         
         base_name = self.current_image_path.stem
         
+        def _update_status(text, color="yellow"):
+            self.after(0, lambda: self.status_label.configure(text=text, text_color=color))
+
+        def _show_success(count):
+            self.after(0, lambda: messagebox.showinfo("Success", f"Generated {count} maps."))
+
+        def _show_error(e):
+            self.after(0, lambda: self.status_label.configure(text=f"Error: {e}", text_color="red"))
+            print(e)
+
         def _process():
             count = 0
             try:
                 if self.var_normal.get():
-                    self.status_label.configure(text="Generating Normal...", text_color="yellow")
+                    _update_status("Generating Normal...")
                     res = generate_normal_map(self.cv_img, self.slider_strength.get())
                     cv2.imwrite(str(pbr_dir / f"{base_name}_Normal.png"), res)
                     count += 1
                     time.sleep(0.1)
                     
                 if self.var_rough.get():
-                    self.status_label.configure(text="Generating Roughness...", text_color="yellow")
+                    _update_status("Generating Roughness...")
                     res = generate_roughness_map(self.cv_img, self.var_invert.get(), contrast=self.slider_strength.get())
                     cv2.imwrite(str(pbr_dir / f"{base_name}_Roughness.png"), res)
                     count += 1
                     time.sleep(0.1)
                     
                 if self.var_disp.get():
-                    self.status_label.configure(text="Generating Displacement...", text_color="yellow")
+                    _update_status("Generating Displacement...")
                     res = generate_displacement_map(self.cv_img)
                     cv2.imwrite(str(pbr_dir / f"{base_name}_Displacement.png"), res)
                     count += 1
                     time.sleep(0.1)
                     
                 if self.var_occ.get():
-                    self.status_label.configure(text="Generating Occlusion...", text_color="yellow")
+                    _update_status("Generating Occlusion...")
                     res = generate_occlusion_map(self.cv_img, self.slider_strength.get())
                     cv2.imwrite(str(pbr_dir / f"{base_name}_Occlusion.png"), res)
                     count += 1
                     time.sleep(0.1)
                     
                 if self.var_metal.get():
-                    self.status_label.configure(text="Generating Metallic...", text_color="yellow")
+                    _update_status("Generating Metallic...")
                     res = generate_metallic_map(self.cv_img, self.slider_strength.get())
                     cv2.imwrite(str(pbr_dir / f"{base_name}_Metallic.png"), res)
                     count += 1
                     time.sleep(0.1)
                     
                 if self.var_orm.get():
-                    self.status_label.configure(text="Generating ORM Pack...", text_color="yellow")
+                    _update_status("Generating ORM Pack...")
                     occ = generate_occlusion_map(self.cv_img, self.slider_strength.get())
                     rough = generate_roughness_map(self.cv_img, self.var_invert.get(), contrast=self.slider_strength.get())
                     metal = generate_metallic_map(self.cv_img, self.slider_strength.get())
@@ -693,12 +996,11 @@ class GeminiImageToolsGUI(BaseWindow):
                     cv2.imwrite(str(pbr_dir / f"{base_name}_ORM.png"), orm)
                     count += 1
                 
-                self.status_label.configure(text=f"Saved {count} maps", text_color="green")
-                messagebox.showinfo("Success", f"Generated {count} maps.")
+                _update_status(f"Saved {count} maps", "green")
+                _show_success(count)
                 
             except Exception as e:
-                self.status_label.configure(text=f"Error: {e}", text_color="red")
-                print(e)
+                _show_error(e)
 
         threading.Thread(target=_process, daemon=True).start()
         

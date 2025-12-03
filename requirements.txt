@@ -19,6 +19,9 @@ faster-whisper
 # Google Gemini API
 google-generativeai
 
+# Translation
+deep-translator
+
 # Optional / Development
 pytest
 piexif

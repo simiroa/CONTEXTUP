@@ -9,7 +9,10 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system"
+        "environment": "system",
+        "dependencies": [
+            "pymeshlab"
+        ]
     },
     {
         "category": "3D",
@@ -17,6 +20,18 @@
         "name": "Convert CAD to OBJ",
         "icon": "assets/icons/icon_cad_convert_obj.ico",
         "types": ".step;.stp;.iges;.igs",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system"
+    },
+    {
+        "category": "3D",
+        "id": "mayo_open",
+        "name": "Open with Mayo",
+        "icon": "assets/icons/icon_cad_convert_obj.ico",
+        "types": ".step;.stp;.iges;.igs;.obj;.stl;.glb;.gltf",
         "scope": "file",
         "status": "COMPLETE",
         "enabled": true,
@@ -45,7 +60,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "AI",
@@ -57,7 +72,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "AI",
@@ -69,7 +84,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "AI",
@@ -81,7 +96,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "AI",
@@ -93,7 +108,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "AI",
@@ -105,7 +120,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "AI",
@@ -117,7 +132,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "Audio",
@@ -189,7 +204,11 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system"
+        "environment": "system",
+        "dependencies": [
+            "yt-dlp",
+            "ffmpeg-python"
+        ]
     },
     {
         "category": "Image",
@@ -201,7 +220,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "Image",
@@ -249,7 +268,12 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system",
+        "dependencies": [
+            "rembg",
+            "torch",
+            "Pillow"
+        ]
     },
     {
         "category": "Image",
@@ -297,7 +321,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "Sys",
@@ -405,7 +429,7 @@
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "ai"
+        "environment": "system"
     },
     {
         "category": "Video",

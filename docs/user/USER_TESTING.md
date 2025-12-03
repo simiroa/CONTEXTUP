@@ -6,7 +6,14 @@ Use this checklist to verify that all features of ContextUp are working correctl
 - [ ] **ContextUp Manager** (`sys_manager_gui`)
     - [ ] Opens successfully.
     - [ ] "Register Menu" works.
-    - [ ] "Unregister Menu" works.
+    - [ ] **Updates & Health Tab** (v3.2):
+        - [ ] "Update All Libraries" runs successfully.
+        - [ ] "Library Cleaner" lists installed packages.
+        - [ ] "Uninstall" button works (and protects critical libs).
+    - [ ] **Smart Dependency System**:
+        - [ ] Missing dependencies show "Setup Required" (Yellow).
+        - [ ] Clicking inactive tool opens Install Dialog.
+        - [ ] Installation completes and tool becomes active.
 - [ ] **Open Recent Folders** (`sys_open_recent`)
     - [ ] Shows list of recently accessed folders.
     - [ ] Clicking a folder opens it.
@@ -89,6 +96,21 @@ Use this checklist to verify that all features of ContextUp are working correctl
 - [ ] **PDF Tools**
     - [ ] **Merge PDFs** (`sys_pdf_merge`).
     - [ ] **Split PDF** (`sys_pdf_split`).
+
+## 8. Stability Tiers (Unified Environment)
+
+To ensure stability in the unified embedded environment, tools are classified into two tiers:
+
+### 🟢 Safe Tier (Standard)
+*   **Description**: Uses only standard Python libraries or lightweight dependencies (Pillow, Requests).
+*   **Risk**: Low. Should work on any Windows machine.
+*   **Tools**: Rename, File Ops, Document Tools, Basic Image/Audio conversion.
+
+### 🟠 Sensitive Tier (AI/Heavy)
+*   **Description**: Depends on complex binaries (PyTorch, CUDA, FFmpeg) running in the embedded environment.
+*   **Risk**: Moderate. Sensitive to driver versions and path lengths.
+*   **Tools**: Remove Background, AI Upscale, Frame Interpolation, Auto LOD, YouTube Downloader.
+*   **Verification**: Run `tests/verify_ai_env.py` to check if these libraries load correctly.
 
 ---
 

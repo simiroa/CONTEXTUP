@@ -161,6 +161,10 @@ def main():
                 # Unified GUI for Extract/Remove/Separate
                 script_path = src_dir / "scripts" / "audio_studio_gui.py"
                 subprocess.Popen([sys.executable, str(script_path), str(target_path), "--tab", "video"])
+            elif item_id == "video_downloader_gui":
+                script_path = src_dir / "scripts" / "video_downloader_gui.py"
+                import subprocess
+                subprocess.Popen([sys.executable, str(script_path)])
             else:
                 logger.warning(f"Unknown video tool: {item_id}")
                 
@@ -187,6 +191,12 @@ def main():
                 blender_tools.extract_textures(target_path)
             else:
                 logger.warning(f"Unknown mesh tool: {item_id}")
+
+        elif item_id.startswith("mayo_"):
+            if item_id == "mayo_open":
+                mayo_tools.open_with_mayo(target_path)
+            else:
+                logger.warning(f"Unknown mayo tool: {item_id}")
         
         logger.debug("Dispatch complete.")
 

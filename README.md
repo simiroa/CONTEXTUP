@@ -26,7 +26,7 @@
 *   **Upscale (AI)**: Uses **Real-ESRGAN** to upscale images (x4) with high fidelity.
 *   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
 *   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
-*   **Texture Tools**: Generates PBR texture maps (Normal, Roughness, etc.) or weathering effects using Gemini API.
+*   **Texture Tools**: Generates PBR texture maps (Normal, Roughness, etc.) or weathering effects using **Gemini 2.5 Flash**. Supports dynamic model selection for Analysis (v2.5) vs Generation (v2.5-Image).
 
 ### 🎥 Video Tools
 *   **Convert / Proxy**: A unified GUI to convert videos (MP4, MOV, etc.) or create 1/2 resolution proxies for editing.
@@ -44,9 +44,12 @@
 ### 🧊 3D Tools
 *   **Convert Mesh**: Converts 3D models between OBJ, FBX, GLTF, and PLY formats using Blender.
 *   **Extract Textures**: Extracts embedded textures from 3D model files.
-*   **Convert CAD**: Converts STEP/IGES CAD files to OBJ mesh format using Mayo.
+*   **Convert CAD**: Converts STEP/IGES CAD files to OBJ mesh format using Mayo. Includes "Open with Mayo" for direct viewing.
+*   **Open with Mayo**: Directly opens supported 3D files (.step, .obj, etc.) in the Mayo viewer.
 
-### 🛠️ Installation
+### 🛠️ Installation (v0.3.2 Minimal Install)
+
+ContextUp now follows a **Minimal Install** policy. The initial download is lightweight, and heavy libraries (like PyTorch, FFmpeg) are installed on-demand via the Manager.
 
 1.  **Clone the repository**:
     ```bash
@@ -57,9 +60,13 @@
     ```bash
     python setup_all.py
     ```
-    This will download necessary binaries (like RIFE) and prepare the environment.
+    This sets up the core Python environment and the Manager.
 3.  **Register Menu**:
     Run `ContextUpManager.bat` and click **"Register Menu"**.
+4.  **Install Features**:
+    *   Open the Context Menu and click any feature (e.g., "Remove Background").
+    *   If dependencies are missing, the **Smart Dependency Manager** will prompt you to install them automatically.
+    *   You can also manage libraries in the **Manager > Updates & Health** tab.
 
 ---
 
@@ -96,3 +103,14 @@ For a detailed code map and file responsibilities, please refer to [**architectu
 
 - **Support**:
     - [Troubleshooting](docs/troubleshooting/TROUBLESHOOTING.md)
+
+## 🛡️ Safe Save Policy
+To prevent accidental data loss, ContextUp tools now implement a **"Rename on Conflict"** policy.
+- If a file (e.g., `image_removed.png`) already exists, the tool will automatically save the new file as `image_removed_01.png`, `image_removed_02.png`, etc.
+- This ensures your previous work is never overwritten without explicit confirmation.
+
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

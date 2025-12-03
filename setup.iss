@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ContextUp"
-#define MyAppVersion "2.0"
+#define MyAppVersion "0.3.2"
 #define MyAppPublisher "HG"
 #define MyAppURL "https://github.com/simiroa/CONTEXTUP"
 #define MyAppExeName "ContextUpManager.bat"
@@ -22,7 +22,7 @@ DefaultDirName={userdocs}\{#MyAppName}
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
-OutputBaseFilename=ContextUp_Setup_v2.0
+OutputBaseFilename=ContextUp_Setup_v0.3.2
 SetupIconFile={#MyAppIcon}
 Compression=lzma
 SolidCompression=yes

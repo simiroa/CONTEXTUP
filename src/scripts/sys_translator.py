@@ -212,15 +212,21 @@ class TranslatorApp(BaseWindow):
     def check_clipboard(self):
         if self.is_auto_clip:
             try:
-                text = self.clipboard_get()
+                # Use type='STRING' to specifically request text
+                text = self.clipboard_get(type='STRING')
                 if text and text != self.last_clip:
                     self.last_clip = text
                     if len(text) < 5000: 
                         self.input_text.delete("0.0", "end")
                         self.input_text.insert("0.0", text)
                         self.trigger_translate()
-            except: pass
-        self.after(1000, self.check_clipboard)
+            except tk.TclError:
+                # Clipboard is empty or contains non-text data
+                pass
+            except Exception as e:
+                print(f"Clipboard Error: {e}")
+                
+        self.after(500, self.check_clipboard)
 
     def on_key_release(self, event):
         if self.debounce_timer: self.debounce_timer.cancel()
