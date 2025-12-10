@@ -79,7 +79,7 @@
         "category": "AI",
         "id": "ai_img_lab",
         "name": "Gemini image tool",
-        "icon": "assets/icons/icon_sys_analyze_clipboard.ico",
+        "icon": "assets/icons/icon_image_analyze_ollama.ico",
         "types": ".jpg;.jpeg;.png;.webp;.tga;.tif;.tiff",
         "scope": "file",
         "status": "COMPLETE",
@@ -96,7 +96,7 @@
         "category": "AI",
         "id": "prompt_master",
         "name": "Prompt Master",
-        "icon": "assets/icons/icon_sys_analyze_clipboard.ico",
+        "icon": "assets/icons/icon_doc_analyze_ollama.ico",
         "types": "*",
         "scope": "both",
         "status": "COMPLETE",
@@ -163,7 +163,7 @@
         "order": 804
     },
     {
-        "category": "Audio",
+        "category": "AI",
         "id": "aud_separate_stems",
         "name": "Separate Stems (AI)",
         "icon": "assets/icons/icon_audio_separate_stems.ico",
@@ -304,7 +304,7 @@
         "order": 501
     },
     {
-        "category": "Image",
+        "category": "AI",
         "id": "img_upscale_ai",
         "name": "AI Upscale",
         "icon": "assets/icons/icon_image_upscale_ai.ico",
@@ -317,7 +317,7 @@
         "order": 401
     },
     {
-        "category": "Image",
+        "category": "AI",
         "id": "img_marigold_pbr",
         "name": "Marigold PBR Gen",
         "icon": "assets/icons/icon_ai_pbr.ico",
@@ -343,7 +343,7 @@
         "order": 402
     },
     {
-        "category": "Image",
+        "category": "AI",
         "id": "img_remove_bg",
         "name": "Remove Background",
         "icon": "assets/icons/icon_image_remove_bg_ai.ico",
@@ -639,10 +639,10 @@
         "order": 106
     },
     {
-        "category": "Video",
+        "category": "AI",
         "id": "vid_frame_interp",
         "name": "Frame Interpolation (AI)",
-        "icon": "assets/icons/video.ico",
+        "icon": "assets/icons/icon_video_frame_interp.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
         "status": "COMPLETE",
@@ -653,10 +653,10 @@
         "order": 105
     },
     {
-        "category": "Video",
+        "category": "AI",
         "id": "vid_subtitle_gen",
         "name": "Generate Subtitles (AI)",
-        "icon": "assets/icons/video.ico",
+        "icon": "assets/icons/icon_video_generate_subtitle.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
         "status": "COMPLETE",
