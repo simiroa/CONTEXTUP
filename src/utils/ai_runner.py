@@ -42,9 +42,8 @@ def run_ai_script(script_name, *args, **kwargs):
         script_dir = Path(__file__).parent.parent / "scripts" / "ai_standalone"
         script_path = script_dir / script_name
         
-        # Fallback: hardcoded path
         if not script_path.exists():
-            script_path = Path(r"C:\Users\HG\Documents\HG_context_v2\src\scripts\ai_standalone") / script_name
+            raise FileNotFoundError(f"AI script not found: {script_name}")
         
         if not script_path.exists():
             raise FileNotFoundError(f"AI script not found: {script_path}")

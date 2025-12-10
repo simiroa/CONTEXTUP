@@ -47,7 +47,8 @@ def _open_manager():
         monitor_cmd = [sys.executable, str(manager_script)]
         
         # Log launch attempt
-        log_path = Path("C:/Users/HG/manager_crash.log")
+        log_path = src_dir.parent / "logs" / "manager_crash.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
         
         # CREATE_NO_WINDOW = 0x08000000
         # We MUST keep the file handles open for the subclass? No, Popen handles it.
