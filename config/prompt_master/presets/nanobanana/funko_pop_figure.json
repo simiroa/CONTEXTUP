@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Funko Pop Figure",
+    "description": "Tags: funko pop, 3d render, collectible, toy",
+    "inputs": [
+        {
+            "id": "name",
+            "label": "Name/Character",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Create a detailed 3D render of a chibi Funko Pop figure {name}, strictly based on the provided reference photo. The figure should accurately reflect the person's appearance, hairstyle, attire, and characteristic style from the photo. High detail, studio lighting, photorealistic texture, pure white background.",
+    "example_image": "abstract.png"
+}

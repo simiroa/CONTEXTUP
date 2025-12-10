@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Body Reshape",
+    "description": "Tags: body reshape, anatomy, edit",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "body_type",
+            "label": "Target Body Type",
+            "default": "muscular body"
+        }
+    ],
+    "options": [],
+    "template": "Reshape the body of the person in {image1} into a {body_type}. Keep the face, identity, hairstyle, and clothing consistent. Ensure realistic anatomy, natural proportions, and photorealistic details.",
+    "example_image": "abstract.png"
+}

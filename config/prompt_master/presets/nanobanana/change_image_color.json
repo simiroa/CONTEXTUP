@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Change Image Color",
+    "description": "Tags: color grading, filter, tone",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "color_style",
+            "label": "Color Tone/Style",
+            "default": "warm tones"
+        }
+    ],
+    "options": [],
+    "template": "Change the colors in {image1} to {color_style}. Keep the main subject and composition intact. Adjust lighting, shadows, and overall color balance to match the new color scheme. Photorealistic, high-resolution, natural-looking result.",
+    "example_image": "abstract.png"
+}

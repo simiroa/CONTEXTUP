@@ -5,6 +5,7 @@ from tkinter import simpledialog, messagebox, filedialog
 import tkinter as tk
 
 from core.logger import setup_logger
+from utils.files import get_safe_path
 
 logger = setup_logger("sys_tools")
 
@@ -40,18 +41,8 @@ def move_to_new_folder(target_path: str, selection=None):
         # Use parent of the first item as base
         base_dir = selection[0].parent
         
-        # Auto-generate name: "New Folder", "New Folder (2)", etc.
-        folder_name = "New Folder"
-        new_folder = base_dir / folder_name
-        
-        if new_folder.exists():
-            idx = 2
-            while True:
-                new_folder = base_dir / f"New Folder ({idx})"
-                if not new_folder.exists():
-                    break
-                idx += 1
-            
+        # Auto-generate name safely
+        new_folder = get_safe_path(base_dir / "New Folder")
         new_folder.mkdir()
         
         count = 0
@@ -61,15 +52,7 @@ def move_to_new_folder(target_path: str, selection=None):
                 if item.exists():
                     # Check if we are trying to move the new folder into itself (unlikely but possible if selection included parent?)
                     # Also check if destination exists
-                    dest = new_folder / item.name
-                    if dest.exists():
-                        # Rename if collision? Or skip?
-                        # Windows usually renames to "Name - Copy" or similar, or asks.
-                        # For "Immediate" mode, let's try to rename automatically or skip.
-                        # Let's skip and report error for now to be safe.
-                        errors.append(f"{item.name} (Destination exists)")
-                        continue
-                        
+                    dest = get_safe_path(new_folder / item.name)
                     shutil.move(str(item), str(dest))
                     count += 1
             except Exception as e:
@@ -99,14 +82,7 @@ def save_clipboard_image(target_path: str):
         dest_dir = Path(target_path)
         if dest_dir.is_file(): dest_dir = dest_dir.parent
         
-        # Find next available name
-        idx = 1
-        while True:
-            save_path = dest_dir / f"clipboard_{idx:03d}.png"
-            if not save_path.exists():
-                break
-            idx += 1
-            
+        save_path = get_safe_path(dest_dir / "clipboard_01.png")
         img.save(save_path, "PNG")
         
     except Exception as e:
@@ -144,7 +120,7 @@ def pdf_merge(target_path: str, selection=None):
         for pdf in pdfs:
             merger.append(str(pdf))
             
-        dest = pdfs[0].parent / "merged.pdf"
+        dest = get_safe_path(pdfs[0].parent / "merged.pdf")
         merger.write(str(dest))
         merger.close()
         
@@ -168,7 +144,7 @@ def pdf_split(target_path: str):
         if not mode: return
         mode = mode.lower()
         
-        output_dir = path.parent / path.stem
+        output_dir = get_safe_path(path.parent / path.stem)
         output_dir.mkdir(exist_ok=True)
         
         if 'pdf' in mode:
@@ -176,7 +152,7 @@ def pdf_split(target_path: str):
             for i, page in enumerate(reader.pages):
                 writer = PdfWriter()
                 writer.add_page(page)
-                out_path = output_dir / f"{path.stem}_page_{i+1:03d}.pdf"
+                out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.pdf")
                 with open(out_path, "wb") as f:
                     writer.write(f)
             messagebox.showinfo("Success", f"Split into {len(reader.pages)} PDFs in {output_dir.name}")
@@ -186,7 +162,7 @@ def pdf_split(target_path: str):
             try:
                 images = convert_from_path(str(path))
                 for i, img in enumerate(images):
-                    out_path = output_dir / f"{path.stem}_page_{i+1:03d}.png"
+                    out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.png")
                     img.save(out_path, "PNG")
                 messagebox.showinfo("Success", f"Converted to {len(images)} PNGs in {output_dir.name}")
             except Exception as e:
@@ -246,72 +222,85 @@ def clean_empty_dirs(target_path: str):
         messagebox.showinfo("Success", f"Removed {removed_count} empty directories.")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to clean: {e}")
+
+# Backward compatibility: legacy name used in dispatcher
+def clean_empty_dir(target_path: str):
+    return clean_empty_dirs(target_path)
  
 def create_symlink(target_path: str, selection=None):
     try:
-        if selection:
-            files = [Path(p) for p in selection]
-        else:
-            files = _get_target_files(target_path)
+        # 1. Determine where to put the link (Current Directory)
+        # If the user clicked on a file background (target_path is folder), use it.
+        # If user clicked on a file, use its parent.
+        dest_dir = Path(target_path)
+        if dest_dir.is_file():
+            dest_dir = dest_dir.parent
             
-        if not files: return
+        # 2. Ask user WHAT to link to
+        root = _get_root()
+        src_target_str = filedialog.askdirectory(parent=root, title="Select Folder to Link", initialdir=str(dest_dir))
         
-        # If single file, create link immediately and trigger rename
-        if len(files) == 1:
-            src_path = files[0]
+        if not src_target_str: return # User cancelled
+        
+        src_target = Path(src_target_str)
+        
+        # 3. Determine Link Name
+        link_name = f"{src_target.name} - Link"
+        link_path = dest_dir / link_name
+        
+        # Collision check
+        if link_path.exists():
+            idx = 2
+            while True:
+                link_name = f"{src_target.name} - Link ({idx})"
+                link_path = dest_dir / link_name
+                if not link_path.exists(): break
+                idx += 1
+
+        # 4. Create Link (Try Normal -> Fallback to Admin)
+        failed_due_to_privilege = False
+        
+        try:
+            # os.symlink(target, link) -> creates a link at 'link' pointing to 'target'
+            os.symlink(src_target, link_path)
             
-            # Auto-generate name
-            link_name = f"{src_path.stem} - Link{src_path.suffix}"
-            link_path = src_path.parent / link_name
+            # Trigger Rename so user can type name immediately
+            from utils.explorer import select_and_rename
+            select_and_rename(link_path)
             
-            # Collision check
-            if link_path.exists():
-                idx = 2
-                while True:
-                    link_name = f"{src_path.stem} - Link ({idx}){src_path.suffix}"
-                    link_path = src_path.parent / link_name
-                    if not link_path.exists(): break
-                    idx += 1
-            
-            try:
-                os.symlink(src_path, link_path)
-                
-                # Trigger Rename
-                from utils.explorer import select_and_rename
-                select_and_rename(link_path)
-                
-            except OSError as e:
-                if hasattr(e, 'winerror') and e.winerror == 1314:
-                    messagebox.showerror("Error", "Privilege not held. Enable Developer Mode or run as Admin.")
-                else:
-                    messagebox.showerror("Error", str(e))
-        else:
-            # Batch mode: Create links with default suffix (No rename trigger for batch)
-            count = 0
-            errors = []
-            for src_path in files:
-                link_name = f"{src_path.stem} - Link{src_path.suffix}"
-                link_path = src_path.parent / link_name
-                
-                if link_path.exists():
-                    errors.append(f"{src_path.name}: Link exists")
-                    continue
-                    
-                try:
-                    os.symlink(src_path, link_path)
-                    count += 1
-                except OSError as e:
-                    if hasattr(e, 'winerror') and e.winerror == 1314:
-                        # Fail fast for privilege error
-                        messagebox.showerror("Error", "Privilege not held. Enable Developer Mode or run as Admin.")
-                        return
-                    errors.append(f"{src_path.name}: {e}")
-            
-            if errors:
-                msg = f"Created {count}/{len(files)} links.\n\nErrors:\n" + "\n".join(errors[:5])
-                messagebox.showwarning("Completed with Errors", msg)
+        except OSError as e:
+            if hasattr(e, 'winerror') and e.winerror == 1314:
+                failed_due_to_privilege = True
             else:
-                messagebox.showinfo("Success", f"Created {count} symlinks.")
+                messagebox.showerror("Error", f"Failed: {e}")
+                return
+
+        # 5. Admin Elevation Fallback
+        if failed_due_to_privilege:
+            import tempfile
+            import ctypes
+            
+            bat_lines = ["@echo off", "chcp 65001 > nul"]
+            
+            # mklink /D "Link" "Target"
+            # Since we selected a folder via askdirectory, it is a directory link.
+            cmd = f'mklink /D "{link_path}" "{src_target}"'
+            bat_lines.append(cmd)
+            
+            bat_lines.append("echo Done.")
+            bat_lines.append("timeout /t 2 > nul")
+            
+            fd, bat_path = tempfile.mkstemp(suffix=".bat", text=True)
+            try:
+                with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                    f.write("\n".join(bat_lines))
+                
+                ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", bat_path, None, None, 1)
+                
+                if ret <= 32:
+                    messagebox.showerror("Error", "Admin privilege request denied or failed.")
+            except Exception as e:
+                messagebox.showerror("Error", f"Elevation failed: {e}")
 
     except Exception as e:
         messagebox.showerror("Error", f"Failed to create symlink: {e}")
@@ -427,3 +416,69 @@ def arrange_sequences(target_path: str, selection=None):
         
     except Exception as e:
         messagebox.showerror("Error", f"Failed: {e}")
+
+def flatten_directory(target_path: str, selection=None):
+    try:
+        path = Path(target_path)
+        if not path.is_dir():
+            messagebox.showwarning("Warning", "Please select a folder.")
+            return
+
+        # Unwrap logic: Move immediate content to parent, no recursion.
+        target_dest = path.parent
+        
+        msg = f"Unwrap '{path.name}' to '{target_dest.name}'?\n\n" \
+              f"Items inside '{path.name}' will be moved one level up.\n" \
+              f"The folder '{path.name}' will be deleted if empty."
+              
+        if not messagebox.askyesno("Confirm Unwrap", msg):
+            return
+
+        items_to_move = list(path.iterdir())
+        if not items_to_move:
+             messagebox.showinfo("Info", "Folder is empty.")
+             return
+
+        # Pre-check for collisions
+        collisions = []
+        for item in items_to_move:
+            dest = target_dest / item.name
+            if dest.exists():
+                collisions.append(item.name)
+        
+        if collisions:
+            msg = "Operation Aborted due to name collisions:\n\n" + "\n".join(collisions[:10])
+            if len(collisions) > 10: msg += "\n..."
+            msg += "\n\nPlease resolve these collisions manually."
+            messagebox.showerror("Collision Error", msg)
+            return
+
+        moved_count = 0
+        errors = []
+        
+        for item in items_to_move:
+            try:
+                dest = target_dest / item.name
+                shutil.move(str(item), str(dest))
+                moved_count += 1
+            except Exception as e:
+                errors.append(f"{item.name}: {e}")
+                logger.error(f"Failed to move {item}: {e}")
+
+        # Try to remove original folder
+        if path.exists():
+            try:
+                path.rmdir()
+            except OSError:
+                if not errors: # Only warn if we had no other errors, otherwise it's expected
+                    pass 
+
+        msg = f"Moved {moved_count} items to {target_dest.name}."
+        if errors:
+            msg += f"\n\nErrors ({len(errors)}):\n" + "\n".join(errors[:5])
+        
+        messagebox.showinfo("Success", msg)
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to flatten: {e}")
+

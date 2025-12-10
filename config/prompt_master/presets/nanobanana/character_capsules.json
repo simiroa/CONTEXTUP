@@ -1,0 +1,45 @@
+{
+    "engine": "nanobanana",
+    "name": "Character Capsules",
+    "description": "Tags: gashapon, capsule, diorama, miniature",
+    "inputs": [
+        {
+            "id": "name",
+            "label": "Name",
+            "default": ""
+        },
+        {
+            "id": "pose_style",
+            "label": "Iconic Pose/Style",
+            "default": ""
+        },
+        {
+            "id": "figure_description",
+            "label": "Figure Look",
+            "default": ""
+        },
+        {
+            "id": "setting",
+            "label": "Background Setting",
+            "default": "stadium, stage, etc."
+        },
+        {
+            "id": "color",
+            "label": "Base Color",
+            "default": "royal blue"
+        },
+        {
+            "id": "motifs",
+            "label": "Decorative Motifs",
+            "default": ""
+        },
+        {
+            "id": "nickname",
+            "label": "Label Name",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "A detailed, transparent gashapon capsule diorama, held between fingers, featuring {name} in their {pose_style}. Inside: {figure_description}, with background elements such as {setting}. Lighting should be dramatic and cinematic, matching their theme. The capsule has a transparent top and a colored base {color}, decorated with {motifs}. The base is labeled with {nickname} in a matching font style. The design should look like a miniature collectible, with photorealistic detail and soft bokeh.",
+    "example_image": "portrait.png"
+}

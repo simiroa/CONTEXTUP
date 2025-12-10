@@ -1,0 +1,23 @@
+# AI & Heavy Processing Dependencies
+# Usage: Install in Conda Environment (python 3.10+)
+
+# PyTorch (CUDA 12.1)
+# Note: Install this manually first if specific CUDA version is needed
+torch --index-url https://download.pytorch.org/whl/cu121
+torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# AI Tools
+rembg
+numpy
+faster-whisper
+google-generativeai
+deep-translator
+
+# Multimedia
+ffmpeg-python
+piexif
+
+# Optional / Experimental
+# basicsr
+# realesrgan
+# gfpgan

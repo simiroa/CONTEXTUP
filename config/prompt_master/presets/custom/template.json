@@ -1,0 +1,46 @@
+{
+    "engine": "custom",
+    "name": "Custom Template",
+    "description": "Flexible custom prompt template. Edit this JSON to create your own preset!",
+    "inputs": [
+        {
+            "id": "input1",
+            "label": "Input 1",
+            "default": ""
+        },
+        {
+            "id": "input2",
+            "label": "Input 2",
+            "default": ""
+        },
+        {
+            "id": "input3",
+            "label": "Input 3",
+            "default": ""
+        }
+    ],
+    "options": [
+        {
+            "id": "option1",
+            "label": "Option 1",
+            "choices": [
+                "choice A",
+                "choice B",
+                "choice C"
+            ],
+            "default": "choice A"
+        },
+        {
+            "id": "option2",
+            "label": "Option 2",
+            "choices": [
+                "style 1",
+                "style 2",
+                "style 3"
+            ],
+            "default": "style 1"
+        }
+    ],
+    "template": "{input1}, {input2}, {input3}, {option1}, {option2}",
+    "example_image": "portrait.png"
+}

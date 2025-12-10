@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "AI Hug Younger Self",
+    "description": "Tags: hug, nostalgia, emotional, polaroid",
+    "inputs": [],
+    "options": [],
+    "template": "Take a photo taken with a Polaroid camera. The photo should look like an ordinary photograph, without an explicit subject or property. The photo should have a slight blur and a consistent light source, like a flash from a dark room, scattered throughout the photo. Don’t change the face. Change the background behind those two people with white curtains. Make it look like both people in the reference picture are hugging each other.",
+    "example_image": "portrait.png"
+}

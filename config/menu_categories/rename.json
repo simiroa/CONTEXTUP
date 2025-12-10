@@ -1,0 +1,28 @@
+[
+    {
+        "category": "Rename",
+        "id": "rename_batch",
+        "name": "Batch Rename...",
+        "icon": "",
+        "types": "*",
+        "scope": "items",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 301
+    },
+    {
+        "category": "Rename",
+        "id": "rename_sequence",
+        "name": "Renumber Sequence...",
+        "icon": "",
+        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp;.obj;.fbx;.abc;.usd;.gltf;.glb;.ply;.stl;.mp4;.mov;.avi;.mkv",
+        "scope": "items",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 302
+    }
+]

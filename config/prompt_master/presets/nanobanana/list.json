@@ -1,0 +1,798 @@
+[
+    {
+        "engine": "nanobanana",
+        "preset_name": "Nano Banana 3D Action Figure",
+        "raw_prompt": "create a 1/7 scale commercialized figure of [character] in the illustration, in a realistic styie and environment.Place the figure on a computer desk, using a circular transparent acrylic base without any text.On the computer screen, display the ZBrush modeling process of the figure.Next to the computer screen, place a BANDAI-style toy packaging box printedwith the original artwork.",
+        "variables": {
+            "character": {
+                "label": "Character Name",
+                "type": "text",
+                "default": "the character"
+            }
+        },
+        "default_tags": [
+            "3d figure",
+            "toy",
+            "packaging",
+            "realistic"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Chibi Knitted Doll",
+        "raw_prompt": "A close-up, professionally composed photograph showcasing a hand-crocheted yarn doll gently cradled by two hands. The doll has a rounded shape, featuring the cute chibi image of the [character], with vivid contrasting colors and rich details. The hands holding the doll are natural and gentle, with clearly visible finger postures, and natural skin texture and light/shadow transitions, conveying a warm and realistic touch. The background is slightly blurred, depicting an indoor environment with a warm wooden tabletop and natural light streaming in from a window, creating a comfortable and intimate atmosphere. The overall image conveys a sense of exquisite craftsmanship and cherished warmth.",
+        "variables": {
+            "character": {
+                "label": "Character Description",
+                "type": "text",
+                "default": "character"
+            }
+        },
+        "default_tags": [
+            "knitted",
+            "chibi",
+            "yarn",
+            "cute"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Character Capsules",
+        "raw_prompt": "A detailed, transparent gashapon capsule diorama, held between fingers, featuring [name] in their [pose_style]. Inside: [figure_description], with background elements such as [setting]. Lighting should be dramatic and cinematic, matching their theme. The capsule has a transparent top and a colored base [color], decorated with [motifs]. The base is labeled with [nickname] in a matching font style. The design should look like a miniature collectible, with photorealistic detail and soft bokeh.",
+        "variables": {
+            "name": {
+                "label": "Name",
+                "type": "text",
+                "default": ""
+            },
+            "pose_style": {
+                "label": "Iconic Pose/Style",
+                "type": "text",
+                "default": ""
+            },
+            "figure_description": {
+                "label": "Figure Look",
+                "type": "text",
+                "default": ""
+            },
+            "setting": {
+                "label": "Background Setting",
+                "type": "text",
+                "default": "stadium, stage, etc."
+            },
+            "color": {
+                "label": "Base Color",
+                "type": "text",
+                "default": "royal blue"
+            },
+            "motifs": {
+                "label": "Decorative Motifs",
+                "type": "text",
+                "default": ""
+            },
+            "nickname": {
+                "label": "Label Name",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "gashapon",
+            "capsule",
+            "diorama",
+            "miniature"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Character Plush Toys",
+        "raw_prompt": "A soft, high-quality plush toy of [character], with an oversized head, small body, and stubby limbs. Made of fuzzy fabric with visible stitching and embroidered facial features. The plush is shown sitting or standing against a neutral background. The expression is cute or expressive, and it wears simple clothes or iconic accessories if relevant. Lighting is soft and even, with a realistic, collectible plush look. Centered, full-body view.",
+        "variables": {
+            "character": {
+                "label": "Character",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "soft plush",
+            "cute",
+            "studio lighting"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "iPhone Selfie",
+        "raw_prompt": "Please draw an extremely ordinary and unremarkable iPhone selfie, with no clear subject or sense of composition — just like a random snapshot taken casually. The photo should include slight motion blur, with uneven lighting caused by sunlight or indoor lights, resulting in mild overexposure. The angle is awkward, the composition is messy, and the overall aesthetic is deliberately plain — as if it were accidentally taken while pulling the phone out of a pocket. The subjects are [names], taken at night, next to the [location].",
+        "variables": {
+            "names": {
+                "label": "Names of Subjects",
+                "type": "text",
+                "default": ""
+            },
+            "location": {
+                "label": "Location",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "selfie",
+            "realistic",
+            "amateur style",
+            "flash"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Chibi Emoji Sticker",
+        "raw_prompt": "[expression]. Maintain the chibi aesthetic. Exaggerated, expressive big eyes. Soft facial lines. Background: Vibrant red with star or colorful confetti elements for decoration. Leave some clean white space around each sticker. Aspect ratio: 9:16",
+        "variables": {
+            "expression": {
+                "label": "Expression/Pose Action",
+                "type": "text",
+                "default": "Making a playful peace sign with both hands and winking"
+            }
+        },
+        "default_tags": [
+            "emoji",
+            "sticker",
+            "chibi",
+            "flat design"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Funko Pop Figure",
+        "raw_prompt": "Create a detailed 3D render of a chibi Funko Pop figure [name], strictly based on the provided reference photo. The figure should accurately reflect the person's appearance, hairstyle, attire, and characteristic style from the photo. High detail, studio lighting, photorealistic texture, pure white background.",
+        "variables": {
+            "name": {
+                "label": "Name/Character",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "funko pop",
+            "3d render",
+            "collectible",
+            "toy"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Ghibli Style",
+        "raw_prompt": "Redraw this photo in Ghibli style",
+        "variables": {},
+        "default_tags": [
+            "ghibli",
+            "anime",
+            "illustration",
+            "studio ghibli"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Game UI",
+        "raw_prompt": "A vibrant rhythm dance game screenshot featuring the 3D animated character from the reference photo, keeping its unique style, hat, outfit, and confident dance pose. Immersive cinematic lighting with neon pink and purple glow, glossy reflective dance floor shining under spotlights, and dynamic 3D cartoon style. Rhythm game interface with immersive UI: score meter at the top, colorful music waveform animations synced to the beat, stage timer countdown, and floating combo numbers. Highly detailed, game-like atmosphere with energy bars, neon particle effects, and immersive arcade rhythm game HUD elements. Ultra-detailed, cinematic, immersive, 3D animation.",
+        "variables": {},
+        "default_tags": [
+            "game ui",
+            "rhythm game",
+            "neon",
+            "hud"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Image Fusion",
+        "raw_prompt": "Combine multiple images ([image_list]) into a single cohesive image. Keep all key subjects recognizable and maintain their proportions and details. Blend the images naturally with consistent lighting, shadows, perspective, and style. Photorealistic, high-resolution, seamless integration.",
+        "variables": {
+            "image_list": {
+                "label": "List of Images",
+                "type": "text",
+                "default": "Image1, Image2"
+            }
+        },
+        "default_tags": [
+            "fusion",
+            "collage",
+            "blend",
+            "composite"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Style Fusion",
+        "raw_prompt": "Transform this image [image1] into the artistic style of [image2]. Keep the main subject, composition, and details from [image1], but apply the colors, textures, and overall aesthetic of [image2]. High-quality, [illustration_style] style, consistent details.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "image2": {
+                "label": "Style Reference Image",
+                "type": "text",
+                "default": "Image2"
+            },
+            "illustration_style": {
+                "label": "Style Description",
+                "type": "text",
+                "default": "illustration"
+            }
+        },
+        "default_tags": [
+            "style transfer",
+            "artistic",
+            "remix"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Virtual Change Clothes",
+        "raw_prompt": "Keep the character in [image1] unchanged, but replace her pant with the outfit in [image2]. Maintain the same pose, body proportions, and facial features, while applying the color, texture, and style of the pants in [image2]. High-quality, realistic, consistent detail.",
+        "variables": {
+            "image1": {
+                "label": "Model Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "image2": {
+                "label": "Outfit Image",
+                "type": "text",
+                "default": "Image2"
+            }
+        },
+        "default_tags": [
+            "fashion",
+            "clothing",
+            "virtual try-on"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Facial Expression Control",
+        "raw_prompt": "Keep the person from [image1] unchanged, but change their facial expression to [expression]. Preserve the pose, body proportions, hairstyle, and overall appearance. Maintain realistic lighting, shadows, and photorealistic details.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "expression": {
+                "label": "Desired Expression",
+                "type": "text",
+                "default": "smiling"
+            }
+        },
+        "default_tags": [
+            "expression",
+            "face edit",
+            "emotion"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Pose Control",
+        "raw_prompt": "Take the two men and place them in the exact poses of the man in green carrying the man in red. Preserve their identities, body proportions, and clothing details. Ensure the pose is natural and realistic, with consistent lighting, shadows, and perspective. Photorealistic, high-resolution result.",
+        "variables": {},
+        "default_tags": [
+            "pose",
+            "controlnet",
+            "body"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Body Reshape",
+        "raw_prompt": "Reshape the body of the person in [image1] into a [body_type]. Keep the face, identity, hairstyle, and clothing consistent. Ensure realistic anatomy, natural proportions, and photorealistic details.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "body_type": {
+                "label": "Target Body Type",
+                "type": "text",
+                "default": "muscular body"
+            }
+        },
+        "default_tags": [
+            "body reshape",
+            "anatomy",
+            "edit"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "3x3 Grid Portrait",
+        "raw_prompt": "Using the uploaded photo as a reference, generate a set of 9 vibrant half-length portraits featuring natural life. Each portrait should show a different pose and be placed in a unique setting, with rich, colorful details that highlight the diversity of nature.",
+        "variables": {},
+        "default_tags": [
+            "grid",
+            "portrait",
+            "collage"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Change Image Background",
+        "raw_prompt": "Replace the background of [image1] with [background_desc]. Keep the main subject (person/object) unchanged, maintaining original proportions, lighting, and details. Ensure the subject blends naturally with the new environment. Photorealistic, high-resolution, seamless integration.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "background_desc": {
+                "label": "New Background Description",
+                "type": "text",
+                "default": "a beach"
+            }
+        },
+        "default_tags": [
+            "background",
+            "environment",
+            "edit"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Add Object to Image",
+        "raw_prompt": "Add [object] to [image1]. Place it naturally in the scene, matching the lighting, perspective, and style. Keep the original elements unchanged. Photorealistic, seamless integration.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "object": {
+                "label": "Object to Add",
+                "type": "text",
+                "default": "a tree"
+            }
+        },
+        "default_tags": [
+            "inpainting",
+            "add object",
+            "edit"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Remove Object from Image",
+        "raw_prompt": "Remove [object] from [image1]. Fill the background naturally to maintain the scene’s continuity, lighting, and details. Keep all other elements unchanged. Photorealistic, high-resolution.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "object": {
+                "label": "Object to Remove",
+                "type": "text",
+                "default": "a person"
+            }
+        },
+        "default_tags": [
+            "remove object",
+            "cleanup",
+            "erase"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Change Camera Angle",
+        "raw_prompt": "Recreate the person from [image1] in four different camera perspectives.Keep the subject’s identity, body proportions, and clothing consistent across all four images. Maintain the same background environment as [image1], with photorealistic lighting, natural shadows, and high-quality details.\nGenerate four variations side by side:\nBird’s-eye view (from above).\nRear view (from behind).\nSide profile view.\nClose-up portrait view.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            }
+        },
+        "default_tags": [
+            "camera angle",
+            "perspective",
+            "viewpoint"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Edit Text in Image",
+        "raw_prompt": "Edit the text in [image1]. Replace the existing text with “[new_text]” while keeping the background, design, and other elements unchanged. Match the font style, size, and color to look natural and consistent with the image. Photorealistic, seamless integration.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "new_text": {
+                "label": "New Text Content",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "text edit",
+            "typography",
+            "logo"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Time-Based Image Generation",
+        "raw_prompt": "Generate an image of the same scene as [image1], but showing how it looks 10 minutes later. Keep the environment and style consistent, but add natural changes over time such as light, weather, people and so on. Photorealistic, seamless continuity.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            }
+        },
+        "default_tags": [
+            "time",
+            "lighting",
+            "sequence"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Object Extraction",
+        "raw_prompt": "Extract the clothing from [image1] and present it as a clean e-commerce product photo. Remove the model’s body completely. Keep the outfit in natural 3D shape, with realistic fabric folds, seams, and textures. Display the garment as if photographed on a mannequin or neatly laid flat, centered on a pure white or transparent background. High-resolution, professional lighting, suitable for online fashion catalog.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            }
+        },
+        "default_tags": [
+            "ecommerce",
+            "product",
+            "transparent background"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Enhance Image",
+        "raw_prompt": "Enhance [image1] to improve overall quality and detail. Keep the original composition, colors, and style intact. Increase resolution, sharpness, texture clarity, and lighting realism. Output as a photorealistic, high-resolution image.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            }
+        },
+        "default_tags": [
+            "upscale",
+            "enhance",
+            "sharpen"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Change the Weather",
+        "raw_prompt": "Change the weather in [image1] to [weather]. Keep the main subject and overall scene intact. Adjust lighting, shadows, colors, and environmental effects to match the new weather. Photorealistic, seamless integration, high-resolution.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "weather": {
+                "label": "Target Weather",
+                "type": "text",
+                "default": "rainy"
+            }
+        },
+        "default_tags": [
+            "weather",
+            "environment",
+            "atmosphere"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Change Image Color",
+        "raw_prompt": "Change the colors in [image1] to [color_style]. Keep the main subject and composition intact. Adjust lighting, shadows, and overall color balance to match the new color scheme. Photorealistic, high-resolution, natural-looking result.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "color_style": {
+                "label": "Color Tone/Style",
+                "type": "text",
+                "default": "warm tones"
+            }
+        },
+        "default_tags": [
+            "color grading",
+            "filter",
+            "tone"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Image Replace",
+        "raw_prompt": "Replace [target_element] in [image1] with [new_element]. Keep all other parts of the image unchanged. Ensure the replacement blends naturally with lighting, perspective, and overall style. Photorealistic, high-resolution, seamless integration.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            },
+            "target_element": {
+                "label": "Element to Replace",
+                "type": "text",
+                "default": ""
+            },
+            "new_element": {
+                "label": "New Element",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "replace",
+            "inpainting",
+            "edit"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Image Outpainting",
+        "raw_prompt": "Extend [image1] beyond its original borders using outpainting. Keep the main subject and composition intact. Generate new content around the edges that matches the style, colors, lighting, and perspective of the original image. Photorealistic, high-resolution, seamless integration.",
+        "variables": {
+            "image1": {
+                "label": "Source Image",
+                "type": "text",
+                "default": "Image1"
+            }
+        },
+        "default_tags": [
+            "outpainting",
+            "expand",
+            "widescreen"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Line to Image",
+        "raw_prompt": "Convert the line art in [image1] into a fully colored and detailed image. Preserve all original outlines and compositions. Apply [style] with realistic lighting, shadows, and textures. High-resolution, natural, seamless rendering.",
+        "variables": {
+            "image1": {
+                "label": "Source Line Art",
+                "type": "text",
+                "default": "Image1"
+            },
+            "style": {
+                "label": "Art Style",
+                "type": "text",
+                "default": "photorealistic"
+            }
+        },
+        "default_tags": [
+            "lineart",
+            "sketch to image",
+            "colorization"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "3x3 Photo Grid Pose",
+        "raw_prompt": "Turn the photo into a 3x3 grid of photo strips with different studio-style poses and expressions.",
+        "variables": {},
+        "default_tags": [
+            "grid",
+            "photobooth",
+            "poses"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "AI Interior Design",
+        "raw_prompt": "1️⃣ Step one: Add a comfortable gray sofa and a wooden coffee table in the center, matching the room’s contemporary style, photorealistic render.\n2️⃣ Step two: Add more furniture-like items to the foreground and more daily necessities on the table. Also, change the wallpaper to something warmer.",
+        "variables": {},
+        "default_tags": [
+            "interior design",
+            "room",
+            "furniture"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Ingredients to Dish",
+        "raw_prompt": "Here are the items available: [item_list]. Based on these items, create an image of a [dish_type] that can be made or represented by combining them. The composition should make logical sense, considering the relationship between the items. Ensure the image is [visual_style]. It should be with appropriate proportions and clear placement of each item.",
+        "variables": {
+            "item_list": {
+                "label": "Ingredients List",
+                "type": "text",
+                "default": ""
+            },
+            "dish_type": {
+                "label": "Type of Object/Dish",
+                "type": "text",
+                "default": ""
+            },
+            "visual_style": {
+                "label": "Visual Style",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "food",
+            "cooking",
+            "composition"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Anatomy Illustration",
+        "raw_prompt": "Draw a bilaterally symmetrical frontal anatomical illustration of the [character], styled similarly to an infographic. The image should show the creature's external features on both sides, with its internal anatomy partially exposed. Detailed text should flank the image, explaining the creature's biology, abilities, behavior, habitat, and the specific functions of its anatomical structures. The overall design should be clear, informative, and in the style of a scientific illustration.",
+        "variables": {
+            "character": {
+                "label": "Character Name",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "anatomy",
+            "diagram",
+            "scientific",
+            "infographic"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "16-Bit Video Game Character",
+        "raw_prompt": "Recreate this [character] as a 16-bit video game character, and place the character in a level of a 2D 16-bit platform video game.",
+        "variables": {
+            "character": {
+                "label": "Character Name",
+                "type": "text",
+                "default": ""
+            }
+        },
+        "default_tags": [
+            "pixel art",
+            "retro",
+            "16-bit",
+            "game"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Gemini AI Polaroid-Style Photo",
+        "raw_prompt": "Take a picture with a Polaroid camera. The photo should look like a normal photo, without any clear subject or props. The photo should have a slight blur a consistent light source. Such as a flash from a dark room, spread throughout the photo. Do not change the faces. Replace the background behind the two people with a white curtain.",
+        "variables": {},
+        "default_tags": [
+            "polaroid",
+            "vintage",
+            "flash",
+            "photo"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "AI Saree",
+        "raw_prompt": "Create A soft, sunlit portrait wearing a flowing sheer yellow saree with delicate floral embroidery. Sit gracefully against a plain wall, bathed in warm natural light with a triangular patch of sunlight casting artistic shadows. Hold a vibrant bouquet of sunflowers close to the chest, and a small white flower is tucked behind he ear. Gentle expression, loose hair strands moving slightly, and the dreamy golden glow create a serene, poetic, and romantic.",
+        "variables": {},
+        "default_tags": [
+            "saree",
+            "traditional",
+            "portrait",
+            "fashion"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "AI Hug Younger Self",
+        "raw_prompt": "Take a photo taken with a Polaroid camera. The photo should look like an ordinary photograph, without an explicit subject or property. The photo should have a slight blur and a consistent light source, like a flash from a dark room, scattered throughout the photo. Don’t change the face. Change the background behind those two people with white curtains. Make it look like both people in the reference picture are hugging each other.",
+        "variables": {},
+        "default_tags": [
+            "hug",
+            "nostalgia",
+            "emotional",
+            "polaroid"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "AI B&W Studio Portrait",
+        "raw_prompt": "Please generate a top-angle and close-up black and white portrait of my face, focused on the head facing forward. Use a 35mm lens look, 10.7K 4HD quality. Proud expression. Deep black shadow background - only the face, the upper chest, and the shoulder.",
+        "variables": {},
+        "default_tags": [
+            "black and white",
+            "studio",
+            "portrait",
+            "high contrast"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "AI Cinematic Portrait",
+        "raw_prompt": "Create a vertical potrait shot using the exact same face features, characterized by stark cinematic lighting and intense contrast. Captured in a slightly low, upward-facing angle that dramatized the subject’s jawline and neck, the composition evokes quite dominance and sculptural elegance. The background is a deep, saturated crimson red, creating a bold visual clash with the model’s luminous skin and dark wardrobe.",
+        "variables": {},
+        "default_tags": [
+            "cinematic",
+            "dramatic lighting",
+            "portrait"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Internal Structure Diagram",
+        "raw_prompt": "Ultra-detailed exploded view of a product, metallic parts and electronic components floating in mid-air, perfectly aligned, revealing inner structure, futuristic technology aesthetic, 8K resolution, soft cinematic lighting, highly realistic.",
+        "variables": {},
+        "default_tags": [
+            "exploded view",
+            "schematic",
+            "tech",
+            "diagram"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Photo Zoom In / Zoom Out",
+        "raw_prompt": "Zoom in 100x on this image, maintaining the original aspect ratio. Ensure that the image details remain sharp and clear, revealing intricate textures, patterns, and elements without distortion, while preserving the natural colors and quality.",
+        "variables": {},
+        "default_tags": [
+            "zoom",
+            "magnify",
+            "enhance"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Detailed Storyboard",
+        "raw_prompt": "Create a storyboard from the uploaded image, highlighting key moments and transitions with cinematic angles, camera movements, and framing that capture the scene's mood and narrative flow.",
+        "variables": {},
+        "default_tags": [
+            "storyboard",
+            "film",
+            "narrative",
+            "layout"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Clear Text to Logos",
+        "raw_prompt": "Turn these 8 Logos into sophisticated minimalistic logos to make letters from realistic food to express the meaning of this word. Composition: rendering of all logos on a single solid white background.",
+        "variables": {},
+        "default_tags": [
+            "logo",
+            "branding",
+            "minimalist",
+            "design"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Semantic Understanding",
+        "raw_prompt": "Create an infographic that shows how to make Thai Tom Yum Goong Soup, with ingredients and recipe in it.",
+        "variables": {},
+        "default_tags": [
+            "infographic",
+            "recipe",
+            "instruction"
+        ]
+    },
+    {
+        "engine": "nanobanana",
+        "preset_name": "Change Photo Focus",
+        "raw_prompt": "Focus on the background trees and blanket of this image, blur this kid.",
+        "variables": {},
+        "default_tags": [
+            "focus",
+            "depth of field",
+            "blur"
+        ]
+    }
+]

@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Anatomy Illustration",
+    "description": "Tags: anatomy, diagram, scientific, infographic",
+    "inputs": [
+        {
+            "id": "character",
+            "label": "Character Name",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Draw a bilaterally symmetrical frontal anatomical illustration of the {character}, styled similarly to an infographic. The image should show the creature's external features on both sides, with its internal anatomy partially exposed. Detailed text should flank the image, explaining the creature's biology, abilities, behavior, habitat, and the specific functions of its anatomical structures. The overall design should be clear, informative, and in the style of a scientific illustration.",
+    "example_image": "abstract.png"
+}

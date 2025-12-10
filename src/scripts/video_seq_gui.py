@@ -14,6 +14,7 @@ sys.path.append(str(src_dir))
 
 from utils.external_tools import get_ffmpeg
 from utils.gui_lib import BaseWindow
+from utils.files import get_safe_path
 
 class SequenceToVideoGUI(BaseWindow):
     def __init__(self, target_path):
@@ -125,7 +126,7 @@ class SequenceToVideoGUI(BaseWindow):
                 output_name += "_4444.mov"
                 ffmpeg_args = ["-c:v", "prores_ks", "-profile:v", "4", "-pix_fmt", "yuva444p10le"]
                 
-            output_path = self.folder / output_name
+            output_path = get_safe_path(self.folder / output_name)
             ffmpeg = get_ffmpeg()
             
             cmd = [

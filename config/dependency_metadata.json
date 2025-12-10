@@ -72,5 +72,17 @@
         "description": "Python tool to translate between different languages.",
         "approx_size": "1 MB",
         "is_critical": false
+    },
+    "pynput": {
+        "pip_name": "pynput",
+        "description": "Monitor and control input devices (Global Hotkeys).",
+        "approx_size": "1 MB",
+        "is_critical": false
+    },
+    "pystray": {
+        "pip_name": "pystray",
+        "description": "System tray icon support.",
+        "approx_size": "1 MB",
+        "is_critical": false
     }
 }

@@ -6,7 +6,7 @@
 *   **Clipboard: Save Image**: Saves the current image in the clipboard to a file.
 *   **Clipboard: Analyze Image**: Uses Ollama (Vision) to describe the image currently in the clipboard.
 *   **Clipboard: Analyze Error**: Uses an LLM to analyze error messages captured in the clipboard and suggest solutions.
-*   **Manager GUI**: A central hub to manage settings, toggle features, check system health, and update the registry.
+*   **Manager GUI**: A central hub to manage settings, toggle features, check system health, and update the registry. Now supports **Category Management**, **Grouped Views**, and **System Python** integration.
 
 ### 🏷️ Rename Tools
 *   **Batch Rename...**: A unified GUI for adding prefixes, suffixes, or removing text from filenames. Includes real-time preview.
@@ -26,7 +26,7 @@
 *   **Upscale (AI)**: Uses **Real-ESRGAN** to upscale images (x4) with high fidelity.
 *   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
 *   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
-*   **Texture Tools**: Generates PBR texture maps (Normal, Roughness, etc.) or weathering effects using **Gemini 2.5 Flash**. Supports dynamic model selection for Analysis (v2.5) vs Generation (v2.5-Image).
+*   **Texture Tools**: Generates PBR texture maps (Normal, Roughness, etc.) using **Marigold (Diffusion-based)**. High-quality estimation from single images. Supports ORM packing and DirectX/OpenGL normal maps.
 
 ### 🎥 Video Tools
 *   **Convert / Proxy**: A unified GUI to convert videos (MP4, MOV, etc.) or create 1/2 resolution proxies for editing.
@@ -39,7 +39,8 @@
 *   **Generate Subtitles**: Uses **Faster-Whisper** to automatically generate `.srt` subtitles for videos.
 
 ### 🌐 System Tools
-*   **Real-time Translator**: A minimalist, always-on-top translator (Google Translate) with Auto-Clipboard detection. Features a compact UI, opacity control, and click-to-copy workflow.
+*   **Real-time Translator**: A minimalist, always-on-top translator (Google Translate) with Auto-Clipboard detection.
+*   **Global Hotkeys**: Supports system-wide shortcuts (e.g., `Ctrl+Alt+V` to open folder from clipboard, `Ctrl+Shift+Alt+F1` for Manager). Configurable via Manager.
 
 ### 🧊 3D Tools
 *   **Convert Mesh**: Converts 3D models between OBJ, FBX, GLTF, and PLY formats using Blender.
@@ -47,40 +48,45 @@
 *   **Convert CAD**: Converts STEP/IGES CAD files to OBJ mesh format using Mayo. Includes "Open with Mayo" for direct viewing.
 *   **Open with Mayo**: Directly opens supported 3D files (.step, .obj, etc.) in the Mayo viewer.
 
-### 🛠️ Installation (v0.3.2 Minimal Install)
+### 🛠️ Installation (v2.0 Hybrid Install)
 
-ContextUp now follows a **Minimal Install** policy. The initial download is lightweight, and heavy libraries (like PyTorch, FFmpeg) are installed on-demand via the Manager.
+ContextUp now uses a **Hybrid Environment Strategy** ensuring maximum stability and performance.
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/yourusername/ContextUp.git
-    cd ContextUp
-    ```
-2.  **Run Setup**:
-    ```bash
-    python setup_all.py
-    ```
-    This sets up the core Python environment and the Manager.
+1.  **Download & Extract**:
+    *   Download `ContextUp_Release.zip` and extract it to a folder (e.g., `C:\ContextUp`).
+    *   *Tip: For offline installation, ensure `tools/python-3.11.9-amd64.exe` is present.*
+
+2.  **Run Installer**:
+    *   Double-click **`ContextUp_Install.bat`**.
+    *   This will:
+        *   Install a local **Embedded Python 3.11** (Core System).
+        *   (Optional) Set up **AI Conda Environment**.
+        *   Launch the **Manager**.
+
 3.  **Register Menu**:
-    Run `ContextUpManager.bat` and click **"Register Menu"**.
-4.  **Install Features**:
-    *   Open the Context Menu and click any feature (e.g., "Remove Background").
-    *   If dependencies are missing, the **Smart Dependency Manager** will prompt you to install them automatically.
-    *   You can also manage libraries in the **Manager > Updates & Health** tab.
+    *   In the Manager, click **"Register Menu"**.
+    *   Right-click any file to see the new context menu!
+
+4.  **Manage Updates**:
+    *   Run `ContextUpManager.bat` anytime to update settings or check health.
 
 ---
 
 ## 🏗️ Technical Architecture
 
-This project uses a **Dual-Environment Architecture** to balance performance and compatibility:
+This project strictly prioritizes **Embedded Python** to ensure stability and portability:
 
-1.  **System Environment (Python 3.14)**:
-    *   Runs the core logic, GUI (Tkinter), system utilities, and standard media processing (FFmpeg, Pillow).
-    *   Fast startup and low overhead.
-2.  **AI Environment (Conda Python 3.10)**:
+1.  **Embedded Python (Primary)**:
+    *   **ALL** features (GUI, System Tools, Media Processing) run in the local `tools/python` environment by default.
+    *   This ensures the app works immediately after download, without relying on the user's system Python.
+    *   **Automatic Installation**: If the embedded environment is missing, the setup script (`setup_all.py`) will automatically download and configure it.
+
+2.  **AI Environment (Secondary/Isolated)**:
     *   Runs heavy AI workloads (PyTorch, CUDA) like Background Removal and Upscaling.
-    *   Isolated to prevent dependency conflicts.
+    *   Isolated to prevent dependency conflicts with the primary environment.
     *   Automatically activated only when needed via `src/utils/ai_runner.py`.
+
+**Policy**: Embedded Python is the default. However, you can now configure the Manager to use your **System Python** via the **Settings** tab if you require specific system-installed libraries (e.g. for the Tray Agent).
 
 For a detailed code map and file responsibilities, please refer to [**architecture.md**](architecture.md).
 
@@ -102,7 +108,17 @@ For a detailed code map and file responsibilities, please refer to [**architectu
     - [Embedded Python & Tkinter](docs/dev/EMBEDDED_PYTHON_TKINTER_GUIDE.md)
 
 - **Support**:
-    - [Troubleshooting](docs/troubleshooting/TROUBLESHOOTING.md)
+    - [Troubleshooting & Crash Fixes](docs/troubleshooting/TROUBLESHOOTING.md)
+
+## 🧭 Adding a New Menu Item (developer quick guide)
+- Use the embedded Python (`tools/python/python.exe`) for any installs; avoid system Python.
+- **Manager writes `config/menu_config.json` for you—follow the same fields when adding programmatically.
+  > [!WARNING]
+  > Do NOT edit `menu_config.json` directly. Edit `config/menu_categories/*.json` instead, then run `src/utils/config_builder.py`.
+- Required per entry: `id` (unique, snake_case), `name` (UI label), `category` (must match CATEGORY_COLORS or “Custom”), `submenu` (`ContextUp`, `(Top Level)`, or custom), `command` (quote paths), `types` (e.g., `"*"` or `"image"`), `scope` (`file`, `folder`, or `both`), `enabled` (bool).
+- Optional: `hotkey` (global), `icon` (e.g., `assets/icons/mytool.png`, 24–32px square PNG), `show_in_tray` (bool), `order` (int; Manager rebalances), `tags` (list), `description`.
+- Flow to add safely: open Manager → Menu Editor → add item → pick category/submenu → set icon path → Apply Changes → right-click shell to verify. Use “Group by Category” / “Reset to Flat” to confirm ordering.
+- Dependencies: import from `src/` using the embedded Python; if a new package is required, install via `tools/python/python.exe -m pip install <pkg>`. Add to `requirements.txt` only if it must be present at install time; otherwise install lazily inside the tool script.
 
 ## 🛡️ Safe Save Policy
 To prevent accidental data loss, ContextUp tools now implement a **"Rename on Conflict"** policy.

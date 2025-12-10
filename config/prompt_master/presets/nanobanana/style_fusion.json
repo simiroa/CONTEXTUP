@@ -1,0 +1,25 @@
+{
+    "engine": "nanobanana",
+    "name": "Style Fusion",
+    "description": "Tags: style transfer, artistic, remix",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "image2",
+            "label": "Style Reference Image",
+            "default": "Image2"
+        },
+        {
+            "id": "illustration_style",
+            "label": "Style Description",
+            "default": "illustration"
+        }
+    ],
+    "options": [],
+    "template": "Transform this image {image1} into the artistic style of {image2}. Keep the main subject, composition, and details from {image1}, but apply the colors, textures, and overall aesthetic of {image2}. High-quality, {illustration_style} style, consistent details.",
+    "example_image": "abstract.png"
+}

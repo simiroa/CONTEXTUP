@@ -12,6 +12,7 @@ src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
 from utils.external_tools import get_ffmpeg
+from utils.files import get_safe_path
 from utils.explorer import get_selection_from_explorer
 from utils.gui_lib import BaseWindow, FileListFrame
 
@@ -113,14 +114,16 @@ class AudioConvertGUI(BaseWindow):
             try:
                 # Determine output directory
                 if self.var_new_folder.get():
-                    out_dir = path.parent / "Converted_Audio"
-                    out_dir.mkdir(exist_ok=True)
+                    base_dir = path.parent / "Converted_Audio"
+                    safe_dir = base_dir if not base_dir.exists() else get_safe_path(base_dir)
+                    safe_dir.mkdir(exist_ok=True)
+                    out_dir = safe_dir
                     out_name = f"{path.stem}.{fmt}"
                 else:
                     out_dir = path.parent
                     out_name = f"{path.stem}_conv.{fmt}"
                 
-                output_path = out_dir / out_name
+                output_path = get_safe_path(out_dir / out_name)
                 
                 cmd = [ffmpeg, "-i", str(path)]
                 

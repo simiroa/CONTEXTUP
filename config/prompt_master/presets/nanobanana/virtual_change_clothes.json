@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Virtual Change Clothes",
+    "description": "Tags: fashion, clothing, virtual try-on",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Model Image",
+            "default": "Image1"
+        },
+        {
+            "id": "image2",
+            "label": "Outfit Image",
+            "default": "Image2"
+        }
+    ],
+    "options": [],
+    "template": "Keep the character in {image1} unchanged, but replace her pant with the outfit in {image2}. Maintain the same pose, body proportions, and facial features, while applying the color, texture, and style of the pants in {image2}. High-quality, realistic, consistent detail.",
+    "example_image": "abstract.png"
+}

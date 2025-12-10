@@ -1,6 +1,6 @@
 """
 Advanced AI Upscaling tools.
-Uses Real-ESRGAN and GFPGAN via Conda environment.
+Uses Real-ESRGAN and GFPGAN via the embedded Python environment.
 """
 import customtkinter as ctk
 import tkinter as tk

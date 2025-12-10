@@ -1,0 +1,16 @@
+{
+    "custom_tags": [
+        {
+            "id": "cinematic",
+            "text": "cinematic lighting, volumetric fog, 8k resolution"
+        },
+        {
+            "id": "photorealistic",
+            "text": "photorealistic, highly detailed, 4k, raw photo"
+        },
+        {
+            "id": "anime",
+            "text": "anime style, cel shaded, vibrant colors"
+        }
+    ]
+}

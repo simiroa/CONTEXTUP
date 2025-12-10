@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Line to Image",
+    "description": "Tags: lineart, sketch to image, colorization",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Line Art",
+            "default": "Image1"
+        },
+        {
+            "id": "style",
+            "label": "Art Style",
+            "default": "photorealistic"
+        }
+    ],
+    "options": [],
+    "template": "Convert the line art in {image1} into a fully colored and detailed image. Preserve all original outlines and compositions. Apply {style} with realistic lighting, shadows, and textures. High-resolution, natural, seamless rendering.",
+    "example_image": "abstract.png"
+}

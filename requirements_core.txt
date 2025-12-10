@@ -1,0 +1,14 @@
+# Core Dependencies (Manager, Tray, Context Menu)
+# Usage: pip install -r requirements_core.txt
+
+customtkinter
+Pillow
+psutil
+pystray
+packaging
+pywin32
+requests
+# pynput is used for global hotkeys if needed, moving to core is safer
+pynput
+keyboard
+send2trash

@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Edit Text in Image",
+    "description": "Tags: text edit, typography, logo",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "new_text",
+            "label": "New Text Content",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Edit the text in {image1}. Replace the existing text with “{new_text}” while keeping the background, design, and other elements unchanged. Match the font style, size, and color to look natural and consistent with the image. Photorealistic, seamless integration.",
+    "example_image": "portrait.png"
+}

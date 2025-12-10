@@ -1,30 +1,14 @@
-# Core Dependencies
-Pillow
-requests
-pywin32
-customtkinter
-packaging
-
-# AI & Image Processing
-torch --index-url https://download.pytorch.org/whl/cu121
-torchvision --index-url https://download.pytorch.org/whl/cu121
-rembg
-# onnxruntime-gpu
-numpy
-
-# Video & Audio
-ffmpeg-python
-faster-whisper
-
-# Google Gemini API
-google-generativeai
-
-# Translation
-deep-translator
-
-# Optional / Development
-pytest
-piexif
-# basicsr
-# realesrgan
-# gfpgan
+# ContextUp Requirements Index
+#
+# DO NOT INSTALL THIS FILE DIRECTLY.
+# Select the appropriate file for your environment:
+#
+# 1. Base Application (Manager, Tray, Context Menu):
+#    pip install -r requirements_core.txt
+#
+# 2. AI Features (Conda Environment):
+#    pip install -r requirements_ai.txt
+#
+# See docs for detailed setup instructions.
+-r requirements_core.txt
+# -r requirements_ai.txt  <-- Uncomment only if installing everything in one place (Not Recommended)

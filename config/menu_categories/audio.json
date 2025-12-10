@@ -1,0 +1,72 @@
+[
+    {
+        "category": "Audio",
+        "id": "aud_convert",
+        "name": "Convert Format",
+        "icon": "assets/icons/audio.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 801
+    },
+    {
+        "category": "Audio",
+        "id": "aud_extract_bgm",
+        "name": "Extract BGM (Filter)",
+        "icon": "assets/icons/audio.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 802
+    },
+    {
+        "category": "Audio",
+        "id": "aud_extract_voice",
+        "name": "Extract Voice (Filter)",
+        "icon": "assets/icons/audio.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 803
+    },
+    {
+        "category": "Audio",
+        "id": "aud_normalize",
+        "name": "Normalize Volume",
+        "icon": "assets/icons/audio.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 804
+    },
+    {
+        "category": "Audio",
+        "id": "aud_separate_stems",
+        "name": "Separate Stems (AI)",
+        "icon": "assets/icons/audio.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 805
+    }
+]

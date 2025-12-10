@@ -4,6 +4,7 @@ from pathlib import Path
 from tkinter import messagebox
 
 from utils.external_tools import get_ffmpeg
+from utils.files import get_safe_path
 
 def convert_format(target_path: str):
     from scripts import audio_convert_gui
@@ -13,7 +14,7 @@ def optimize_volume(target_path: str):
     try:
         path = Path(target_path)
         ffmpeg = get_ffmpeg()
-        output_path = path.with_name(f"{path.stem}_optimized{path.suffix}")
+        output_path = get_safe_path(path.with_name(f"{path.stem}_optimized{path.suffix}"))
         
         # Loudnorm
         cmd = [

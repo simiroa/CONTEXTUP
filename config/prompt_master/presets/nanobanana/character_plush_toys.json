@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Character Plush Toys",
+    "description": "Tags: soft plush, cute, studio lighting",
+    "inputs": [
+        {
+            "id": "character",
+            "label": "Character",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "A soft, high-quality plush toy of {character}, with an oversized head, small body, and stubby limbs. Made of fuzzy fabric with visible stitching and embroidered facial features. The plush is shown sitting or standing against a neutral background. The expression is cute or expressive, and it wears simple clothes or iconic accessories if relevant. Lighting is soft and even, with a realistic, collectible plush look. Centered, full-body view.",
+    "example_image": "portrait.png"
+}

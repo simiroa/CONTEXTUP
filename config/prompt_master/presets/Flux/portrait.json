@@ -1,0 +1,66 @@
+{
+    "engine": "Flux",
+    "name": "Flux Portrait",
+    "description": "Specialized template for creating portrait images with Flux.",
+    "inputs": [
+        {
+            "id": "person",
+            "label": "Person Description",
+            "default": ""
+        },
+        {
+            "id": "expression",
+            "label": "Expression",
+            "default": "neutral"
+        },
+        {
+            "id": "clothing",
+            "label": "Clothing/Outfit",
+            "default": ""
+        },
+        {
+            "id": "background",
+            "label": "Background",
+            "default": "blurred background"
+        }
+    ],
+    "options": [
+        {
+            "id": "shot_type",
+            "label": "Shot Type",
+            "choices": [
+                "close-up portrait",
+                "headshot",
+                "half-body portrait",
+                "full-body portrait"
+            ],
+            "default": "close-up portrait"
+        },
+        {
+            "id": "lighting",
+            "label": "Portrait Lighting",
+            "choices": [
+                "soft natural light",
+                "Rembrandt lighting",
+                "butterfly lighting",
+                "rim lighting",
+                "golden hour light"
+            ],
+            "default": "soft natural light"
+        },
+        {
+            "id": "mood",
+            "label": "Mood",
+            "choices": [
+                "professional",
+                "casual",
+                "dramatic",
+                "ethereal",
+                "moody"
+            ],
+            "default": "professional"
+        }
+    ],
+    "template": "{shot_type} of {person}, {expression}, wearing {clothing}, {background}, {lighting}, {mood} atmosphere, sharp focus on eyes, professional portrait photography, high detail",
+    "example_image": "portrait.png"
+}

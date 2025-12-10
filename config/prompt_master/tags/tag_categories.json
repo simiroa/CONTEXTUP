@@ -1,0 +1,96 @@
+{
+    "categories": [
+        {
+            "id": "style",
+            "name": "Style",
+            "icon": "🎨",
+            "tags": [
+                {
+                    "id": "cinematic",
+                    "text": "cinematic lighting, volumetric lighting, dramatic atmosphere"
+                },
+                {
+                    "id": "anime",
+                    "text": "anime style, 2d, cel shaded, vibrant colors"
+                },
+                {
+                    "id": "photorealistic",
+                    "text": "photorealistic, 8k, highly detailed, raw photo"
+                },
+                {
+                    "id": "digital_art",
+                    "text": "digital art, concept art, trending on artstation"
+                },
+                {
+                    "id": "oil_painting",
+                    "text": "oil painting, textured brushstrokes, impasto"
+                }
+            ]
+        },
+        {
+            "id": "quality",
+            "name": "Quality",
+            "icon": "⭐",
+            "tags": [
+                {
+                    "id": "masterpiece",
+                    "text": "masterpiece, best quality"
+                },
+                {
+                    "id": "high_res",
+                    "text": "high resolution, 8k, 4k, uhd"
+                },
+                {
+                    "id": "detailed",
+                    "text": "highly detailed, intricate details"
+                },
+                {
+                    "id": "sharp",
+                    "text": "sharp focus, clear image"
+                }
+            ]
+        },
+        {
+            "id": "lighting",
+            "name": "Lighting",
+            "icon": "💡",
+            "tags": [
+                {
+                    "id": "natural",
+                    "text": "natural lighting, sunlight"
+                },
+                {
+                    "id": "studio",
+                    "text": "studio lighting, softbox"
+                },
+                {
+                    "id": "neon",
+                    "text": "neon lights, cyberpunk lighting"
+                },
+                {
+                    "id": "golden_hour",
+                    "text": "golden hour, warm lighting"
+                }
+            ]
+        },
+        {
+            "id": "camera",
+            "name": "Camera",
+            "icon": "📷",
+            "tags": [
+                {
+                    "id": "wide_angle",
+                    "text": "wide angle lens, panoramic"
+                },
+                {
+                    "id": "macro",
+                    "text": "macro lens, close up, depth of field"
+                },
+                {
+                    "id": "bokeh",
+                    "text": "bokeh, blurred background"
+                }
+            ]
+        }
+    ]
+}

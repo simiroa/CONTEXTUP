@@ -1,44 +1,22 @@
-# Python
 __pycache__/
 *.pyc
+*.log
+.gemini/
+tools/
+.cache/
+logs/
+*.zip
+*.rar
+*.7z
+.env
+config/secrets.json
 .venv/
-venv/
-env/
-
-# Project specific
-Output/
-backups/
-# Project specific
-Output/
-backups/
-*.log
-example/
-
-
-# Large Tools (Binaries & Environments)
-tools/python/
-tools/blender/
-tools/ffmpeg/
-tools/realesrgan/
-tools/exiftool/
-tools/ImageMagick/
-tools/Mayo/
-libs/
-
-# AI Models & Weights (Heavy files)
-*.pth
-*.onnx
-*.safetensors
-*.bin
-*.pt
-*.ckpt
-
-# Temporary & User Data
-Output/
-backups/
-*.log
-.venv_translator/
+.venv/
 bin/
-
-
-
+ContextUp_Backup.zip
+*.mp4
+history_*.png
+history_*.png
+**/.cache/
+example/
+*.pth

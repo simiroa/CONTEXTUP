@@ -50,7 +50,9 @@ class ToolTip:
 
 class TranslatorApp(BaseWindow):
     def __init__(self):
-        super().__init__(title="Translator", width=340, height=280)
+        super().__init__(title="Translator", width=340, height=400) # Taller default
+        self.minsize(300, 250)
+        self.resizable(True, True) # Enable resizing
         
         # State
         self.last_text = ""
@@ -119,18 +121,18 @@ class TranslatorApp(BaseWindow):
         self.slider.set(1.0)
 
         # --- Content ---
-        # Input (Distinct Style)
-        self.input_text = ctk.CTkTextbox(self.main_frame, height=60, font=("", 12), 
+        # Input (Expandable)
+        self.input_text = ctk.CTkTextbox(self.main_frame, height=80, font=("", 12), 
                                        fg_color="#252525", border_width=1, border_color="#404040",
                                        text_color="white")
-        self.input_text.pack(fill="x", padx=8, pady=(5, 2))
+        self.input_text.pack(fill="both", expand=True, padx=8, pady=(5, 2))
         self.input_text.bind("<KeyRelease>", self.on_key_release)
         
         # Status (Middle)
         self.status_label = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray", font=("", 10), height=14)
         self.status_label.pack(fill="x", padx=10, pady=0)
 
-        # Output (Main)
+        # Output (Expandable)
         self.output_text = ctk.CTkTextbox(self.main_frame, height=100, fg_color="transparent", 
                                         font=("", 15, "bold"), text_color="#ECF0F1")
         self.output_text.pack(fill="both", expand=True, padx=8, pady=(0, 5))

@@ -22,7 +22,7 @@ class HealthCheck:
         self.check_gpu()
         self.check_ffmpeg()
         self.check_dependencies() # System deps
-        self.check_ai_env()       # Conda deps
+        self.check_ai_env()       # Embedded AI deps
         self.check_api()
         return self.results
 
@@ -79,87 +79,34 @@ class HealthCheck:
             self._add_result("FFmpeg", "ERROR", f"FFmpeg check failed: {e}")
 
     def check_dependencies(self):
-        # System dependencies (Minimal set for Manager)
+        # Embedded/system dependencies
         required = [
             ("cv2", "opencv-python"),
             ("PIL", "pillow"),
+            ("google.genai", "google-generativeai"),
+            ("ollama", "ollama"),
+            ("piexif", "piexif"),
+            ("faster_whisper", "faster-whisper"),
         ]
-        
+
         for module_name, pkg_name in required:
             try:
                 importlib.import_module(module_name)
-                self._add_result("System Deps", "OK", f"{pkg_name} installed.")
+                self._add_result("Dependencies", "OK", f"{pkg_name} installed.")
             except ImportError:
-                self._add_result("System Deps", "ERROR", f"Missing: {pkg_name}")
+                self._add_result("Dependencies", "WARNING", f"Missing: {pkg_name}")
             except Exception as e:
-                self._add_result("System Deps", "WARNING", f"Error loading {pkg_name}: {e}")
-
-        # AI/Script dependencies (Check in Conda if possible)
-        ai_required = [
-            ("google.genai", "google-genai"),
-            ("ollama", "ollama"),
-            ("piexif", "piexif"),
-            ("faster_whisper", "faster-whisper")
-        ]
-        
-        # Try to find Conda python first
-        conda_python = None
-        try:
-            from utils.ai_runner import get_conda_env_info
-            env_info = get_conda_env_info()
-            if env_info.get('PYTHON_EXE') and Path(env_info['PYTHON_EXE']).exists():
-                conda_python = env_info['PYTHON_EXE']
-        except: pass
-
-        if conda_python:
-            # Check via subprocess in Conda
-            check_script = "import importlib; import sys; "
-            check_script += "pkgs = " + str([r[0] for r in ai_required]) + "; "
-            check_script += "missing = [p for p in pkgs if importlib.util.find_spec(p) is None]; "
-            check_script += "print('MISSING:' + ','.join(missing))"
-            
-            try:
-                res = subprocess.run([conda_python, "-c", check_script], capture_output=True, text=True)
-                if "MISSING:" in res.stdout:
-                    missing_list = res.stdout.strip().split("MISSING:")[1]
-                    if not missing_list:
-                        self._add_result("Script Deps", "OK", "All AI/Script dependencies found in Conda.")
-                    else:
-                        self._add_result("Script Deps", "ERROR", f"Missing in Conda: {missing_list}")
-            except Exception as e:
-                self._add_result("Script Deps", "WARNING", f"Failed to check Conda deps: {e}")
-        else:
-            # Fallback to system check
-            for module_name, pkg_name in ai_required:
-                if importlib.util.find_spec(module_name) is None:
-                     self._add_result("Script Deps", "WARNING", f"Missing (System): {pkg_name} (Conda not found)")
+                self._add_result("Dependencies", "WARNING", f"Error loading {pkg_name}: {e}")
 
     def check_ai_env(self):
         try:
-            from utils.ai_runner import get_conda_env_info
-            env_info = get_conda_env_info()
-            python_exe = env_info.get('PYTHON_EXE')
-            
-            if not python_exe or not Path(python_exe).exists():
-                self._add_result("AI Env", "ERROR", "Conda environment not found.")
-                return
-
-            self._add_result("AI Env", "OK", f"Found Conda Env: {env_info.get('CONDA_ENV_PATH')}")
-
-            # Check packages in Conda env
-            check_script = "import torch; import rembg; import basicsr; import gfpgan; print('AI_DEPS_OK')"
-            
-            result = subprocess.run(
-                [python_exe, "-c", check_script],
-                capture_output=True,
-                text=True
-            )
-            
-            if "AI_DEPS_OK" in result.stdout:
-                self._add_result("AI Env", "OK", "AI Dependencies (PyTorch, rembg, etc.) verified.")
-            else:
-                self._add_result("AI Env", "ERROR", f"AI Dependencies missing.\nOutput: {result.stderr}")
-
+            import torch
+            import rembg  # type: ignore
+            import basicsr  # type: ignore
+            _ = (torch, rembg, basicsr)
+            self._add_result("AI Env", "OK", "AI dependencies (torch/rembg/basicsr) present in embedded env.")
+        except ImportError as e:
+            self._add_result("AI Env", "WARNING", f"AI dependencies missing: {e}")
         except Exception as e:
             self._add_result("AI Env", "WARNING", f"AI Environment check failed: {e}")
 

@@ -1,0 +1,57 @@
+[
+    {
+        "category": "Clipboard",
+        "id": "clipboard_copy_info",
+        "name": "Copy My Info",
+        "icon": "assets/icons/icon_sys_analyze_clipboard.ico",
+        "types": "*",
+        "scope": "background",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "system",
+        "order": 901
+    },
+    {
+        "category": "Clipboard",
+        "id": "tool_analyze_error",
+        "name": "Analyze Clipboard Error",
+        "icon": "assets/icons/icon_sys_analyze_clipboard.ico",
+        "types": "*",
+        "scope": "background",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 902
+    },
+    {
+        "id": "clipboard_open_from_path",
+        "name": "Open Path from Clipboard",
+        "category": "Clipboard",
+        "icon": "",
+        "types": "*",
+        "scope": "background",
+        "submenu": "ContextUp",
+        "hotkey": "<ctrl>+<alt>+v",
+        "status": "COMPLETE",
+        "enabled": true,
+        "environment": "system",
+        "order": 903
+    },
+    {
+        "category": "Clipboard",
+        "id": "clipboard_save_image",
+        "name": "Save Clipboard Image Here",
+        "icon": "assets/icons/icon_sys_save_clipboard.ico",
+        "types": "*",
+        "scope": "background",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "system",
+        "order": 904
+    }
+]

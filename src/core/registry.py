@@ -12,35 +12,61 @@ class RegistryManager:
         self.config = config
         self.root_key = "Software\\Classes"
         self.app_key = "ContextUp"
-        # Use the currently running python executable (System Python)
-        # Ensure we use pythonw.exe if available for no-console
-        current_exe = Path(sys.executable)
-        # Check if we are already running pythonw
-        if current_exe.name.lower() == "pythonw.exe":
-            self.python_exe = current_exe
+        # Prefer embedded python, then configured PYTHON_PATH, then current interpreter
+        embedded = Path(__file__).parent.parent.parent / "tools" / "python" / "pythonw.exe"
+        if embedded.exists():
+            self.embedded_python = embedded
         else:
-            # Try to find pythonw.exe in the same dir
-            pythonw = current_exe.parent / "pythonw.exe"
-            if pythonw.exists():
-                self.python_exe = pythonw
+            self.embedded_python = Path(sys.executable)
+
+        # Determine System Python
+        try:
+            from core.settings import load_settings
+            settings = load_settings()
+            custom = settings.get("PYTHON_PATH")
+            
+            candidate = None
+            if custom and Path(custom).exists():
+                candidate = Path(custom)
             else:
-                self.python_exe = current_exe
+                candidate = Path(sys.executable)
+            
+            # auto-switch to pythonw.exe if possible to hide console
+            if candidate and candidate.name.lower() == 'python.exe':
+                possible_w = candidate.parent / "pythonw.exe"
+                if possible_w.exists():
+                    candidate = possible_w
+            
+            self.system_python = candidate
+
+        except Exception:
+            self.system_python = "pythonw" # Try pythonw in PATH first, default loop will handle if fails? No, better safe.
+            # actually if we fail to determine, just use "python" or sys.executable
+            # But let's try to be smart.
+            self.system_python = Path(sys.executable)
             
         self.menu_script = Path(__file__).parent / "menu.py"
 
-    def _get_command(self, item_id: str, placeholder: str = "%1") -> str:
+    def _get_command(self, item_id: str, placeholder: str = "%1", env: str = "embedded") -> str:
         """
-        Constructs the command string: "pythonw.exe" "menu.py" "item_id" "placeholder"
+        Constructs the command string.
         """
-        # IMPORTANT: All paths must be quoted.
-        cmd = f'"{self.python_exe}" "{self.menu_script}" "{item_id}" "{placeholder}"'
+        python_bin = self.embedded_python if env != "system" else self.system_python
+        
+        # If python_bin is a Path object, resolve strictly. If string, leave as is (command).
+        if isinstance(python_bin, Path):
+            cmd = f'"{python_bin}" "{self.menu_script}" "{item_id}" "{placeholder}"'
+        else:
+            # It's a command like "python"
+            cmd = f'{python_bin} "{self.menu_script}" "{item_id}" "{placeholder}"'
+            
         return cmd
 
     def register_all(self):
         """
         Registers items based on their types, scope, and submenu configuration.
         """
-        logger.info(f"Starting registration using {self.python_exe}...")
+        logger.info(f"Starting registration using {self.embedded_python} (System: {self.system_python})...")
 
         try:
             # Group items by their registration target AND submenu
@@ -66,17 +92,29 @@ class RegistryManager:
                     targets.append("Directory")
                     targets.append("Directory\\Background")
                 
+                if scope == 'directory':
+                    targets.append("Directory")
+
                 if scope == 'file' or scope == 'both':
                     targets.append("*")
+
+                if scope == 'items':
+                    targets.append("*")
+                    targets.append("Directory")
+
+                if scope == 'background':
+                    targets.append("Directory\\Background")
                     
-                    # If types is specific, create AppliesTo string
-                    if types and types != "*":
-                        exts = [t.strip() for t in types.split(';') if t.strip()]
-                        conditions = []
-                        for ext in exts:
-                            if not ext.startswith('.'): ext = '.' + ext
-                            conditions.append(f"System.FileExtension:={ext}")
-                        
+                # If types is specific, create AppliesTo string
+                # This should apply REGARDLESS of the scope, if it's targeted at files.
+                if types and types != "*":
+                    exts = [t.strip() for t in types.split(';') if t.strip()]
+                    conditions = []
+                    for ext in exts:
+                        if not ext.startswith('.'): ext = '.' + ext
+                        conditions.append(f"System.FileExtension:={ext}")
+                    
+                    if conditions:
                         applies_to = " OR ".join(conditions)
                         item_applies_to[item['id']] = applies_to
 
@@ -91,6 +129,15 @@ class RegistryManager:
                 placeholder = "%V" if target == "Directory\\Background" else "%1"
                 
                 for submenu_name, items in submenus.items():
+                    # Stable sort by optional "order" field, then name/id for predictability
+                    items = sorted(
+                        items,
+                        key=lambda it: (
+                            it.get("order", 9999),
+                            it.get("name", ""),
+                            it.get("id", "")
+                        )
+                    )
                     self._register_submenu_group(target, submenu_name, items, placeholder, item_applies_to)
             
             logger.info("Registration complete.")
@@ -178,7 +225,10 @@ class RegistryManager:
                 if icon_path.exists():
                     item_icon = str(icon_path)
             
-            item_key_path = f"{parent_key_path}\\{item_id}"
+            # Enforce ordering by prefixing the registry key name with the order number
+            # Windows sorts keys alphabetically.
+            order_prefix = f"{item.get('order', 9999):04d}"
+            item_key_path = f"{parent_key_path}\\{order_prefix}_{item_id}"
             
             try:
                 with winreg.CreateKey(winreg.HKEY_CURRENT_USER, item_key_path) as key:
@@ -195,7 +245,8 @@ class RegistryManager:
                 # Command
                 command_key_path = f"{item_key_path}\\command"
                 with winreg.CreateKey(winreg.HKEY_CURRENT_USER, command_key_path) as key:
-                    cmd = self._get_command(item_id, placeholder)
+                    env = item.get("environment", "embedded")
+                    cmd = self._get_command(item_id, placeholder, env)
                     winreg.SetValue(key, "", winreg.REG_SZ, cmd)
             except Exception as e:
                 logger.warning(f"Failed to register item {item_id}: {e}")

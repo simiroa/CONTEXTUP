@@ -1,0 +1,41 @@
+[
+    {
+        "category": "Document",
+        "id": "doc_analyze_ollama",
+        "name": "Analyze Document (Ollama)",
+        "icon": "assets/icons/icon_sys_pdf_split.ico",
+        "types": ".pdf",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 201
+    },
+    {
+        "category": "Document",
+        "id": "doc_pdf_merge",
+        "name": "Merge PDFs",
+        "icon": "assets/icons/icon_sys_pdf_merge.ico",
+        "types": ".pdf",
+        "scope": "items",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 202
+    },
+    {
+        "category": "Document",
+        "id": "doc_pdf_split",
+        "name": "Split PDF",
+        "icon": "assets/icons/icon_sys_pdf_split.ico",
+        "types": ".pdf",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 203
+    }
+]

@@ -440,7 +440,12 @@ class GeminiImageToolsGUI(BaseWindow):
         self.bottom_bar.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
         
         # Prompt Area
-        ctk.CTkLabel(self.bottom_bar, text="AI Prompt:").pack(anchor="w", padx=10, pady=(5,0))
+        prompt_frame = ctk.CTkFrame(self.bottom_bar, fg_color="transparent")
+        prompt_frame.pack(fill="x", padx=10, pady=(5,0))
+        
+        ctk.CTkLabel(prompt_frame, text="AI Prompt:").pack(side="left", anchor="w")
+        ctk.CTkButton(prompt_frame, text="[JSON]", width=50, height=20, fg_color="transparent", border_width=1, text_color="gray", command=self.show_prompt_json).pack(side="left", padx=10)
+        
         self.prompt_entry = ctk.CTkTextbox(self.bottom_bar, height=50)
         self.prompt_entry.pack(fill="x", padx=10, pady=5)
         
@@ -455,8 +460,9 @@ class GeminiImageToolsGUI(BaseWindow):
         self.status_label = ctk.CTkLabel(btn_frame, text="Ready", text_color="gray", font=("Arial", 12))
         self.status_label.pack(side="left", padx=15)
         
-        # Right Side: Save
-        ctk.CTkButton(btn_frame, text="Save Result", command=self.save_result, fg_color="green", width=120).pack(side="right", padx=5)
+        # Right Side: Save & Copy
+        ctk.CTkButton(btn_frame, text="Save As...", command=self.save_result, fg_color="green", width=100).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Copy", command=self.copy_to_clipboard, fg_color="#E67E22", width=80).pack(side="right", padx=5)
 
     def setup_style_tab(self):
         ctk.CTkLabel(self.tab_style, text="AI Style Transfer", font=ctk.CTkFont(weight="bold")).pack(pady=10)
@@ -770,6 +776,12 @@ class GeminiImageToolsGUI(BaseWindow):
                 
                 self.status_label.configure(text=f"Sending to {model_name}...", text_color="yellow")
 
+                # Prepare Image
+                is_success, buffer = cv2.imencode(".png", self.cv_img)
+                if not is_success:
+                    raise ValueError("Failed to encode image")
+                img_bytes = buffer.tobytes()
+
                 # Call Gemini API
                 response = client.models.generate_content(
                     model=model_name,
@@ -817,13 +829,23 @@ class GeminiImageToolsGUI(BaseWindow):
             self.update_history_buttons()
             self.update_info_header()
             
-            self.status_label.configure(text="Image Generated", text_color="green")
+            # --- Auto-Save Logic ---
+            try:
+                timestamp = int(time.time())
+                save_name = f"{self.current_image_path.stem}_gen_{timestamp}.png"
+                save_path = self.current_image_path.parent / save_name
+                cv2.imwrite(str(save_path), self.cv_img)
+                self.status_label.configure(text=f"Saved: {save_name}", text_color="green")
+                print(f"Auto-saved to: {save_path}")
+            except Exception as e:
+                print(f"Auto-save failed: {e}")
+                self.status_label.configure(text="Generated (Auto-save failed)", text_color="orange")
         
         if text_output:
             if self.tab_view.get() == "Analysis":
                 self.txt_analysis.delete("1.0", "end")
                 self.txt_analysis.insert("1.0", text_output)
-                self.status_label.configure(text="Analysis Complete", text_color="green")
+                if not image_found: self.status_label.configure(text="Analysis Complete", text_color="green")
             elif not image_found:
                 # If we expected an image but got text (e.g. refusal or description)
                 messagebox.showinfo("AI Response", f"Model returned text:\n\n{text_output}")
@@ -862,7 +884,54 @@ class GeminiImageToolsGUI(BaseWindow):
             cv2.imwrite(str(save_path), self.processed_img)
             messagebox.showinfo("Saved", f"Saved to {save_path.name}")
 
+    def copy_to_clipboard(self):
+        """Copy current image to clipboard using PowerShell."""
+        if self.cv_img is None: return
+        
+        try:
+            # Save to temp file
+            import tempfile
+            import subprocess
+            
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                tmp_path = Path(tmp.name)
+                
+            cv2.imwrite(str(tmp_path), self.cv_img)
+            
+            # PowerShell command to set clipboard
+            cmd = f"Set-Clipboard -Path '{str(tmp_path)}'"
+            subprocess.run(["powershell", "-Command", cmd], check=True)
+            
+            # Clean up (optional, but good practice. Windows might lock it briefly)
+            # self.after(1000, lambda: tmp_path.unlink(missing_ok=True)) 
+            
+            self.status_label.configure(text="Copied to Clipboard", text_color="green")
+            
+        except Exception as e:
+            print(f"Clipboard Error: {e}")
+            self.status_label.configure(text="Clipboard Error", text_color="red")
 
+    def show_prompt_json(self):
+        """Show the current prompt in a JSON format."""
+        import json
+        prompt = self.prompt_entry.get("1.0", "end").strip()
+        
+        data = {
+            "system_instruction": "You are a texture generation expert...", # Simplified for view
+            "user_prompt": prompt,
+            "model": "gemini-2.5-flash-image" if self.tab_view.get() != "Analysis" else "gemini-2.5-flash"
+        }
+        
+        json_str = json.dumps(data, indent=2)
+        
+        # Popup
+        top = ctk.CTkToplevel(self)
+        top.title("Prompt Inspection")
+        top.geometry("500x400")
+        
+        txt = ctk.CTkTextbox(top, font=("Consolas", 12))
+        txt.pack(fill="both", expand=True, padx=10, pady=10)
+        txt.insert("1.0", json_str)
 
     def close_image(self):
         self.cv_img = None

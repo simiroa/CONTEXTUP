@@ -1,0 +1,67 @@
+{
+    "engine": "Veo3",
+    "name": "Veo3 Nature Documentary",
+    "description": "Template for creating nature documentary-style videos with Veo3.",
+    "inputs": [
+        {
+            "id": "subject",
+            "label": "Wildlife/Nature Subject",
+            "default": ""
+        },
+        {
+            "id": "behavior",
+            "label": "Behavior/Activity",
+            "default": ""
+        },
+        {
+            "id": "habitat",
+            "label": "Natural Habitat",
+            "default": ""
+        },
+        {
+            "id": "weather",
+            "label": "Weather Conditions",
+            "default": "clear weather"
+        }
+    ],
+    "options": [
+        {
+            "id": "camera_style",
+            "label": "Documentary Style",
+            "choices": [
+                "wildlife close-up",
+                "wide establishing shot",
+                "aerial view",
+                "underwater shot",
+                "macro photography"
+            ],
+            "default": "wide establishing shot"
+        },
+        {
+            "id": "time_of_day",
+            "label": "Time of Day",
+            "choices": [
+                "early morning mist",
+                "midday sun",
+                "golden hour",
+                "sunset",
+                "twilight",
+                "night"
+            ],
+            "default": "golden hour"
+        },
+        {
+            "id": "quality",
+            "label": "Production Quality",
+            "choices": [
+                "BBC Planet Earth style",
+                "National Geographic style",
+                "cinematic documentary",
+                "nature vlog style"
+            ],
+            "default": "BBC Planet Earth style"
+        }
+    ],
+    "template": "{camera_style} of {subject}, {behavior}, in {habitat}, {weather}, {time_of_day}, {quality}, ultra-realistic, 4k nature cinematography",
+    "example_image": "abstract.png"
+}

@@ -5,6 +5,7 @@ from tkinter import messagebox
 
 
 from utils.external_tools import get_ffmpeg
+from utils.files import get_safe_path
 
 def extract_audio(target_path: str):
     from scripts import video_audio_gui
@@ -32,7 +33,7 @@ def frame_interp_30fps(target_path: str):
         path = Path(target_path)
         ffmpeg = get_ffmpeg()
         
-        output_path = path.with_name(f"{path.stem}_30fps.mp4")
+        output_path = get_safe_path(path.with_name(f"{path.stem}_30fps.mp4"))
         
         # Simple blend interpolation to 30fps
         cmd = [

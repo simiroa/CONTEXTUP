@@ -3,27 +3,32 @@ import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-TOOLS_CONFIG_DIR = PROJECT_ROOT / "config" / "tools"
+MENU_CATEGORIES_DIR = PROJECT_ROOT / "config" / "menu_categories"
 OUTPUT_CONFIG_PATH = PROJECT_ROOT / "config" / "menu_config.json"
 
 def build_config():
-    if not TOOLS_CONFIG_DIR.exists():
-        print(f"Tools config directory not found: {TOOLS_CONFIG_DIR}")
+    if not MENU_CATEGORIES_DIR.exists():
+        print(f"Menu categories directory not found: {MENU_CATEGORIES_DIR}")
         return
 
     combined_config = []
     
     # List all json files
-    files = [f for f in os.listdir(TOOLS_CONFIG_DIR) if f.endswith('.json')]
+    files = [f for f in os.listdir(MENU_CATEGORIES_DIR) if f.endswith('.json')]
     
-    print(f"Found {len(files)} tool configurations.")
+    print(f"Found {len(files)} category files.")
     
     for filename in files:
-        file_path = TOOLS_CONFIG_DIR / filename
+        file_path = MENU_CATEGORIES_DIR / filename
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                tool_config = json.load(f)
-                combined_config.append(tool_config)
+                data = json.load(f)
+                if isinstance(data, list):
+                    combined_config.extend(data)
+                elif isinstance(data, dict):
+                    combined_config.append(data)
+                else:
+                    print(f"Warning: {filename} contains invalid data type (not list or dict).")
         except Exception as e:
             print(f"Error loading {filename}: {e}")
 
@@ -32,7 +37,7 @@ def build_config():
 
     # Write to menu_config.json
     with open(OUTPUT_CONFIG_PATH, 'w', encoding='utf-8') as f:
-        json.dump(combined_config, f, indent=4)
+        json.dump(combined_config, f, indent=4, ensure_ascii=False)
         
     print(f"Successfully rebuilt menu_config.json with {len(combined_config)} entries.")
 

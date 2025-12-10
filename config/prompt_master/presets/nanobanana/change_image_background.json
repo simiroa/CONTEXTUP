@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Change Image Background",
+    "description": "Tags: background, environment, edit",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "background_desc",
+            "label": "New Background Description",
+            "default": "a beach"
+        }
+    ],
+    "options": [],
+    "template": "Replace the background of {image1} with {background_desc}. Keep the main subject (person/object) unchanged, maintaining original proportions, lighting, and details. Ensure the subject blends naturally with the new environment. Photorealistic, high-resolution, seamless integration.",
+    "example_image": "landscape.png"
+}

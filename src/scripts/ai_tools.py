@@ -1,6 +1,6 @@
 """
 AI-powered background removal using latest models (Nov-Dec 2024).
-Runs in isolated Conda environment.
+Runs in the embedded Python environment.
 """
 import customtkinter as ctk
 from tkinter import messagebox

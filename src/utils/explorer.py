@@ -74,44 +74,69 @@ def get_selection_from_explorer(anchor_path: str):
     if not win32com:
         return [Path(anchor_path)]
 
+    # Initialize COM safely
+    try:
+        import pythoncom
+        pythoncom.CoInitialize()
+    except: pass
+
     anchor = Path(anchor_path).resolve()
     # If anchor is a file, parent is the folder.
     # If anchor is a folder, it might be the folder open in Explorer OR a selected folder.
-    
-    # We want to find an Explorer window where:
-    # 1. The LocationURL matches anchor's parent (if anchor is file)
-    # 2. The LocationURL matches anchor (if anchor is folder and open)
-    
-    # Convert path to URL format for comparison (file:///C:/...)
-    # Actually, LocationURL is usually URL encoded.
     
     selected_paths = []
     
     try:
         shell = win32com.client.Dispatch("Shell.Application")
-        for window in shell.Windows():
+        # Retry logic or robust loop
+        windows = shell.Windows()
+        for i in range(windows.Count):
             try:
+                window = windows.Item(i)
+                if not window: continue
+                
                 # window.LocationURL might be empty or fail
                 doc = window.Document
                 if not doc: continue
                 
-                folder_path = doc.Folder.Self.Path
+                folder = doc.Folder
+                if not folder: continue
+                
+                folder_path = folder.Self.Path
                 if not folder_path: continue
                 
-                folder_path = Path(folder_path).resolve()
+                folder_path_obj = Path(folder_path).resolve()
+                folder_path_str = str(folder_path).lower().replace('/', '\\')
                 
                 # Check if this window is relevant
-                # Case 1: Anchor is a file in this folder
-                # Case 2: Anchor is a folder in this folder (selected)
-                # Case 3: Anchor IS this folder (background click)
+                # Match by path string to be robust
+                anchor_parent_str = str(anchor.parent).lower().replace('/', '\\')
+                anchor_str = str(anchor).lower().replace('/', '\\')
                 
-                is_parent = False
-                if anchor.parent == folder_path:
-                    is_parent = True
-                elif anchor == folder_path:
-                    is_parent = True
+                is_match = False
+                
+                # Direct path match
+                if anchor_parent_str == folder_path_str:
+                    is_match = True
+                elif anchor_str == folder_path_str:
+                    is_match = True
                     
-                if is_parent:
+                # URL Match Fallback
+                if not is_match:
+                    try:
+                        loc_url = window.LocationURL
+                        if loc_url and loc_url.lower().startswith("file:///"):
+                            from urllib.request import url2pathname
+                            decoded_path = url2pathname(loc_url[8:])
+                            decoded_path = decoded_path.replace('/', '\\').lower()
+                            
+                            # Check against anchor parent or anchor
+                            # Decode might return c:\foo even if input was C:\Foo
+                            if decoded_path == anchor_parent_str or decoded_path == anchor_str:
+                                is_match = True
+                    except: pass
+                    
+                if is_match:
                     # Found the window! Get selection.
                     items = doc.SelectedItems()
                     if items.Count > 0:
@@ -121,8 +146,6 @@ def get_selection_from_explorer(anchor_path: str):
                         return selected_paths
                     else:
                         # No selection? Maybe background click.
-                        # If background click, return just the folder?
-                        # Or if anchor was passed, return anchor.
                         pass
             except Exception:
                 continue
@@ -133,30 +156,114 @@ def get_selection_from_explorer(anchor_path: str):
     # Fallback: just return the anchor
     return [anchor]
 
+
+
 def select_and_rename(path):
     """
-    Selects the file in Explorer and triggers Rename (F2).
+    Selects the file in the *existing* Explorer window and triggers Rename (F2).
+    Avoids opening a new window if possible.
     """
     try:
         path = Path(path).resolve()
         if not path.exists(): return
 
-        # 1. Open Explorer and select the file
-        # 'explorer /select,"path"' usually activates the window if already open, or opens new.
-        import subprocess
-        subprocess.Popen(f'explorer /select,"{str(path)}"')
+        # Fallback for systems without pywin32
+        if not win32com:
+            import subprocess
+            subprocess.Popen(f'explorer /select,"{str(path)}"')
+            return
+
+        # Initialize COM (Critical for scripts running in separate processes)
+        try:
+            import pythoncom
+            pythoncom.CoInitialize()
+        except: pass
+
+        shell = win32com.client.Dispatch("Shell.Application")
+        parent_path = str(path.parent).lower().replace('/', '\\')
         
-        # 2. Wait for window to focus
-        time.sleep(0.5)
+        target_window = None
         
-        # 3. Send F2
-        if win32com:
+        # 1. Find the window displaying the folder
+        # We wrap iteration in try-except because shell.Windows() can be flaky
+        try:
+            windows = shell.Windows()
+            for i in range(windows.Count):
+                try:
+                    window = windows.Item(i)
+                    if not window: continue
+                    
+                    # Check URL/Path
+                    doc = window.Document
+                    if not doc: continue
+                    folder = doc.Folder
+                    if not folder: continue
+                    
+                    win_path = folder.Self.Path
+                    if not win_path: continue
+                    
+                    win_path_str = str(win_path).lower().replace('/', '\\')
+                    
+                    # Try matching by Path OR LocationURL (file:///...)
+                    matched = False
+                    if win_path_str == parent_path:
+                        matched = True
+                    else:
+                        try:
+                            # Convert win_path to file URI for comparison if parent_path is distinct?
+                            # Or check LocationURL from window
+                            loc_url = window.LocationURL
+                            if loc_url:
+                                from urllib.request import url2pathname
+                                # Remove file:/// prefix
+                                if loc_url.lower().startswith("file:///"):
+                                    decoded_path = url2pathname(loc_url[8:]) # 8 for file:///
+                                    decoded_path = decoded_path.replace('/', '\\').lower()
+                                    if decoded_path == parent_path:
+                                        matched = True
+                        except: pass
+                        
+                    if matched:
+                        target_window = window
+                        break
+                except Exception:
+                    continue
+        except Exception:
+            pass
+            
+        # 2. If found, select and F2
+        if target_window:
             try:
-                wscript = win32com.client.Dispatch("WScript.Shell")
-                wscript.SendKeys("{F2}")
+                # Select the item
+                folder_item = target_window.Document.Folder.ParseName(path.name)
+                if folder_item:
+                    # Select(item, flags): 1=Select, 4=Deselect others, 8=Ensure visible, 16=Focus
+                    target_window.Document.SelectItem(folder_item, 1 | 4 | 8 | 16)
+                    
+                    # Trigger Rename via SendKeys
+                    time.sleep(0.1)
+                    wscript = win32com.client.Dispatch("WScript.Shell")
+                    
+                    try:
+                        wscript.AppActivate(target_window.LocationName)
+                    except: pass
+                    
+                    wscript.SendKeys("{F2}")
+                    
             except Exception as e:
-                print(f"SendKeys failed: {e}")
-                
+                print(f"Selection/Rename COM failed: {e}")
+        else:
+            # Window not found? Maybe closed? Open it cleanly.
+            import subprocess
+            subprocess.Popen(f'explorer /select,"{str(path)}"')
+            
+            # Try to catch the new window and triggered rename?
+            # It takes time to open. We can try sleeping and sending F2 blindly to active window?
+            # Risky, but better than nothing if user really wants valid rename.
+            # But let's stick to just opening for now if finding failed.
+            pass
     except Exception as e:
         print(f"select_and_rename failed: {e}")
+
+
 

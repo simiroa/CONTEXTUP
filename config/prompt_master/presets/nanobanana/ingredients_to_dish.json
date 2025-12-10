@@ -1,0 +1,25 @@
+{
+    "engine": "nanobanana",
+    "name": "Ingredients to Dish",
+    "description": "Tags: food, cooking, composition",
+    "inputs": [
+        {
+            "id": "item_list",
+            "label": "Ingredients List",
+            "default": ""
+        },
+        {
+            "id": "dish_type",
+            "label": "Type of Object/Dish",
+            "default": ""
+        },
+        {
+            "id": "visual_style",
+            "label": "Visual Style",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Here are the items available: {item_list}. Based on these items, create an image of a {dish_type} that can be made or represented by combining them. The composition should make logical sense, considering the relationship between the items. Ensure the image is {visual_style}. It should be with appropriate proportions and clear placement of each item.",
+    "example_image": "scifi.png"
+}

@@ -1,111 +1,164 @@
 """
-Texture Tools GUI.
+Texture Tools: Power of 2 Resizing and Utilities.
 """
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox
-from pathlib import Path
-import threading
-import os
 import sys
+import os
+import math
+from pathlib import Path
+import customtkinter as ctk
+from PIL import Image
+from tkinter import messagebox
+import threading
 
 # Add src to path
 current_dir = Path(__file__).parent
 src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
-from utils.ai_runner import run_ai_script
 from utils.gui_lib import BaseWindow
+from utils.explorer import get_selection_from_explorer
 
-class TextureGUI(BaseWindow):
-    def __init__(self, target_path):
-        super().__init__(title="ContextUp Texture Tools", width=700, height=600)
-        self.image_path = Path(target_path)
+def get_nearest_pot(n, upscale=True):
+    """Returns the nearest power of 2. If upscale is True, rounds up, else rounds down."""
+    if n <= 0: return 1
+    
+    # Log base 2
+    log_val = math.log2(n)
+    
+    if upscale:
+        # Round up to next power of 2
+        # If already POT, stay same? Or go up? Usually stay same.
+        # But user might want to force up. Let's stick to nearest logic requested.
+        # "Upscale" usually means >= current.
+        pot = math.ceil(log_val)
+    else:
+        # Downscale
+        pot = math.floor(log_val)
         
+    return 2 ** int(pot)
+
+class TextureToolsGUI(BaseWindow):
+    def __init__(self, target_path=None):
+        super().__init__(title="Texture Tools", width=500, height=400)
+        
+        self.target_path = target_path
+        self.selection = []
+        
+        if target_path:
+            try:
+                self.selection = get_selection_from_explorer(target_path)
+                # Filter for images
+                self.selection = [p for p in self.selection if p.suffix.lower() in ['.png', '.jpg', '.jpeg', '.tga', '.bmp', '.webp']]
+            except Exception as e:
+                print(f"Selection error: {e}")
+                
+        if not self.selection:
+            messagebox.showerror("Error", "No valid images selected.")
+            self.destroy()
+            return
+
         self.create_widgets()
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        
+        self.update_preview()
+
     def create_widgets(self):
         # Header
-        self.add_header(f"File: {self.image_path.name}")
+        ctk.CTkLabel(self.main_frame, text="Resize to Power of 2", font=("", 18, "bold")).pack(pady=15)
         
-        # API Key Check
-        if not os.environ.get('GEMINI_API_KEY'):
-            ctk.CTkLabel(self.main_frame, text="Warning: GEMINI_API_KEY not found in environment variables.", text_color="#E74C3C").pack(anchor="w", padx=20)
+        # File Info
+        self.lbl_files = ctk.CTkLabel(self.main_frame, text=f"Selected: {len(self.selection)} files")
+        self.lbl_files.pack(pady=5)
         
-        # Tabs
-        self.tab_view = ctk.CTkTabview(self.main_frame)
-        self.tab_view.pack(fill="both", expand=True, padx=20, pady=10)
+        # Settings
+        settings_frame = ctk.CTkFrame(self.main_frame)
+        settings_frame.pack(fill="x", padx=20, pady=10)
         
-        self.tab_pbr = self.tab_view.add("PBR Generation")
-        self.tab_analyze = self.tab_view.add("Analyze (Gemini)")
+        # Upscale/Downscale
+        self.var_upscale = ctk.BooleanVar(value=True)
+        ctk.CTkCheckBox(settings_frame, text="Upscale (Round Up)", variable=self.var_upscale, command=self.update_preview).pack(anchor="w", padx=20, pady=10)
         
-        self.setup_pbr_tab()
-        self.setup_analyze_tab()
+        # Alpha
+        self.var_alpha = ctk.BooleanVar(value=True)
+        ctk.CTkCheckBox(settings_frame, text="Preserve Alpha Channel", variable=self.var_alpha).pack(anchor="w", padx=20, pady=10)
         
-        # Close Button
+        # Preview Area
+        self.preview_frame = ctk.CTkScrollableFrame(self.main_frame, height=150)
+        self.preview_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # Actions
         btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", padx=20, pady=10)
-        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
-
-    def setup_pbr_tab(self):
-        ctk.CTkLabel(self.tab_pbr, text="Generate Normal, Roughness, and Displacement maps.").pack(anchor="w", padx=20, pady=10)
+        btn_frame.pack(fill="x", padx=20, pady=20)
         
-        self.btn_pbr = ctk.CTkButton(self.tab_pbr, text="Generate PBR Maps", command=self.run_pbr)
-        self.btn_pbr.pack(anchor="w", padx=20, pady=10)
+        ctk.CTkButton(btn_frame, text="Process All", command=self.run_process, fg_color="green").pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Cancel", command=self.destroy, fg_color="transparent", border_width=1, text_color="gray").pack(side="right", padx=5)
+
+    def update_preview(self):
+        # Clear
+        for widget in self.preview_frame.winfo_children(): widget.destroy()
         
-        self.log_pbr = ctk.CTkTextbox(self.tab_pbr, font=("Consolas", 10))
-        self.log_pbr.pack(fill="both", expand=True, padx=20, pady=10)
-
-    def setup_analyze_tab(self):
-        ctk.CTkLabel(self.tab_analyze, text="Analyze texture properties using Gemini Vision.").pack(anchor="w", padx=20, pady=10)
+        upscale = self.var_upscale.get()
         
-        self.btn_analyze = ctk.CTkButton(self.tab_analyze, text="Analyze Texture", command=self.run_analyze)
-        self.btn_analyze.pack(anchor="w", padx=20, pady=10)
+        for path in self.selection[:10]: # Limit preview
+            try:
+                with Image.open(path) as img:
+                    w, h = img.size
+                    target_w = get_nearest_pot(w, upscale)
+                    target_h = get_nearest_pot(h, upscale)
+                    
+                    row = ctk.CTkFrame(self.preview_frame, fg_color="transparent")
+                    row.pack(fill="x", pady=2)
+                    
+                    ctk.CTkLabel(row, text=path.name, width=150, anchor="w").pack(side="left")
+                    ctk.CTkLabel(row, text=f"{w}x{h}  ➜  {target_w}x{target_h}", font=("Consolas", 12)).pack(side="left", padx=10)
+            except Exception:
+                pass
+                
+        if len(self.selection) > 10:
+            ctk.CTkLabel(self.preview_frame, text=f"...and {len(self.selection)-10} more").pack(pady=5)
+
+    def run_process(self):
+        upscale = self.var_upscale.get()
+        preserve_alpha = self.var_alpha.get()
         
-        self.log_analyze = ctk.CTkTextbox(self.tab_analyze, font=("Consolas", 10))
-        self.log_analyze.pack(fill="both", expand=True, padx=20, pady=10)
-
-    def run_pbr(self):
-        self.btn_pbr.configure(state="disabled", text="Generating...")
-        self.log_pbr.insert("end", "Generating PBR maps...\n")
-        threading.Thread(target=self._run_script, args=("pbr", self.log_pbr, self.btn_pbr), daemon=True).start()
-
-    def run_analyze(self):
-        self.btn_analyze.configure(state="disabled", text="Analyzing...")
-        self.log_analyze.insert("end", "Analyzing with Gemini...\n")
-        threading.Thread(target=self._run_script, args=("analyze", self.log_analyze, self.btn_analyze), daemon=True).start()
-
-    def _run_script(self, action, log_widget, btn_widget):
-        args = ["texture_gen.py", str(self.image_path), "--action", action]
-        success, output = run_ai_script(*args)
-        
-        self.after(0, lambda: self.update_ui(success, output, log_widget, btn_widget))
-
-    def update_ui(self, success, output, log_widget, btn_widget):
-        btn_widget.configure(state="normal")
-        if action := "Generate PBR Maps" if btn_widget == self.btn_pbr else "Analyze Texture":
-             btn_widget.configure(text=action)
-             
-        if success:
-            log_widget.insert("end", output + "\nDone.\n")
-        else:
-            log_widget.insert("end", f"Error:\n{output}\n")
-        log_widget.see("end")
-
-    def on_closing(self):
-        self.destroy()
-
-def open_texture_tools(target_path: str):
-    """
-    Open Texture Tools dialog.
-    """
-    if not target_path:
-        return
-        
-    app = TextureGUI(target_path)
-    app.mainloop()
+        def _process():
+            count = 0
+            for path in self.selection:
+                try:
+                    with Image.open(path) as img:
+                        w, h = img.size
+                        target_w = get_nearest_pot(w, upscale)
+                        target_h = get_nearest_pot(h, upscale)
+                        
+                        if w == target_w and h == target_h:
+                            continue # Skip if already POT
+                            
+                        # Resize
+                        resample = Image.Resampling.LANCZOS
+                        resized = img.resize((target_w, target_h), resample)
+                        
+                        # Save (Overwrite or New? Let's overwrite as implied by "Resize", but maybe backup?)
+                        # User request didn't specify, but usually tools like this modify or save copy.
+                        # Let's save as copy to be safe: _pot.png
+                        # Actually user said "Resize to Power of 2", implying modification.
+                        # But safety first. Let's overwrite but keep original? No, that's messy.
+                        # Let's save with suffix for now.
+                        
+                        save_path = path.parent / f"{path.stem}_pot{path.suffix}"
+                        
+                        if not preserve_alpha and resized.mode == 'RGBA':
+                             resized = resized.convert('RGB')
+                             
+                        resized.save(save_path)
+                        count += 1
+                        
+                except Exception as e:
+                    print(f"Failed to process {path}: {e}")
+            
+            self.after(0, lambda: messagebox.showinfo("Complete", f"Processed {count} images."))
+            self.after(0, self.destroy)
+            
+        threading.Thread(target=_process, daemon=True).start()
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        open_texture_tools(sys.argv[1])
+        app = TextureToolsGUI(sys.argv[1])
+        app.mainloop()

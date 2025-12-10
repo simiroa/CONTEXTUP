@@ -1,37 +1,34 @@
 """
-Utility to run AI scripts in Conda environment.
+Utility to run AI scripts using the embedded Python environment.
 """
 import subprocess
+import sys
 from pathlib import Path
 
-def get_conda_env_info():
-    """Get Conda environment information."""
-    # Use absolute path based on this file's location
-    script_dir = Path(__file__).parent.parent / "scripts" / "ai_standalone"
-    info_file = script_dir / "env_info.txt"
-    
-    # Fallback: hardcoded path
-    if not info_file.exists():
-        info_file = Path(r"C:\Users\HG\Documents\HG_context_v2\src\scripts\ai_standalone\env_info.txt")
-    
-    if not info_file.exists():
-        raise FileNotFoundError(
-            f"Conda environment not set up. Run: python tools/setup_ai_conda.py\n"
-            f"Expected location: {info_file}"
-        )
-    
-    info = {}
-    with open(info_file, 'r') as f:
-        for line in f:
-            if '=' in line:
-                key, value = line.strip().split('=', 1)
-                info[key] = value
-    
-    return info
+def _find_python():
+    """
+    Prefer the embedded python at tools/python/python.exe,
+    then fallback to config.settings.PYTHON_PATH, then current interpreter.
+    """
+    project_root = Path(__file__).parents[2]
+    embedded = project_root / "tools" / "python" / "python.exe"
+    if embedded.exists():
+        return embedded
+
+    try:
+        from core.settings import load_settings
+        settings = load_settings()
+        custom = settings.get("PYTHON_PATH")
+        if custom and Path(custom).exists():
+            return Path(custom)
+    except Exception:
+        pass
+
+    return Path(sys.executable)
 
 def run_ai_script(script_name, *args, **kwargs):
     """
-    Run AI script in Conda environment.
+    Run AI script in the embedded/system Python environment.
     
     Args:
         script_name: Name of script in ai_standalone/
@@ -39,8 +36,7 @@ def run_ai_script(script_name, *args, **kwargs):
         **kwargs: Additional options
     """
     try:
-        env_info = get_conda_env_info()
-        python_exe = env_info['PYTHON_EXE']
+        python_exe = _find_python()
         
         # Use absolute path for script
         script_dir = Path(__file__).parent.parent / "scripts" / "ai_standalone"

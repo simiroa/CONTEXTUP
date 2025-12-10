@@ -1,0 +1,686 @@
+import os
+import hashlib
+import re
+import threading
+import tkinter as tk
+from pathlib import Path
+from datetime import datetime
+import customtkinter as ctk
+from tkinter import filedialog, messagebox
+
+# PIP: send2trash
+try:
+    from send2trash import send2trash
+except ImportError:
+    send2trash = None
+
+from .finder_backend import scan_worker
+from core.logger import setup_logger
+from utils.files import get_safe_path
+
+logger = setup_logger("finder_v2")
+
+class FinderV2App(ctk.CTk):
+    def __init__(self, target_path=""):
+        super().__init__()
+        self.title("ContentUp - Advanced Finder")
+        self.geometry("1000x800")
+
+        self.target_path = target_path
+        
+        # Data
+        self.all_groups = [] # List of tuples: (grp_name, [file_path, ...])
+        self.ui_groups = []  # List of dicts: { "name": str, "items": [ {path, var, mtime}, ... ] }
+        
+        # Pagination
+        self.current_page = 0
+        self.PAGE_SIZE = 50
+        
+        self.stop_event = threading.Event()
+        
+        if not send2trash:
+            messagebox.showwarning("Dependency Missing", "send2trash module not found.\nDeletion will be permanent (os.remove).\nPlease install: pip install send2trash")
+
+        self._setup_ui()
+        
+        if self.target_path:
+            self.lbl_path.configure(text=str(self.target_path))
+
+    def _setup_ui(self):
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        
+    def _setup_ui(self):
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        
+        # --- Sidebar (Unified) ---
+        self.frm_sidebar = ctk.CTkFrame(self, width=280) # Slightly wider for tools
+        self.frm_sidebar.grid(row=0, column=0, sticky="nswe", padx=10, pady=10)
+        self.frm_sidebar.grid_propagate(False)
+        
+        # SECTION 1: SCAN
+        self._frm_scan = ctk.CTkFrame(self.frm_sidebar, fg_color="transparent")
+        self._frm_scan.pack(fill="x", pady=5)
+        
+        ctk.CTkLabel(self._frm_scan, text="1. Scan Scope", font=("Arial", 14, "bold"), anchor="w").pack(fill="x", padx=10)
+        ctk.CTkButton(self._frm_scan, text="Select Folder", command=self._select_folder).pack(pady=5, padx=10, fill="x")
+        self.lbl_path = ctk.CTkLabel(self._frm_scan, text="No path selected", text_color="gray", wraplength=250)
+        self.lbl_path.pack(pady=5)
+        
+        self.var_mode = ctk.StringVar(value="exact")
+        frm_mode = ctk.CTkFrame(self._frm_scan, fg_color="transparent")
+        frm_mode.pack(fill="x", padx=10)
+        ctk.CTkRadioButton(frm_mode, text="Strict", variable=self.var_mode, value="exact").pack(side="left", padx=(0,10))
+        ctk.CTkRadioButton(frm_mode, text="Smart", variable=self.var_mode, value="smart").pack(side="left")
+        
+        ctk.CTkButton(self._frm_scan, text="START SCAN", fg_color="green", command=self._start_scan_thread).pack(pady=10, padx=10, fill="x")
+        
+        # SECTION 2: FILTER (Initially Disabled)
+        self._frm_tools = ctk.CTkFrame(self.frm_sidebar, fg_color="transparent")
+        self._frm_tools.pack(fill="x", pady=10)
+        
+        ctk.CTkLabel(self._frm_tools, text="2. Smart Select", font=("Arial", 14, "bold"), anchor="w").pack(fill="x", padx=10)
+        
+        # Pattern select
+        self.entry_pattern = ctk.CTkEntry(self._frm_tools, placeholder_text="Name pattern (e.g. 'copy')")
+        self.entry_pattern.pack(fill="x", padx=10, pady=5)
+        
+        frm_pat_btns = ctk.CTkFrame(self._frm_tools, fg_color="transparent")
+        frm_pat_btns.pack(fill="x", padx=10)
+        ctk.CTkButton(frm_pat_btns, text="Select Match", width=120, fg_color="gray50", command=lambda: self._action_pattern(keep=False)).pack(side="left", padx=(0,5))
+        ctk.CTkButton(frm_pat_btns, text="Keep Match", width=120, fg_color="gray50", command=lambda: self._action_pattern(keep=True)).pack(side="left")
+
+        # Quick Actions
+        ctk.CTkLabel(self._frm_tools, text="Quick Actions", font=("Arial", 12, "bold"), anchor="w").pack(fill="x", padx=10, pady=(10, 5))
+        
+        frm_quick = ctk.CTkFrame(self._frm_tools, fg_color="transparent")
+        frm_quick.pack(fill="x", padx=10)
+        ctk.CTkButton(frm_quick, text="First(Old)", width=80, fg_color="gray40", command=self._select_keep_oldest).pack(side="left", fill="x", expand=True, padx=(0,2))
+        ctk.CTkButton(frm_quick, text="Last(New)", width=80, fg_color="gray40", command=self._select_keep_newest).pack(side="left", fill="x", expand=True, padx=(2,2))
+        ctk.CTkButton(frm_quick, text="Invert", width=80, fg_color="gray40", command=self._invert_selection).pack(side="left", fill="x", expand=True, padx=(2,0))
+        
+        frm_bulk = ctk.CTkFrame(self._frm_tools, fg_color="transparent")
+        frm_bulk.pack(fill="x", padx=10, pady=5)
+        ctk.CTkButton(frm_bulk, text="All", width=60, fg_color="gray40", command=lambda: self._select_all(True)).pack(side="left", fill="x", expand=True, padx=(0,2))
+        ctk.CTkButton(frm_bulk, text="None", width=60, fg_color="gray40", command=lambda: self._select_all(False)).pack(side="left", fill="x", expand=True, padx=(2,0))
+
+        # SECTION 3: DELETE
+        self._frm_exec = ctk.CTkFrame(self.frm_sidebar, fg_color="transparent")
+        self._frm_exec.pack(side="bottom", fill="x", pady=20)
+        
+        self.lbl_stats = ctk.CTkLabel(self._frm_exec, text="Ready")
+        self.lbl_stats.pack(pady=5)
+        
+        self.btn_delete = ctk.CTkButton(self._frm_exec, text="DELETE CHECKED", fg_color="red", height=40, state="disabled", command=self._delete_selected)
+        self.btn_delete.pack(fill="x", padx=10)
+
+        self._set_tools_state("disabled")
+
+        # --- Right Panel ---
+        self.frm_right = ctk.CTkFrame(self)
+        self.frm_right.grid(row=0, column=1, sticky="nswe", padx=10, pady=10)
+        
+        self.scroll_results = ctk.CTkScrollableFrame(self.frm_right, label_text="Scan Results")
+        self.scroll_results.pack(expand=True, fill="both", padx=5, pady=5)
+        
+        self.frm_pagination = ctk.CTkFrame(self.frm_right, height=40)
+        self.frm_pagination.pack(fill="x", padx=5, pady=0)
+        self.btn_load_more = ctk.CTkButton(self.frm_pagination, text="Load More", command=self._load_next_page)
+        self.btn_load_more.pack(pady=5)
+        self.btn_load_more.pack_forget()
+
+        # Removed Bottom Action Bar self.frm_actions
+
+    def _set_tools_state(self, state):
+        # Helper to toggle UI
+        for child in self._frm_tools.winfo_children():
+            try: child.configure(state=state)
+            except: 
+                for sub in child.winfo_children():
+                    try: sub.configure(state=state)
+                    except: pass
+        self.btn_delete.configure(state=state)
+
+        # Removed Bottom Action Bar self.frm_actions
+
+    def _select_folder(self):
+        root = tk.Tk()
+        root.withdraw()
+        path = filedialog.askdirectory(initialdir=self.target_path)
+        if path:
+            self.target_path = path
+            self.lbl_path.configure(text=path)
+            
+    def _start_scan_thread(self):
+        if not self.target_path or not Path(self.target_path).exists():
+            messagebox.showerror("Error", "Invalid path")
+            return
+            
+        for widget in self.scroll_results.winfo_children():
+            widget.destroy()
+        self.ui_groups = []
+        self.all_groups = []
+        self.current_page = 0
+        self.btn_load_more.pack_forget()
+        
+        # Disable tools during scan
+        self._set_tools_state("disabled")
+        self.lbl_stats.configure(text="Scanning...")
+        self.progress.set(0)
+        self.progress.start()
+        
+        threading.Thread(target=self._scan_logic, daemon=True).start()
+        
+    def _scan_logic(self):
+        try:
+            mode = self.var_mode.get()
+            path = Path(self.target_path)
+            
+            def status_update(msg):
+                self.after(0, lambda: self.lbl_stats.configure(text=msg))
+                
+            groups = scan_worker(path, mode, status_callback=status_update)
+            
+            self.all_groups = groups
+            self.after(0, self._display_initial_results)
+
+        except Exception as e:
+            logger.error(f"Scan error: {e}")
+            self.after(0, lambda: self.lbl_stats.configure(text=f"Error: {e}"))
+            self.progress.stop()
+
+    def _display_initial_results(self):
+        self.progress.stop()
+        self.lbl_stats.configure(text=f"Found {len(self.all_groups)} groups.")
+        
+        # Enable tools
+        self._set_tools_state("normal")
+
+        if len(self.all_groups) > self.PAGE_SIZE:
+             self.btn_load_more.pack(pady=5)
+        else:
+             self.btn_load_more.pack_forget()
+        self._load_next_page()
+    
+    # --- Action Logic (Global Model Updates) ---
+    def _action_pattern(self, keep=False):
+        pattern = self.entry_pattern.get().strip()
+        if not pattern: return
+        
+        count = 0
+        for grp in self.all_groups:
+            count += grp.select_by_pattern(pattern, keep)
+            
+        self.lbl_stats.configure(text=f"{'Kept' if keep else 'Selected'} {count} changes.")
+        self._refresh_visible_ui()
+
+    def _select_all(self, state):
+        for grp in self.all_groups:
+            grp.select_all(state)
+        self._refresh_visible_ui()
+
+    def _invert_selection(self):
+        for grp in self.all_groups:
+            grp.invert_selection()
+        self._refresh_visible_ui()
+
+    def _select_keep_oldest(self):
+        for grp in self.all_groups:
+            grp.mark_all_except_oldest()
+        self._refresh_visible_ui()
+
+    def _select_keep_newest(self):
+        for grp in self.all_groups:
+            grp.mark_all_except_newest()
+        self._refresh_visible_ui()
+
+    def _refresh_visible_ui(self):
+        # Update ONLY the currently rendered widgets to match Backend State
+        for i, ui_data in enumerate(self.ui_groups):
+            grp_backend = ui_data.get("backend_ref")
+            if not grp_backend: continue
+
+            # Update Checkboxes
+            for item_data, item_backend in zip(ui_data["items"], grp_backend.items):
+                 if item_data["var"].get() != item_backend.selected:
+                     item_data["var"].set(item_backend.selected)
+            
+            # Update Group Header (via helper which reads UI vars -> backend)
+            # Actually, we need to ensure UI vars match backend first.
+            self._update_group_status(i)
+
+    def _display_initial_results(self):
+        self.progress.stop()
+        self.lbl_stats.configure(text=f"Found {len(self.all_groups)} groups.")
+        
+        # Enable tools
+        self._set_tools_state("normal")
+
+        if len(self.all_groups) > self.PAGE_SIZE:
+             self.btn_load_more.pack(pady=5)
+        else:
+             self.btn_load_more.pack_forget()
+        self._load_next_page()
+
+    def _show_settings_panel(self):
+        pass # Deprecated
+
+    def _show_actions_panel(self):
+        pass # Deprecated
+
+    def _open_folder(self, path):
+        try:
+            # Select file in explorer
+            import subprocess
+            subprocess.Popen(f'explorer /select,"{path}"')
+        except Exception as e:
+            logger.error(f"Open folder error: {e}")
+
+    def _load_next_page(self):
+        start = self.current_page * self.PAGE_SIZE
+        end = start + self.PAGE_SIZE
+        subset = self.all_groups[start:end]
+        
+        if not subset:
+            self.btn_load_more.pack_forget()
+            return
+
+        for grp in subset: # grp is FinderGroup object
+            group_index = len(self.ui_groups)
+            group_items = []
+            
+            # Group Checkbox
+            grp_var = ctk.BooleanVar(value=False)
+            
+            for item in grp.items: # item is FinderItem
+                # UI Variable
+                var = ctk.BooleanVar(value=item.selected)
+                
+                # Trace: When UI clicked -> Update Backend -> Update Header
+                def on_change(*args, b_item=item, g_idx=group_index, v=var):
+                     b_item.selected = v.get()
+                     self._update_group_status(g_idx)
+
+                var.trace_add("write", on_change)
+                group_items.append({"path": item.path, "var": var, "mtime": item.mtime})
+                
+            self.ui_groups.append({
+                "name": grp.name, 
+                "backend_ref": grp, # Link to backend
+                "items": group_items,
+                "widgets_loaded": False,
+                "frm_content": None,
+                "chk_widgets": [],
+                "grp_var": grp_var,
+                "lbl_header": None
+            })
+            
+            # --- Render Header ---
+            frm_grp = ctk.CTkFrame(self.scroll_results, fg_color="gray25")
+            frm_grp.pack(fill="x", pady=2, padx=5)
+            
+            frm_header = ctk.CTkFrame(frm_grp, fg_color="transparent")
+            frm_header.pack(fill="x", padx=5, pady=5)
+            
+            # 1. Expand
+            btn_toggle = ctk.CTkButton(frm_header, text="▶", width=30, height=20, fg_color="gray40", 
+                                     command=lambda idx=group_index, f=frm_grp, b=None: self._toggle_group(idx, f))
+            btn_toggle.pack(side="left", padx=(0, 5))
+            self.ui_groups[group_index]["btn_toggle"] = btn_toggle
+
+            # 2. Group Checkbox
+            chk_grp = ctk.CTkCheckBox(frm_header, text="", variable=grp_var, width=24,
+                                    command=lambda idx=group_index: self._toggle_entire_group(idx))
+            chk_grp.pack(side="left", padx=(0, 5))
+
+            # 3. Badges
+            badge_color = "#3B8ED0" if grp.badge == "SEQ" else "#2CC985" if grp.badge == "VER" else "gray"
+            if grp.badge:
+                ctk.CTkLabel(frm_header, text=grp.badge, fg_color=badge_color, text_color="white", 
+                             corner_radius=6, height=18, font=("Arial", 10, "bold")).pack(side="left", padx=(0, 5))
+
+            # 4. Header Label
+            # Initial Status Update & Sync
+            lbl_header = ctk.CTkLabel(frm_header, text="", font=("Arial", 12, "bold"))
+            lbl_header.pack(side="left")
+            self.ui_groups[group_index]["lbl_header"] = lbl_header
+            
+            # Initial sync of text and group checkbox
+            self._update_group_status(group_index)
+            
+            if grp.items:
+                 first_file = grp.items[0].path
+                 ctk.CTkButton(frm_header, text="Open Folder", width=80, height=20, font=("Arial", 10),
+                             command=lambda p=first_file: self._open_folder(p)).pack(side="right")
+
+            # Content container
+            self.ui_groups[group_index]["frm_content"] = ctk.CTkFrame(frm_grp, fg_color="transparent")
+
+            if group_index % 10 == 0: self.update_idletasks()
+        
+        self.current_page += 1
+        if (self.current_page * self.PAGE_SIZE) >= len(self.all_groups):
+            self.btn_load_more.pack_forget()
+
+    def _toggle_entire_group(self, idx):
+        # User clicked Group Checkbox -> Updates Backend -> Updates UI
+        data = self.ui_groups[idx]
+        grp_backend = data["backend_ref"]
+        target_state = data["grp_var"].get()
+        
+        # Update Backend
+        grp_backend.select_all(target_state)
+        
+        # Update UI Vars
+        for item_data in data["items"]:
+            if item_data["var"].get() != target_state:
+                item_data["var"].set(target_state)
+        
+        # Force update status once at end
+        self._update_group_status(idx)
+
+    def _update_group_status(self, idx):
+        data = self.ui_groups[idx]
+        grp_backend = data.get("backend_ref")
+        if not grp_backend: return 
+
+        selected_count = grp_backend.get_selected_count()
+        total = len(grp_backend.items)
+        
+        # Update Text
+        new_text = f"{grp_backend.clean_name} ({selected_count}/{total} selected)"
+        if data["lbl_header"]:
+             data["lbl_header"].configure(text=new_text)
+
+        # Sync Checkbox (Avoid triggering trace if value is same)
+        is_all = (selected_count == total and total > 0)
+        current_val = data["grp_var"].get()
+        if current_val != is_all:
+             data["grp_var"].set(is_all)
+
+    def _toggle_group(self, idx, frm_parent):
+        group_data = self.ui_groups[idx]
+        frm_content = group_data["frm_content"]
+        btn = group_data["btn_toggle"]
+        
+        if frm_content.winfo_ismapped():
+            frm_content.pack_forget()
+            btn.configure(text="▶")
+        else:
+            frm_content.pack(fill="x", padx=10, pady=5)
+            btn.configure(text="▼")
+            if not group_data["widgets_loaded"]:
+                self._lazy_render_items(idx)
+
+    def _lazy_render_items(self, idx):
+        group_data = self.ui_groups[idx]
+        frm_content = group_data["frm_content"]
+        items = group_data["items"]
+        
+        MAX_DISPLAY = 20
+        visible_items = items[:MAX_DISPLAY]
+        
+        for item in visible_items:
+            f = item["path"]
+            mtime = item["mtime"]
+            size_mb = 0
+            try: size_mb = f.stat().st_size / (1024*1024)
+            except: pass
+            
+            frm_item = ctk.CTkFrame(frm_content, fg_color="transparent", height=25)
+            frm_item.pack(fill="x", pady=1)
+            
+            # NEW: Parent/Filename
+            display_name = f"{f.parent.name} / {f.name}"
+            
+            chk = ctk.CTkCheckBox(frm_item, text=display_name, variable=item["var"], font=("Arial", 11))
+            chk.pack(side="left", fill="x", expand=True) 
+            group_data["chk_widgets"].append(chk)
+            
+            ctk.CTkLabel(frm_item, text=f"{size_mb:.2f} MB", text_color="gray", font=("Arial", 10)).pack(side="right")
+        
+        if len(items) > MAX_DISPLAY:
+             ctk.CTkLabel(frm_content, text=f"... and {len(items) - MAX_DISPLAY} more (hidden)", 
+                          text_color="gray", font=("Arial", 10, "italic")).pack(pady=2)
+                          
+        group_data["widgets_loaded"] = True
+
+    def _delete_selected(self):
+        to_delete = []
+        for grp in self.ui_groups:
+            for item in grp["items"]:
+                if item["var"].get():
+                    to_delete.append(item["path"])
+                    
+        if not to_delete:
+            self.lbl_stats.configure(text="Status: No files selected.")
+            return
+            
+        if not messagebox.askyesno("Confirm", f"Trash {len(to_delete)} files?"):
+            return
+            
+        success = 0
+        errors = []
+        for f in to_delete:
+            try:
+                if send2trash: send2trash(str(f))
+                else: os.remove(f)
+                success += 1
+            except Exception as e:
+                errors.append(f"{f.name}: {e}")
+        
+        self.lbl_stats.configure(text=f"Deleted {success} files.")
+        messagebox.showinfo("Result", f"Deleted {success} files.")
+        self._start_scan_thread()
+
+    def _toggle_entire_group(self, idx):
+        # Master switch for the group
+        data = self.ui_groups[idx]
+        target_state = data["grp_var"].get()
+        # Suspend tracing or just update? Updating is fine, trace will fire but cheap
+        for item in data["items"]:
+            item["var"].set(target_state)
+
+    def _update_group_status(self, idx):
+        # Triggered when any item in group changes
+        data = self.ui_groups[idx]
+        items = data["items"]
+        selected_count = sum(1 for item in items if item["var"].get())
+        total = len(items)
+        
+        # Update Header Label
+        new_text = f"📂 {data['name']} ({selected_count}/{total} selected)"
+        if data["lbl_header"]:
+             data["lbl_header"].configure(text=new_text)
+
+    def _toggle_group(self, idx, frm_parent):
+        group_data = self.ui_groups[idx]
+        frm_content = group_data["frm_content"]
+        btn = group_data["btn_toggle"]
+        
+        if frm_content.winfo_ismapped():
+            frm_content.pack_forget()
+            btn.configure(text="▶")
+        else:
+            frm_content.pack(fill="x", padx=10, pady=5)
+            btn.configure(text="▼")
+            if not group_data["widgets_loaded"]:
+                self._lazy_render_items(idx)
+
+    def _lazy_render_items(self, idx):
+        group_data = self.ui_groups[idx]
+        frm_content = group_data["frm_content"]
+        items = group_data["items"]
+        
+        MAX_DISPLAY = 20
+        visible_items = items[:MAX_DISPLAY]
+        
+        for item in visible_items:
+            f = item["path"]
+            mtime = item["mtime"]
+            size_mb = 0
+            try: size_mb = f.stat().st_size / (1024*1024)
+            except: pass
+            
+            frm_item = ctk.CTkFrame(frm_content, fg_color="transparent", height=25)
+            frm_item.pack(fill="x", pady=1)
+            
+            display_name = f"{f.parent.name}/{f.name}"
+            chk = ctk.CTkCheckBox(frm_item, text=display_name, variable=item["var"], font=("Arial", 11))
+            chk.pack(side="left", fill="x", expand=True) 
+            group_data["chk_widgets"].append(chk)
+            
+            ctk.CTkLabel(frm_item, text=f"{size_mb:.2f} MB", text_color="gray", font=("Arial", 10)).pack(side="right")
+        
+        if len(items) > MAX_DISPLAY:
+             ctk.CTkLabel(frm_content, text=f"... and {len(items) - MAX_DISPLAY} more (hidden)", 
+                          text_color="gray", font=("Arial", 10, "italic")).pack(pady=2)
+                          
+        group_data["widgets_loaded"] = True
+        
+    # ... (Keep existing _delete_selected and other helpers)
+
+
+    def _select_keep_newest(self):
+        for grp in self.ui_groups:
+            items = grp["items"]
+            if not items: continue
+            best_item = max(items, key=lambda x: x["mtime"])
+            for item in items:
+                item["var"].set(False if item == best_item else True)
+
+    def _select_keep_oldest(self):
+        for grp in self.ui_groups:
+            items = grp["items"]
+            if not items: continue
+            best_item = min(items, key=lambda x: x["mtime"])
+            for item in items:
+                item["var"].set(False if item == best_item else True)
+
+    def _open_selection_menu(self):
+        # Create a Toplevel dialog for advanced selection
+        dlg = ctk.CTkToplevel(self)
+        dlg.title("Advanced Selection")
+        dlg.geometry("350x300")
+        dlg.transient(self) # Keep on top
+        
+        ctk.CTkLabel(dlg, text="Select files containing:", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        entry_pattern = ctk.CTkEntry(dlg, placeholder_text="e.g. 'backup' or '.bak'")
+        entry_pattern.pack(pady=5, padx=20, fill="x")
+        
+        def action_select_by_pattern(keep=False):
+            pattern = entry_pattern.get().strip()
+            if not pattern: return
+            
+            count = 0
+            for grp in self.ui_groups:
+                for item in grp["items"]:
+                    path_str = str(item["path"]).lower()
+                    if pattern.lower() in path_str:
+                        # If 'Keep' mode, uncheck (False). If 'Select' mode, check (True).
+                        target_state = False if keep else True
+                        item["var"].set(target_state)
+                        count += 1
+            
+            messagebox.showinfo("Result", f"{'Kept' if keep else 'Selected'} {count} files matching '{pattern}'")
+            dlg.destroy()
+
+        # Buttons
+        ctk.CTkButton(dlg, text="Select Matching (Mark to Delete)", fg_color="red", 
+                      command=lambda: action_select_by_pattern(keep=False)).pack(pady=5, padx=20, fill="x")
+                      
+        ctk.CTkButton(dlg, text="Keep Matching (Uncheck)", fg_color="green", 
+                      command=lambda: action_select_by_pattern(keep=True)).pack(pady=5, padx=20, fill="x")
+        
+        ctk.CTkLabel(dlg, text="--- Other Actions ---").pack(pady=10)
+        
+        ctk.CTkButton(dlg, text="Invert Selection", fg_color="gray", command=lambda: [self._invert_selection(), dlg.destroy()]).pack(pady=5, padx=20, fill="x")
+        ctk.CTkButton(dlg, text="Select All", fg_color="gray", command=lambda: [self._select_all(True), dlg.destroy()]).pack(pady=5, padx=20, fill="x")
+
+
+    def _invert_selection(self):
+        for grp in self.ui_groups:
+            for item in grp["items"]:
+                current = item["var"].get()
+                item["var"].set(not current)
+
+    def _select_all(self, state=True):
+         for grp in self.ui_groups:
+            for item in grp["items"]:
+                item["var"].set(state)
+
+
+    def _lazy_render_items(self, idx):
+        group_data = self.ui_groups[idx]
+        frm_content = group_data["frm_content"]
+        items = group_data["items"]
+        
+        MAX_DISPLAY = 20
+        visible_items = items[:MAX_DISPLAY]
+        
+        for item in visible_items:
+            f = item["path"]
+            mtime = item["mtime"]
+            size_mb = 0
+            try: size_mb = f.stat().st_size / (1024*1024)
+            except: pass
+            
+            frm_item = ctk.CTkFrame(frm_content, fg_color="transparent", height=25)
+            frm_item.pack(fill="x", pady=1)
+            
+            # Display Parent/Name for better context
+            display_name = f"{f.parent.name}/{f.name}"
+            
+            # Link Checkbox to existing Var
+            chk = ctk.CTkCheckBox(frm_item, text=display_name, variable=item["var"], font=("Arial", 11))
+            chk.pack(side="left", fill="x", expand=True) # Allow text to expand
+            group_data["chk_widgets"].append(chk)
+            
+            ctk.CTkLabel(frm_item, text=f"{size_mb:.2f} MB", text_color="gray", font=("Arial", 10)).pack(side="right")
+        
+        if len(items) > MAX_DISPLAY:
+             ctk.CTkLabel(frm_content, text=f"... and {len(items) - MAX_DISPLAY} more (hidden)", 
+                          text_color="gray", font=("Arial", 10, "italic")).pack(pady=2)
+                          
+        group_data["widgets_loaded"] = True
+
+    def _delete_selected(self):
+        to_delete = []
+        for grp in self.ui_groups:
+            for item in grp["items"]:
+                if item["var"].get():
+                    to_delete.append(item["path"])
+                    
+        if not to_delete:
+            messagebox.showinfo("Info", "No files selected.")
+            return
+            
+        if not messagebox.askyesno("Confirm", f"Trash {len(to_delete)} files?"):
+            return
+            
+        success = 0
+        errors = []
+        for f in to_delete:
+            try:
+                if send2trash: send2trash(str(f))
+                else: os.remove(f)
+                success += 1
+            except Exception as e:
+                errors.append(f"{f.name}: {e}")
+        
+        self.lbl_status.configure(text=f"Deleted {success} files.")
+        messagebox.showinfo("Result", f"Deleted {success} files.")
+        self._start_scan_thread()
+
+
+
+def open_finder(target_path=None, *args, **kwargs):
+    if not target_path:
+        target_path = os.getcwd()
+    app = FinderV2App(target_path=target_path)
+    app.mainloop()
+
+if __name__ == "__main__":
+    open_finder(r"C:\Users\HG\Documents")

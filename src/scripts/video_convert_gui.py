@@ -13,6 +13,7 @@ sys.path.append(str(src_dir))
 
 from utils.external_tools import get_ffmpeg
 from utils.explorer import get_selection_from_explorer
+from utils.files import get_safe_path
 from utils.gui_lib import BaseWindow, FileListFrame
 
 class VideoConvertGUI(BaseWindow):
@@ -139,6 +140,7 @@ class VideoConvertGUI(BaseWindow):
         total = len(self.files)
         success = 0
         errors = []
+        out_dir_cache = {}
         
         for i, path in enumerate(self.files):
             self.lbl_status.configure(text=f"Processing {i+1}/{total}: {path.name}")
@@ -155,14 +157,18 @@ class VideoConvertGUI(BaseWindow):
                 
                 # Determine output directory
                 if self.var_new_folder.get():
-                    out_dir = path.parent / "Converted"
-                    out_dir.mkdir(exist_ok=True)
+                    base_dir = path.parent / "Converted"
+                    if base_dir not in out_dir_cache:
+                        safe_dir = base_dir if not base_dir.exists() else get_safe_path(base_dir)
+                        safe_dir.mkdir(exist_ok=True)
+                        out_dir_cache[base_dir] = safe_dir
+                    out_dir = out_dir_cache[base_dir]
                     out_name = f"{path.stem}{suffix}" # Clean name in new folder
                 else:
                     out_dir = path.parent
                     out_name = f"{path.stem}_conv{suffix}" # Suffix in same folder
                 
-                output_path = out_dir / out_name
+                output_path = get_safe_path(out_dir / out_name)
                 
                 # Video Codec
                 if "H.264" in fmt:

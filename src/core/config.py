@@ -10,7 +10,13 @@ class MenuConfig:
         if not path_obj.is_absolute():
             # This file is in src/core/, so root is 2 levels up
             root_dir = Path(__file__).parent.parent.parent
-            self.config_path = root_dir / config_path
+            candidate = root_dir / config_path
+            if candidate.exists():
+                self.config_path = candidate
+            else:
+                # Fallback: if caller passed "menu_config.json", search under config/
+                alt = root_dir / "config" / path_obj.name
+                self.config_path = alt
         else:
             self.config_path = path_obj
             

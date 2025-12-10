@@ -1,0 +1,65 @@
+{
+    "engine": "Midj",
+    "name": "Midjourney Character Design",
+    "description": "Template for character design and concept art with Midjourney.",
+    "inputs": [
+        {
+            "id": "character",
+            "label": "Character Description",
+            "default": ""
+        },
+        {
+            "id": "outfit",
+            "label": "Outfit/Costume",
+            "default": ""
+        },
+        {
+            "id": "pose",
+            "label": "Pose/Action",
+            "default": "standing"
+        },
+        {
+            "id": "background",
+            "label": "Background",
+            "default": "white background"
+        }
+    ],
+    "options": [
+        {
+            "id": "view",
+            "label": "View Type",
+            "choices": [
+                "character sheet",
+                "full body",
+                "portrait",
+                "three-quarter view",
+                "front and back view"
+            ],
+            "default": "full body"
+        },
+        {
+            "id": "art_style",
+            "label": "Art Style",
+            "choices": [
+                "concept art",
+                "anime style",
+                "realistic illustration",
+                "digital painting",
+                "comic book style"
+            ],
+            "default": "concept art"
+        },
+        {
+            "id": "aspect",
+            "label": "Aspect Ratio",
+            "choices": [
+                "--ar 1:1",
+                "--ar 2:3",
+                "--ar 16:9"
+            ],
+            "default": "--ar 2:3"
+        }
+    ],
+    "template": "{view} of {character}, {outfit}, {pose}, {background}, {art_style}, highly detailed, professional quality {aspect} --stylize 250 --v 6",
+    "example_image": "abstract.png"
+}

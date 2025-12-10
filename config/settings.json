@@ -1,5 +1,4 @@
 {
-    "GEMINI_API_KEY": "AIzaSyCygvKPU0T6ZZKCdWCpPHQqtg7d_RtXAsc",
     "OLLAMA_URL": "http://localhost:11434",
     "PYTHON_PATH": "",
     "THEME": "Dark",
@@ -13,6 +12,28 @@
         "3D": "#9b59b6",
         "Sys": "#95a5a6",
         "Document": "#f1c40f",
-        "Custom": "#ecf0f1"
-    }
+        "Custom": "#ecf0f1",
+        "AI": "#3498DB",
+        "Etc": "#E74C3C",
+        "System": "#2ECC71",
+        "Rename": "#F1C40F",
+        "Clipboard": "#9B59B6"
+    },
+    "BACKUP_EXCLUDE": [],
+    "TRAY_ENABLED": true,
+    "TRAY_AGENT_ENABLED": true,
+    "CATEGORY_ORDER": [
+        "Video",
+        "AI",
+        "3D",
+        "Audio",
+        "Etc",
+        "Document",
+        "System",
+        "Rename",
+        "Image",
+        "Clipboard",
+        "Sys",
+        "Custom"
+    ]
 }

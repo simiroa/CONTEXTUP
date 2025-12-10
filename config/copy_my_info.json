@@ -1,0 +1,16 @@
+{
+    "items": [
+        {
+            "label": "Email",
+            "content": "user@example.com"
+        },
+        {
+            "label": "IP",
+            "content": "127.0.0.1"
+        },
+        {
+            "label": "Phone",
+            "content": "010-0000-0000"
+        }
+    ]
+}

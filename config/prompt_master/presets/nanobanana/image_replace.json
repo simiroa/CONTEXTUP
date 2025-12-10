@@ -1,0 +1,25 @@
+{
+    "engine": "nanobanana",
+    "name": "Image Replace",
+    "description": "Tags: replace, inpainting, edit",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "target_element",
+            "label": "Element to Replace",
+            "default": ""
+        },
+        {
+            "id": "new_element",
+            "label": "New Element",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Replace {target_element} in {image1} with {new_element}. Keep all other parts of the image unchanged. Ensure the replacement blends naturally with lighting, perspective, and overall style. Photorealistic, high-resolution, seamless integration.",
+    "example_image": "abstract.png"
+}
