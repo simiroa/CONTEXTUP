@@ -1,4 +1,5 @@
 ### 🛠️ System Utilities
+*   **Copy My Info**: A robust clipboard manager for your personal data (Email, Phone, IP, etc.) with a dedicated GUI. Supports inline editing and auto-save.
 *   **Folder: Move to New...**: Moves selected files to a new folder. Handles naming collisions automatically.
 *   **Folder: Remove Empty**: Recursively removes empty subdirectories within the selected folder.
 *   **Folder: Arrange Sequences**: Groups file sequences (e.g., `shot.001.png`, `shot.002.png`) into separate folders based on their prefix.
@@ -113,13 +114,13 @@ For a detailed code map and file responsibilities, please refer to [**architectu
 
 ## 🧭 Adding a New Menu Item (developer quick guide)
 - Use the embedded Python (`tools/python/python.exe`) for any installs; avoid system Python.
-- **Manager writes `config/menu_config.json` for you—follow the same fields when adding programmatically.
-  > [!WARNING]
-  > Do NOT edit `menu_config.json` directly. Edit `config/menu_categories/*.json` instead, then run `src/utils/config_builder.py`.
-- Required per entry: `id` (unique, snake_case), `name` (UI label), `category` (must match CATEGORY_COLORS or “Custom”), `submenu` (`ContextUp`, `(Top Level)`, or custom), `command` (quote paths), `types` (e.g., `"*"` or `"image"`), `scope` (`file`, `folder`, or `both`), `enabled` (bool).
-- Optional: `hotkey` (global), `icon` (e.g., `assets/icons/mytool.png`, 24–32px square PNG), `show_in_tray` (bool), `order` (int; Manager rebalances), `tags` (list), `description`.
-- Flow to add safely: open Manager → Menu Editor → add item → pick category/submenu → set icon path → Apply Changes → right-click shell to verify. Use “Group by Category” / “Reset to Flat” to confirm ordering.
-- Dependencies: import from `src/` using the embedded Python; if a new package is required, install via `tools/python/python.exe -m pip install <pkg>`. Add to `requirements.txt` only if it must be present at install time; otherwise install lazily inside the tool script.
+- **Config Strategy**:
+  - ContextUp now splits configuration by category in `config/menu_categories/*.json`.
+  - To add a new tool, create or edit the relevant JSON file (e.g., `config/menu_categories/my_tool.json`).
+  - The Manager will automatically detect these files using `src/utils/config_builder.py`.
+- Required per entry: `id` (unique, snake_case), `name` (UI label), `category`, `submenu` (`ContextUp`, `(Top Level)`, or custom), `command`, `types`, `scope`, `enabled`.
+- **Dynamic Submenus**: Use `"dynamic_submenu": "copy_my_info"` (or similar) to register complex nested menus like the "Copy My Info" feature.
+- **Icons**: Place 24px/32px PNG or ICO in `assets/icons/`. Use absolute paths or relative to repo root.
 
 ## 🛡️ Safe Save Policy
 To prevent accidental data loss, ContextUp tools now implement a **"Rename on Conflict"** policy.
