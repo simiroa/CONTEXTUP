@@ -3,7 +3,7 @@
         "category": "Audio",
         "id": "aud_convert",
         "name": "Convert Format",
-        "icon": "assets/icons/audio.ico",
+        "icon": "assets/icons/icon_audio_convert_format.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
         "status": "COMPLETE",
@@ -11,13 +11,16 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 801
+        "order": 801,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     },
     {
         "category": "Audio",
         "id": "aud_extract_bgm",
         "name": "Extract BGM (Filter)",
-        "icon": "assets/icons/audio.ico",
+        "icon": "assets/icons/icon_audio_extract_bgm.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
         "status": "COMPLETE",
@@ -25,13 +28,16 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 802
+        "order": 802,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     },
     {
         "category": "Audio",
         "id": "aud_extract_voice",
         "name": "Extract Voice (Filter)",
-        "icon": "assets/icons/audio.ico",
+        "icon": "assets/icons/icon_audio_extract_voice.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
         "status": "COMPLETE",
@@ -45,7 +51,7 @@
         "category": "Audio",
         "id": "aud_normalize",
         "name": "Normalize Volume",
-        "icon": "assets/icons/audio.ico",
+        "icon": "assets/icons/icon_audio_optimize_vol.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
         "status": "COMPLETE",
@@ -53,6 +59,9 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 804
+        "order": 804,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     }
 ]

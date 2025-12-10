@@ -20,3 +20,4 @@ history_*.png
 **/.cache/
 example/
 *.pth
+config/copy_my_info.json

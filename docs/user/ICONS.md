@@ -37,6 +37,7 @@ Each icon corresponds to a specific feature ID in `menu_config.json`.
 | `icon_audio_separate_stems.ico` | A complex sound wave splitting into distinct colorful strands (vocals, drums, bass) |
 | `icon_image_upscale_ai.ico` | A small pixelated square transforming into a large sharp diamond, upward arrow |
 | `icon_doc_analyze_ollama.ico` | A document being scanned by an AI brain or eye |
+| `icon_ai_gemini_vision.ico` | A futuristic glowing gem or crystal (Google Gemini concept) analyzing an image file, sparkling star vibe, cyan and purple gradient |
 
 ## 2. Image Tools (Cyan/Blue Theme)
 
@@ -57,18 +58,18 @@ Each icon corresponds to a specific feature ID in `menu_config.json`.
 
 | ID | Prompt Subject |
 | :--- | :--- |
-| `icon_video_convert.ico` | A film strip transforming into a digital file, purple glow |
-| `icon_video_seq_to_video.ico` | A sequence of image frames merging into a film reel |
-| `icon_video_frame_interp.ico` | Two video frames with a glowing interpolated frame appearing in between |
-| `icon_video_audio_tools.ico` | A video file with a speaker or waveform icon, splitting or merging |
-| `icon_video_generate_subtitle.ico` | A video screen with speech bubbles or text lines appearing at the bottom |
+| `icon_video_convert.ico` | A film strip spiraling and transforming into a sleek digital MP4 file icon, purple and cyan lighting |
+| `icon_video_seq_to_video.ico` | A sequence of floating image frames merging into a glowing cinematic film reel, dynamic motion |
+| `icon_video_frame_interp.ico` | Two distinct video frames with a magical glowing interpolated frame materializing in between, smooth motion blur concept |
+| `icon_video_audio_tools.ico` | A sleek video file icon with a sound wave spectrum overlay, splitting into audio channels |
+| `icon_video_generate_subtitle.ico` | A futuristic screen displaying a video with glowing holographic subtitles appearing at the bottom |
 
 ## 3. Audio Tools (Orange/Yellow Theme)
 
 | ID | Prompt Subject |
 | :--- | :--- |
-| `icon_audio_convert_format.ico` | A musical note transforming into sound waves, orange glow |
-| `icon_audio_optimize_vol.ico` | A volume knob or slider set to the perfect level, balanced waveform |
+| `icon_audio_convert_format.ico` | A glowing musical note smoothly transforming into a digital waveform, floating in void, orange and gold lighting, magical transition |
+| `icon_audio_optimize_vol.ico` | A futuristic volume knob with a glowing level indicator set to the perfect balanced green zone, metallic texture |
 
 ## 4. System Utilities (Silver/Gray Theme)
 
@@ -112,3 +113,8 @@ Each icon corresponds to a specific feature ID in `menu_config.json`.
 | `ContextUp.ico` | Abstract geometric logo representing connections and "Up" arrow, C and U monogram, futuristic, cyan and purple gradient |
 | `audio.ico` | A generic modern speaker or sound wave icon, orange theme |
 | `video.ico` | A generic film clapperboard or play icon, purple theme |
+| `icon_audio_extract_voice.ico` | A sound wave focusing on the center (voice), with background noise faded out, orange theme |
+| `icon_audio_extract_bgm.ico` | A sound wave where the background tracks are highlighted and the center vocal is removed, orange theme |
+| `icon_video_proxy.ico` | A large heavy video file turning into a smaller lighter ghost/outline version, purple theme |
+| `icon_video_mute.ico` | A video file icon with a speaker symbol crossed out, purple theme |
+| `icon_3d_mayo.ico` | A stylized 3D viewer window or mechanical CAD eye, green/teal theme |

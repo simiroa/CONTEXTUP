@@ -1,24 +1,27 @@
 [
     {
         "category": "AI",
-        "id": "prompt_master",
-        "name": "Prompt Master",
-        "icon": "assets/icons/icon_doc_analyze_ollama.ico",
-        "types": "*",
-        "scope": "both",
+        "id": "vid_frame_interp",
+        "name": "Frame Interpolation (AI)",
+        "icon": "assets/icons/icon_video_frame_interp.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 601
+        "order": 601,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     },
     {
         "category": "AI",
-        "id": "ai_img_lab",
-        "name": "Gemini image tool",
-        "icon": "assets/icons/icon_image_analyze_ollama.ico",
-        "types": ".jpg;.jpeg;.png;.webp;.tga;.tif;.tiff",
+        "id": "vid_subtitle_gen",
+        "name": "Generate Subtitles (AI)",
+        "icon": "assets/icons/icon_video_generate_subtitle.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
         "status": "COMPLETE",
         "enabled": true,
@@ -41,7 +44,10 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 401
+        "order": 603,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     },
     {
         "category": "AI",
@@ -59,7 +65,9 @@
             "torch",
             "Pillow"
         ],
-        "order": 403
+        "order": 604,
+        "command": "",
+        "hotkey": ""
     },
     {
         "category": "AI",
@@ -72,7 +80,44 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 404
+        "order": 605,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
+    },
+    {
+        "category": "AI",
+        "id": "prompt_master",
+        "name": "Prompt Master",
+        "icon": "assets/icons/icon_ai_prompt_master.ico",
+        "types": "*",
+        "scope": "both",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 606,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
+    },
+    {
+        "category": "AI",
+        "id": "ai_img_lab",
+        "name": "[Gemini] Image Tool",
+        "icon": "assets/icons/icon_ai_gemini_vision.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.tga;.tif;.tiff",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 607,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     },
     {
         "category": "AI",
@@ -86,34 +131,9 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 805
-    },
-    {
-        "category": "AI",
-        "id": "vid_frame_interp",
-        "name": "Frame Interpolation (AI)",
-        "icon": "assets/icons/icon_video_frame_interp.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 105
-    },
-    {
-        "category": "AI",
-        "id": "vid_subtitle_gen",
-        "name": "Generate Subtitles (AI)",
-        "icon": "assets/icons/icon_video_generate_subtitle.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 108
+        "order": 608,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     }
 ]

@@ -10,7 +10,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 500
+        "order": 1101
     },
     {
         "category": "Tools",
@@ -23,7 +23,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 501,
+        "order": 1102,
         "dependencies": []
     }
 ]

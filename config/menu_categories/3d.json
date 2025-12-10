@@ -48,7 +48,7 @@
         "category": "3D",
         "id": "mayo_open",
         "name": "Open with Mayo",
-        "icon": "assets/icons/icon_cad_convert_obj.ico",
+        "icon": "assets/icons/icon_3d_mayo.ico",
         "types": ".step;.stp;.iges;.igs;.obj;.stl;.glb;.gltf",
         "scope": "file",
         "status": "COMPLETE",
@@ -56,13 +56,16 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 704
+        "order": 704,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
     },
     {
         "category": "3D",
         "id": "mesh_extract_textures",
         "name": "Extract Textures from FBX",
-        "icon": "assets/icons/icon_mesh_convert_format.ico",
+        "icon": "assets/icons/icon_mesh_extract_textures.ico",
         "types": ".fbx;.obj;.gltf;.glb;.usd",
         "scope": "file",
         "status": "COMPLETE",

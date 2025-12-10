@@ -17,7 +17,7 @@
         "category": "Video",
         "id": "vid_convert",
         "name": "Convert Format",
-        "icon": "assets/icons/video.ico",
+        "icon": "assets/icons/icon_video_convert.ico",
         "types": ".mp4;.mov;.avi;.mkv;.webm",
         "scope": "file",
         "status": "COMPLETE",
@@ -31,7 +31,7 @@
         "category": "Video",
         "id": "vid_extract_audio",
         "name": "Extract Audio",
-        "icon": "assets/icons/audio.ico",
+        "icon": "assets/icons/icon_video_audio_tools.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
         "status": "COMPLETE",
@@ -59,7 +59,7 @@
         "category": "Video",
         "id": "vid_frame_interp_30fps",
         "name": "Frame Interpolation (30fps)",
-        "icon": "assets/icons/video.ico",
+        "icon": "assets/icons/icon_video_frame_interp.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
         "status": "COMPLETE",
@@ -67,13 +67,30 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 106
+        "order": 105
     },
     {
         "category": "Video",
         "id": "vid_create_proxy",
         "name": "Create Proxy Media",
-        "icon": "assets/icons/video.ico",
+        "icon": "assets/icons/icon_video_proxy.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 106,
+        "command": "",
+        "hotkey": "",
+        "dependencies": []
+    },
+    {
+        "category": "Video",
+        "id": "vid_mute",
+        "name": "Remove Audio Track",
+        "icon": "assets/icons/icon_video_mute.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
         "status": "COMPLETE",
@@ -85,23 +102,9 @@
     },
     {
         "category": "Video",
-        "id": "vid_mute",
-        "name": "Remove Audio Track",
-        "icon": "assets/icons/video.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 109
-    },
-    {
-        "category": "Video",
         "id": "vid_from_sequence",
         "name": "Image Sequence to Video",
-        "icon": "assets/icons/video.ico",
+        "icon": "assets/icons/icon_video_seq_to_video.ico",
         "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff",
         "scope": "items",
         "status": "COMPLETE",
@@ -109,6 +112,6 @@
         "submenu": "ContextUp",
         "show_in_tray": false,
         "environment": "system",
-        "order": 110
+        "order": 108
     }
 ]

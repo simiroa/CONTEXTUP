@@ -89,6 +89,13 @@ class ContextUpManager(ctk.CTk):
         self._add_nav_btn("Logs", "logs", 5)
         
         # Spacer
+        ctk.CTkLabel(self.sidebar, text="").grid(row=8, column=0)
+        
+        # Refresh Control
+        self.btn_refresh = ctk.CTkButton(self.sidebar, text="⟳ Refresh Menu", fg_color=("gray70", "gray30"), hover_color=("gray60", "gray40"),
+                                       command=self.refresh_app)
+        self.btn_refresh.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="ew")
+
         ctk.CTkLabel(self.sidebar, text="").grid(row=10, column=0)
         
         # Tray Controls
@@ -240,6 +247,27 @@ class ContextUpManager(ctk.CTk):
                 
         except Exception as e:
             logging.error(f"Failed to sync categories: {e}")
+
+    def refresh_app(self):
+        """Reload configuration from disk and refresh UI and Registry."""
+        try:
+            # 1. Reload Config
+            self.config_manager.load_config(force_reload=True)
+            self._sync_categories()
+            
+            # 2. Refresh UI frames
+            if "editor" in self.frames:
+                self.frames["editor"].load_items()
+               
+            # 3. Re-apply Registry
+            # reusing apply_registry_changes but suppressing its success msg would be nice, 
+            # but for now let's just use it as is or copy logic to avoid double popup if we want custom msg.
+            # actually apply_registry_changes does exactly what we need for registry.
+            self.apply_registry_changes()
+            
+        except Exception as e:
+            logging.error(f"Refresh failed: {e}")
+            messagebox.showerror("Error", f"Refresh failed: {e}")
 
     def save_app_settings(self):
         """Global save for settings.json"""

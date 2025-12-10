@@ -8,10 +8,13 @@
         "scope": "background",
         "status": "COMPLETE",
         "enabled": true,
+        "status": "COMPLETE",
+        "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
         "environment": "system",
-        "order": 901
+        "order": 901,
+        "dynamic_submenu": "copy_my_info"
     },
     {
         "category": "Clipboard",

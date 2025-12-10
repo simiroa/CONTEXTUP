@@ -10,7 +10,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 402
+        "order": 401
     },
     {
         "category": "Image",
@@ -23,7 +23,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 405
+        "order": 402
     },
     {
         "category": "Image",
@@ -36,7 +36,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 406
+        "order": 403
     },
     {
         "category": "Image",
@@ -49,6 +49,6 @@
         "enabled": true,
         "submenu": "ContextUp",
         "environment": "system",
-        "order": 407
+        "order": 404
     }
 ]

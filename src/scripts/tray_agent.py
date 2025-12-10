@@ -30,7 +30,7 @@ except ImportError:
 PID_FILE = src_dir.parent / "logs" / "tray_agent.pid"
 HANDSHAKE_FILE = src_dir.parent / "logs" / "tray_info.json"
 LOG_FILE = src_dir.parent / "logs" / "tray_agent.log"
-CONFIG_FILE = src_dir.parent / "config" / "menu_config.json"
+
 
 
 def kill_pid(pid: int):
@@ -198,19 +198,30 @@ def main():
             clip_module = ClipboardOpener(agent_wrapper)
             clip_module.start()
             
+            # --- Copy My Info ---
+            from scripts.tray_modules.copy_my_info import CopyMyInfoModule
+            info_module = CopyMyInfoModule(agent_wrapper)
+            info_module.start()
+            
             # Store module reference to keep it alive
             if icon_ref:
                 if not hasattr(icon_ref, '_modules'):
                     icon_ref._modules = []
                 icon_ref._modules.append(recent_module)
                 icon_ref._modules.append(clip_module) # Keep alive
+                icon_ref._modules.append(info_module)
             
             # append items
             recent_items = recent_module.get_menu_items()
             if recent_items:
                 menu_entries.extend(recent_items)
                 menu_entries.append(pystray.Menu.SEPARATOR)
-                
+            
+            info_items = info_module.get_menu_items()
+            if info_items:
+                menu_entries.extend(info_items)
+                menu_entries.append(pystray.Menu.SEPARATOR)
+
             clip_items = clip_module.get_menu_items()
             if clip_items:
                 menu_entries.extend(clip_items)
@@ -319,31 +330,31 @@ def main():
                 logger.error(f"Global Hotkey Execution Failed: {e}")
 
         # Scan menu_config for hotkeys
-        if CONFIG_FILE.exists():
-            try:
-                # Config is a list, not a dict with flat_menus
-                menus = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-                if isinstance(menus, dict): menus = menus.get("flat_menus", []) # Handle both just in case
-                
-                count = 0
-                for m in menus:
-                    hk = m.get("hotkey", "").strip()
-                    if hk:
-                        # Convert <ctrl> to ctrl, etc
-                        clean_hk = hk.replace("<", "").replace(">", "").lower()
-                        
-                        # Register
-                        try:
-                            # Use closure to capture 'm'
-                            keyboard.add_hotkey(clean_hk, lambda x=m: execute_hotkey_command(x))
-                            count += 1
-                            logger.info(f"Registered Hotkey: {clean_hk} -> {m.get('name')}")
-                        except Exception as ex:
-                            logger.error(f"Failed to register hotkey '{clean_hk}': {ex}")
-                logger.info(f"Total Hotkeys Registered: {count}")
+        # Scan config for hotkeys using MenuConfig
+        try:
+            from core.config import MenuConfig
+            menu_config = MenuConfig() # Loads from categories automatically
+            menus = menu_config.items
+            
+            count = 0
+            for m in menus:
+                hk = m.get("hotkey", "").strip()
+                if hk:
+                    # Convert <ctrl> to ctrl, etc
+                    clean_hk = hk.replace("<", "").replace(">", "").lower()
+                    
+                    # Register
+                    try:
+                        # Use closure to capture 'm'
+                        keyboard.add_hotkey(clean_hk, lambda x=m: execute_hotkey_command(x))
+                        count += 1
+                        logger.info(f"Registered Hotkey: {clean_hk} -> {m.get('name')}")
+                    except Exception as ex:
+                        logger.error(f"Failed to register hotkey '{clean_hk}': {ex}")
+            logger.info(f"Total Hotkeys Registered: {count}")
 
-            except Exception as e:
-                logger.error(f"Failed to load hotkeys from config: {e}")
+        except Exception as e:
+            logger.error(f"Failed to load hotkeys from config: {e}")
 
     except ImportError:
         logger.warning("keyboard module not found. Hotkeys disabled.")
