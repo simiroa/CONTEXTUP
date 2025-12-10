@@ -3,14 +3,14 @@ import sys
 import torch
 from pathlib import Path
 
-# Try to import necessary libs (should be in conda env)
+# Try to import necessary libs
 try:
     from diffusers import DiffusionPipeline
     import rembg
     from huggingface_hub import hf_hub_download
 except ImportError as e:
     print(f"Error importing AI libraries: {e}")
-    print("Please ensure you are running this in the 'ai_tools' Conda environment.")
+    print("Please ensure dependencies are installed (run install.bat).")
     sys.exit(1)
 
 def download_marigold():

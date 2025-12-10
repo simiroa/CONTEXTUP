@@ -7,9 +7,9 @@ echo ==================================================
 echo.
 
 REM 1. Run Python Cleanup Script (Registry & Cache)
-REM Try Venv first, then system. We need ANY python to run the script.
-if exist "tools\contextup_venv\Scripts\python.exe" (
-    "tools\contextup_venv\Scripts\python.exe" "src\scripts\uninstall_contextup.py"
+REM Use the Embedded Python if available
+if exist "tools\python\python.exe" (
+    "tools\python\python.exe" "src\scripts\uninstall_contextup.py"
 ) else (
     python "src\scripts\uninstall_contextup.py"
 )
@@ -25,15 +25,19 @@ if %errorlevel% neq 0 (
 echo.
 echo --- Removing Environments ---
 
-REM 2. Remove Virtual Environment
-if exist "tools\contextup_venv" (
-    echo Removing Virtual Environment...
-    rmdir /s /q "tools\contextup_venv"
+REM 2. Remove Unified Python Environment
+if exist "tools\python" (
+    echo Removing Local Python...
+    rmdir /s /q "tools\python"
 )
 
-REM 3. Remove Conda Environment (Optional AI)
+REM 3. Remove Legacy Environments (Cleanup)
+if exist "tools\contextup_venv" (
+    echo Removing Legacy Venv...
+    rmdir /s /q "tools\contextup_venv"
+)
 if exist "tools\conda" (
-    echo Removing AI Environment...
+    echo Removing Legacy AI Conda Env...
     rmdir /s /q "tools\conda"
 )
 

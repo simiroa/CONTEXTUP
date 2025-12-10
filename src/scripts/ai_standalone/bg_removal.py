@@ -1,6 +1,6 @@
 """
 Background Removal script using RMBG-2.0, BiRefNet, or InSPyReNet.
-Runs in isolated Conda environment.
+Runs in the unified Python environment.
 """
 import sys
 import argparse
