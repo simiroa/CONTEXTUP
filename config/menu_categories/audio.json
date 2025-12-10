@@ -54,19 +54,5 @@
         "show_in_tray": false,
         "environment": "system",
         "order": 804
-    },
-    {
-        "category": "Audio",
-        "id": "aud_separate_stems",
-        "name": "Separate Stems (AI)",
-        "icon": "assets/icons/audio.ico",
-        "types": ".wav;.mp3;.ogg;.flac;.m4a",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 805
     }
 ]

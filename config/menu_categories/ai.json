@@ -29,5 +29,91 @@
         "command": "",
         "hotkey": "",
         "dependencies": []
+    },
+    {
+        "category": "AI",
+        "id": "img_upscale_ai",
+        "name": "AI Upscale",
+        "icon": "assets/icons/icon_image_upscale_ai.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.bmp",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 401
+    },
+    {
+        "category": "AI",
+        "id": "img_remove_bg",
+        "name": "Remove Background",
+        "icon": "assets/icons/icon_image_remove_bg_ai.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.bmp",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "dependencies": [
+            "rembg",
+            "torch",
+            "Pillow"
+        ],
+        "order": 403
+    },
+    {
+        "category": "AI",
+        "id": "img_marigold_pbr",
+        "name": "Marigold PBR Gen",
+        "icon": "assets/icons/icon_ai_pbr.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.tga;.bmp",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 404
+    },
+    {
+        "category": "AI",
+        "id": "aud_separate_stems",
+        "name": "Separate Stems (AI)",
+        "icon": "assets/icons/icon_audio_separate_stems.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 805
+    },
+    {
+        "category": "AI",
+        "id": "vid_frame_interp",
+        "name": "Frame Interpolation (AI)",
+        "icon": "assets/icons/icon_video_frame_interp.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 105
+    },
+    {
+        "category": "AI",
+        "id": "vid_subtitle_gen",
+        "name": "Generate Subtitles (AI)",
+        "icon": "assets/icons/icon_video_generate_subtitle.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "order": 108
     }
 ]

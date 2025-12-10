@@ -1,82 +1,56 @@
-# PowerShell:
-.\.venv\Scripts\Activate.ps1
-# Command Prompt:
-.venv\Scripts\activate.bat
+# Installation Guide
 
-# Install dependencies
-pip install -r requirements.txt
-```
+## 🚀 Quick Start (Recommended)
 
-> **Note:** If you have an NVIDIA GPU, ensure you install the CUDA-enabled version of PyTorch as specified in `requirements.txt`.
+**ContextUp** now features a unified, portable installation process.
 
-### 2. Restore Tools & Environment (Vital)
+1.  **Run Installer**:
+    Double-click `install.bat`.
+    *   It will download a portable version of Python 3.11.
+    *   It will automatically install all dependencies (including AI libraries).
+    *   It will register the Windows Context Menu.
 
-If you downloaded the **Minimal Backup** version, you need to restore the environment and tools.
+2.  **Launch Manager**:
+    After installation, `ContextUpManager.bat` will launch automatically.
+    You can use this to check for updates or manage settings.
 
-1.  **Run the Master Setup**:
+3.  **Verify**:
+    Right-click any file or folder. You should see the **"ContextUp"** menu.
+
+---
+
+## 🛠️ Manual Installation (Developers)
+
+If you prefer to set up manually or are developing:
+
+1.  **Environment**:
+    Ensure you have Python 3.11+ installed.
+    
+2.  **Dependencies**:
     ```powershell
-    python setup_all.py
+    pip install -r requirements_core.txt
     ```
-    This will:
-    *   Download and configure the **Python Environment** (`tools/python`).
-    *   Download external tools like **FFmpeg, ExifTool, Real-ESRGAN** (`tools/ffmpeg`, etc.).
-    *   Download necessary AI models (if any).
 
-2.  **Verify Setup**:
-    Check if `tools/python/python.exe` exists. This is the engine that runs ContextUp.
+3.  **Register Menu**:
+    ```powershell
+    python manage.py register
+    ```
 
-### 3. Setup AI Environment (Optional)
+## 📦 Portability & Moving
 
-For advanced AI features (Background Removal, Upscaling), you need to set up a Conda environment.
+The entire `ContextUp` folder is portable. 
+*   **To Move**: Simply move the folder to a new location (e.g., USB drive).
+*   **To Re-activate**: Run `python manage.py register` in the new location to update registry paths.
 
-1.  Install **Miniconda** or **Anaconda**.
-2.  Run the setup script:
+## 🗑️ Uninstallation
 
-```powershell
-python tools/setup_ai_conda.py
-```
+To remove the context menu and clean up:
 
-This will create an `ai_tools` environment with Python 3.10 and necessary AI libraries.
+1.  Run `ContextUp_Uninstall.bat`.
+2.  Select "Yes" to remove registry keys and the local python environment.
 
-### 4. Configure Settings
+## ❓ Troubleshooting
 
-The tool uses a `config/settings.json` file. If it doesn't exist, it will use defaults.
-You can configure your API keys (for Gemini, etc.) using the **Manager GUI**.
+*   **"Python not found"**: Ensure `install.bat` completed successfully and `tools/python` exists.
+*   **Tray Icon not appearing**: Run `ContextUpManager.bat` manually and check the console for errors.
 
-### 5. Register Context Menu
-
-To add the tools to your Windows Right-Click Menu, run:
-
-```powershell
-python manage.py register
-```
-
-You should see a "Registration complete" message.
-
-### 6. Verify
-
-Right-click on any file or folder. You should see a **"Creator Tools"** menu item.
-
-## Moving the Folder
-
-If you move this project folder to a new location:
-1.  Open a terminal in the *new* location.
-2.  Run `python manage.py register` again.
-    *   This will automatically update the registry paths to point to the new location.
-
-## Uninstallation
-
-To remove the context menu:
-
-```powershell
-python manage.py unregister
-```
-
-## Troubleshooting
-
-### Tray Agent Issues
-If the Tray Agent icon does not appear:
-1. Open **Manager GUI**.
-2. Go to **Settings**.
-3. In "Python Environment", ensure the path is valid or select "Custom" to point to your System Python if needed.
-4. Click **"Test Connection"** to verify dependencies (`pystray`, `Pillow`, `pywin32`).

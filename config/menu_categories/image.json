@@ -1,19 +1,6 @@
 [
     {
         "category": "Image",
-        "id": "img_upscale_ai",
-        "name": "AI Upscale",
-        "icon": "assets/icons/icon_image_upscale_ai.ico",
-        "types": ".jpg;.jpeg;.png;.webp;.bmp",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "environment": "system",
-        "order": 401
-    },
-    {
-        "category": "Image",
         "id": "img_merge_exr",
         "name": "Merge to EXR",
         "icon": "assets/icons/icon_image_exr_merge.ico",
@@ -24,37 +11,6 @@
         "submenu": "ContextUp",
         "environment": "system",
         "order": 402
-    },
-    {
-        "category": "Image",
-        "id": "img_remove_bg",
-        "name": "Remove Background",
-        "icon": "assets/icons/icon_image_remove_bg_ai.ico",
-        "types": ".jpg;.jpeg;.png;.webp;.bmp",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "environment": "system",
-        "dependencies": [
-            "rembg",
-            "torch",
-            "Pillow"
-        ],
-        "order": 403
-    },
-    {
-        "category": "Image",
-        "id": "img_marigold_pbr",
-        "name": "Marigold PBR Gen",
-        "icon": "assets/icons/icon_ai_pbr.ico",
-        "types": ".jpg;.jpeg;.png;.webp;.tga;.bmp",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "environment": "system",
-        "order": 404
     },
     {
         "category": "Image",
