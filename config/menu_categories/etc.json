@@ -15,21 +15,6 @@
             "ffmpeg-python"
         ],
         "order": 501
-    },
-    {
-        "category": "Etc",
-        "id": "tool_translator",
-        "name": "Realtime Translator",
-        "icon": "assets/icons/icon_sys_translator.ico",
-        "types": "*",
-        "scope": "items",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "environment": "system",
-        "order": 502,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
     }
 ]
+```

@@ -77,6 +77,14 @@ def setup_embedded_python():
         subprocess.run(cmd, check=True)
         print("Local Python setup complete.")
         
+        # Verify installation actually worked
+        py_exe = PYTHON_DIR / "python.exe"
+        if not py_exe.exists():
+            print(f"[ERROR] python.exe not found at: {py_exe}")
+            print("The installer exited successfully, but the file is missing.")
+            print("Possible causes: Antivirus blocking, disk write delay, or installer failed silently.")
+            return False
+
         # Only remove if we downloaded it as "python_installer.exe"
         if installer_path.name == "python_installer.exe" and installer_path.exists():
             os.remove(installer_path)

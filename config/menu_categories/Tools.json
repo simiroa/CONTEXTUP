@@ -18,7 +18,7 @@
         "name": "Realtime Translator",
         "icon": "assets/icons/icon_sys_translator.ico",
         "types": "*",
-        "scope": "items",
+        "scope": "background",
         "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",

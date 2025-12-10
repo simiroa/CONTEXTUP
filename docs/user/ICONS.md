@@ -106,6 +106,8 @@ Each icon corresponds to a specific feature ID in `menu_config.json`.
 | `icon_sys_create_symlink.ico` | A folder icon with a shortcut arrow or chain link overlay |
 | `icon_sys_copy_unc_path.ico` | A network path symbol (\\hostname\path) with a copy icon |
 | `icon_sys_finder.ico` | A folder with a powerful searchlight or radar scanning it |
+| `icon_sys_copy_info.ico` | A digital ID card or profile with a copy symbol |
+| `icon_sys_open_path.ico` | A folder opening with a glowing path leading into it |
 | `icon_sys_open_recent_folder.ico` | An open folder with a clock or history symbol |
 | `ContextUp.ico` | Abstract geometric logo representing connections and "Up" arrow, C and U monogram, futuristic, cyan and purple gradient |
 | `audio.ico` | A generic modern speaker or sound wave icon, orange theme |
