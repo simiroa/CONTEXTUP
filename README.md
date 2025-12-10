@@ -1,134 +1,97 @@
-### 🛠️ System Utilities
-*   **Copy My Info**: A robust clipboard manager for your personal data (Email, Phone, IP, etc.) with a dedicated GUI. Supports inline editing and auto-save.
-*   **Folder: Move to New...**: Moves selected files to a new folder. Handles naming collisions automatically.
-*   **Folder: Remove Empty**: Recursively removes empty subdirectories within the selected folder.
-*   **Folder: Arrange Sequences**: Groups file sequences (e.g., `shot.001.png`, `shot.002.png`) into separate folders based on their prefix.
-*   **Folder: Find Missing Frames**: Scans image sequences for missing frame numbers and reports gaps.
-*   **Clipboard: Save Image**: Saves the current image in the clipboard to a file.
-*   **Clipboard: Analyze Image**: Uses Ollama (Vision) to describe the image currently in the clipboard.
-*   **Clipboard: Analyze Error**: Uses an LLM to analyze error messages captured in the clipboard and suggest solutions.
-*   **Manager GUI**: A central hub to manage settings, toggle features, check system health, and update the registry. Now supports **Category Management**, **Grouped Views**, and **System Python** integration.
+# ContextUp
 
-### 🏷️ Rename Tools
-*   **Batch Rename...**: A unified GUI for adding prefixes, suffixes, or removing text from filenames. Includes real-time preview.
-*   **Renumber...**: A unified GUI for renumbering file sequences. Supports both "Selected Files" and "Folder" modes with collision detection.
+**ContextUp** is a powerful Windows Context Menu extension suite that boosts productivity by adding essential tools directly to your right-click menu.
 
-### 📄 Document Tools
-*   **Merge PDFs**: Merges multiple selected PDF files into a single document.
-*   **Split PDF**: Splits a PDF into individual pages or converts pages to images.
-*   **Analyze Document**: Uses Ollama to summarize or chat with the content of a PDF file.
-
-### 🖼️ Image Tools
-*   **Convert Format**: Batch converts images to PNG, JPG, WEBP, BMP, TGA, TIFF, or ICO. Supports progress tracking.
-*   **Resize to POT**: Resizes images to the nearest Power-of-Two dimensions (e.g., 512x512, 1024x1024). Useful for game textures. Supports "Stretch" and "Canvas/Pad" modes.
-*   **Remove EXIF**: Strips metadata (EXIF) from images for privacy.
-*   **EXR Split/Merge**: Splits multi-layer EXR files into separate images or merges multiple images into a layered EXR.
-*   **Remove Background (AI)**: Uses **RMBG-2.0** (via isolated AI environment) to instantly remove backgrounds.
-*   **Upscale (AI)**: Uses **Real-ESRGAN** to upscale images (x4) with high fidelity.
-*   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
-*   **Generate Prompt**: Uses Ollama (Vision) to generate descriptive prompts from images.
-*   **Texture Tools**: Generates PBR texture maps (Normal, Roughness, etc.) using **Marigold (Diffusion-based)**. High-quality estimation from single images. Supports ORM packing and DirectX/OpenGL normal maps.
-
-### 🎥 Video Tools
-*   **Convert / Proxy**: A unified GUI to convert videos (MP4, MOV, etc.) or create 1/2 resolution proxies for editing.
-*   **Sequence to Video**: Converts an image sequence into a video file. Includes "Skip First Frame" option for Unreal Engine exports.
-*   **Audio Studio**: A comprehensive GUI for all audio needs:
-    *   **Converter**: Batch convert audio formats (MP3, WAV, FLAC, etc.).
-    *   **AI Separator**: Isolate vocals and accompaniment using **Spleeter**.
-    *   **Video Audio**: Extract or remove audio tracks from video files.
-*   **Frame Interpolation (RIFE)**: Uses **RIFE (Real-Time Intermediate Flow Estimation)** to smooth videos by generating intermediate frames (e.g., 30fps -> 60fps).
-*   **Generate Subtitles**: Uses **Faster-Whisper** to automatically generate `.srt` subtitles for videos.
-
-### 🔧 Tools
-*   **Real-time Translator**: A minimalist, always-on-top translator (Google Translate) with Auto-Clipboard detection. Now unified for both files and folders.
-*   **YouTube Downloader**: Downloads videos or audio from YouTube URLs using yt-dlp.
-*   **Global Hotkeys**: Supports system-wide shortcuts (e.g., `Ctrl+Alt+V` to open folder from clipboard, `Ctrl+Shift+Alt+F1` for Manager). Configurable via Manager.
-
-### 🧊 3D Tools
-*   **Convert Mesh**: Converts 3D models between OBJ, FBX, GLTF, and PLY formats using Blender.
-*   **Extract Textures**: Extracts embedded textures from 3D model files.
-*   **Convert CAD**: Converts STEP/IGES CAD files to OBJ mesh format using Mayo. Includes "Open with Mayo" for direct viewing.
-*   **Open with Mayo**: Directly opens supported 3D files (.step, .obj, etc.) in the Mayo viewer.
-
-### 🛠️ Installation (v2.0 Hybrid Install)
-
-ContextUp now uses a **Hybrid Environment Strategy** ensuring maximum stability and performance.
-
-1.  **Download & Extract**:
-    *   Download `ContextUp_Release.zip` and extract it to a folder (e.g., `C:\ContextUp`).
-    *   *Tip: For offline installation, ensure `tools/python-3.11.9-amd64.exe` is present.*
-
-2.  **Run Installer**:
-    *   Double-click **`ContextUp_Install.bat`**.
-    *   This will:
-        *   Install a local **Embedded Python 3.11** (Core System).
-        *   (Optional) Set up **AI Conda Environment**.
-        *   Launch the **Manager**.
-
-3.  **Register Menu**:
-    *   In the Manager, click **"Register Menu"**.
-    *   Right-click any file to see the new context menu!
-
-4.  **Manage Updates**:
-    *   Run `ContextUpManager.bat` anytime to update settings or check health.
+It operates entirely on a **local Embedded Python** environment, ensuring zero conflict with your system settings and maximum portability.
 
 ---
 
-## 🏗️ Technical Architecture
+## ✨ Features
 
-This project strictly prioritizes **Embedded Python** to ensure stability and portability:
+### 🛠️ System & Management
+*   **Copy My Info**: (New) Quickly copy personal snippets (Email, IP, Phone) via a cascading menu. Includes a modern GUI Manager.
+*   **Manager GUI**: Central dashboard to toggle features, check updates, and manage the registry.
+*   **Folder Tools**: "Move to New Folder", "Remove Empty Folders", "Arrange File Sequences".
+*   **Global Hotkeys**: Custom keyboard shortcuts for system-wide actions.
 
-1.  **Embedded Python (Primary)**:
-    *   **ALL** features (GUI, System Tools, Media Processing) run in the local `tools/python` environment by default.
-    *   This ensures the app works immediately after download, without relying on the user's system Python.
-    *   **Automatic Installation**: If the embedded environment is missing, the setup script (`setup_all.py`) will automatically download and configure it.
+### � Clipboard Tools
+*   **Save Image**: Instantly save clipboard images to a file.
+*   **Analyze Error**: (AI) Diagnose error messages in your clipboard.
+*   **Open Path**: Open the folder path currently in your clipboard.
 
-2.  **AI Environment (Secondary/Isolated)**:
-    *   Runs heavy AI workloads (PyTorch, CUDA) like Background Removal and Upscaling.
-    *   Isolated to prevent dependency conflicts with the primary environment.
-    *   Automatically activated only when needed via `src/utils/ai_runner.py`.
+### 🖼️ Image & 3D
+*   **Batch Convert**: Images to PNG, JPG, WEBP, ICO, etc.
+*   **Resize**: Smart resizing (Power-of-Two, etc.) for game dev.
+*   **Remove Background**: AI-powered background removal.
+*   **Upscale**: AI Super-resolution.
+*   **Texture Tools**: Generate PBR maps from images.
+*   **3D Converters**: CAD (STEP/IGES) to OBJ, Mesh conversions.
 
-**Policy**: Embedded Python is the default. However, you can now configure the Manager to use your **System Python** via the **Settings** tab if you require specific system-installed libraries (e.g. for the Tray Agent).
+### 🎥 Video & Audio
+*   **Video Proxy**: Create lightweight proxy files for editing.
+*   **Audio Studio**: Separate vocals (Spleeter), convert formats, extract audio.
+*   **Subtitles**: Auto-generate .srt subtitles using Whisper.
 
-For a detailed code map and file responsibilities, please refer to [**architecture.md**](architecture.md).
+### � Documents
+*   **PDF Tools**: Merge, Split, and Analyze PDFs.
+*   **Renaming**: Batch Rename and Renumbering tools with preview.
 
-## 📚 Documentation
+---
 
-- **User Guide**:
-    - [Features List](docs/user/FEATURES.md)
-    - [Icon Reference](docs/user/ICONS.md)
-    - [User Testing Guide](docs/user/USER_TESTING.md)
+## � Installation
 
-- **Installation**:
-    - [Conda Environment Setup](docs/install/INSTALL_CONDA.md)
-    - [Python Environment Guide](docs/install/PYTHON_ENV_GUIDE.md)
+1.  **Download & Extract**:
+    *   Unzip the release to a permanent location (e.g., `C:\ContextUp`).
 
-- **Development**:
-    - [Contributing](docs/dev/CONTRIBUTING.md)
-    - [Development Guide](docs/dev/DEVELOPMENT.md)
-    - [GUI Guidelines](docs/dev/GUI_GUIDELINES.md)
-    - [Embedded Python & Tkinter](docs/dev/EMBEDDED_PYTHON_TKINTER_GUIDE.md)
+2.  **Initialize**:
+    *   Run **`ContextUp_Install.bat`**.
+    *   This sets up the **local Embedded Python** environment automatically.
 
-- **Support**:
-    - [Troubleshooting & Crash Fixes](docs/troubleshooting/TROUBLESHOOTING.md)
+3.  **Activate**:
+    *   The **ContextUp Manager** will launch.
+    *   Click **"Register Menu"** to Add ContextUp to your right-click menu.
 
-## 🧭 Adding a New Menu Item (developer quick guide)
-- Use the embedded Python (`tools/python/python.exe`) for any installs; avoid system Python.
-- **Config Strategy**:
-  - ContextUp now splits configuration by category in `config/menu_categories/*.json`.
-  - To add a new tool, create or edit the relevant JSON file (e.g., `config/menu_categories/my_tool.json`).
-  - The Manager will automatically detect these files using `src/utils/config_builder.py`.
-- Required per entry: `id` (unique, snake_case), `name` (UI label), `category`, `submenu` (`ContextUp`, `(Top Level)`, or custom), `command`, `types`, `scope`, `enabled`.
-- **Dynamic Submenus**: Use `"dynamic_submenu": "copy_my_info"` (or similar) to register complex nested menus like the "Copy My Info" feature.
-- **Icons**: Place 24px/32px PNG or ICO in `assets/icons/`. Use absolute paths or relative to repo root.
+---
 
-## 🛡️ Safe Save Policy
-To prevent accidental data loss, ContextUp tools now implement a **"Rename on Conflict"** policy.
-- If a file (e.g., `image_removed.png`) already exists, the tool will automatically save the new file as `image_removed_01.png`, `image_removed_02.png`, etc.
-- This ensures your previous work is never overwritten without explicit confirmation.
+## ⚙️ Configuration
 
-## 🤝 Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+ContextUp uses a modular configuration system for easy customization.
+
+*   **Menu Categories**: 
+    *   Tools are defined in `config/menu_categories/*.json` (e.g., `image.json`, `system.json`).
+    *   The system loads these files to build the context menu.
+*   **Personal Data**:
+    *   "Copy My Info" data is stored in `config/copy_my_info.json`.
+    *   This file is local-only and not shared.
+
+---
+
+## 👨‍💻 Development Policies
+
+### 1. Python Environment
+*   **Strictly Embedded**: To ensure stability, this project uses **ONLY** the embedded Python located in `tools/python/`.
+*   **No System Python**: Scripts should not rely on the user's installed Python. All dependencies must be installed into the embedded environment.
+
+### 2. Adding New Tools
+1.  **Create Script**: Write your Python script in `src/scripts/`.
+2.  **Define Config**: Create or edit a JSON file in `config/menu_categories/`.
+    ```json
+    {
+        "id": "my_tool_id",
+        "name": "My New Tool",
+        "category": "Custom",
+        "submenu": "ContextUp",
+        "command": "python src/scripts/my_tool.py",
+        "scope": "file"
+    }
+    ```
+3.  **Apply**: Open Manager and click **"Apply Menu Changes"**.
+
+### 3. Icon Architecture
+*   Place icons in `assets/icons/`.
+*   Recommended format: `.ico` or `.png` (24x24 or 32x32).
+
+---
 
 ## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
