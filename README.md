@@ -38,8 +38,9 @@
 *   **Frame Interpolation (RIFE)**: Uses **RIFE (Real-Time Intermediate Flow Estimation)** to smooth videos by generating intermediate frames (e.g., 30fps -> 60fps).
 *   **Generate Subtitles**: Uses **Faster-Whisper** to automatically generate `.srt` subtitles for videos.
 
-### 🌐 System Tools
-*   **Real-time Translator**: A minimalist, always-on-top translator (Google Translate) with Auto-Clipboard detection.
+### 🔧 Tools
+*   **Real-time Translator**: A minimalist, always-on-top translator (Google Translate) with Auto-Clipboard detection. Now unified for both files and folders.
+*   **YouTube Downloader**: Downloads videos or audio from YouTube URLs using yt-dlp.
 *   **Global Hotkeys**: Supports system-wide shortcuts (e.g., `Ctrl+Alt+V` to open folder from clipboard, `Ctrl+Shift+Alt+F1` for Manager). Configurable via Manager.
 
 ### 🧊 3D Tools

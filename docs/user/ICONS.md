@@ -1,4 +1,16 @@
-# Icon Generation Prompts (ComfyUI Optimized)
+# Icon Generation Prompts (AI / Nanobanana)
+
+This document provides prompts for generating icons using **Google Imagen / Gemini** via the automated batch script.
+
+## Automation
+You can automatically generate missing icons using the provided tool:
+```bash
+python tools/generate_icons_ai.py
+```
+This script respects the API rate limits (5s delay) and converts results to `.ico`.
+
+---
+
 
 This document provides optimized prompts for generating icons using **ComfyUI** (Stable Diffusion XL or similar models).
 Each icon corresponds to a specific feature ID in `menu_config.json`.
@@ -14,9 +26,19 @@ Each icon corresponds to a specific feature ID in `menu_config.json`.
 > **Positive**: 3d render, glassmorphism, translucent, glossy, soft studio lighting, isometric view, rounded corners, minimalism, high quality, 8k, unreal engine 5 render, white background
 > **Negative**: text, watermark, low quality, pixelated, blurry, noisy, distorted, realistic photo, complex details, shadow, dark background
 
----
 
-## 1. Image Tools (Cyan/Blue Theme)
+## 1. AI Tools (Rainbow/Holographic Theme)
+
+| ID | Prompt Subject |
+| :--- | :--- |
+| `icon_image_remove_bg_ai.ico` | A subject popping out of a frame, checkerboard background behind it |
+| `icon_ai_pbr.ico` | A material sphere showing normal map bumps and roughness details |
+| `icon_video_frame_interp.ico` | Two video frames with a glowing interpolated frame appearing in between |
+| `icon_audio_separate_stems.ico` | A complex sound wave splitting into distinct colorful strands (vocals, drums, bass) |
+| `icon_image_upscale_ai.ico` | A small pixelated square transforming into a large sharp diamond, upward arrow |
+| `icon_doc_analyze_ollama.ico` | A document being scanned by an AI brain or eye |
+
+## 2. Image Tools (Cyan/Blue Theme)
 
 | ID | Prompt Subject |
 | :--- | :--- |
@@ -73,3 +95,18 @@ Each icon corresponds to a specific feature ID in `menu_config.json`.
 | `icon_sys_pdf_split.ico` | A red PDF document splitting into multiple pages |
 | `icon_sys_pdf_merge.ico` | Multiple PDF pages combining into a single document |
 | `icon_doc_analyze_ollama.ico` | A document being scanned by an AI brain or eye |
+| `icon_mesh_lod.ico` | A high-poly sphere transitioning to a low-poly geometric shape |
+
+## 6. Additional System Icons
+| ID | Prompt Subject |
+| :--- | :--- |
+| `icon_sys_translator.ico` | A speech bubble with language symbols (A/文) and translation arrow |
+| `icon_video_downloader.ico` | A red play button downloading into a file folder |
+| `icon_ai_pbr.ico` | A material sphere showing normal map bumps and roughness details |
+| `icon_sys_create_symlink.ico` | A folder icon with a shortcut arrow or chain link overlay |
+| `icon_sys_copy_unc_path.ico` | A network path symbol (\\hostname\path) with a copy icon |
+| `icon_sys_finder.ico` | A folder with a powerful searchlight or radar scanning it |
+| `icon_sys_open_recent_folder.ico` | An open folder with a clock or history symbol |
+| `ContextUp.ico` | Abstract geometric logo representing connections and "Up" arrow, C and U monogram, futuristic, cyan and purple gradient |
+| `audio.ico` | A generic modern speaker or sound wave icon, orange theme |
+| `video.ico` | A generic film clapperboard or play icon, purple theme |

@@ -528,6 +528,33 @@
         "order": 1004
     },
     {
+        "category": "Tools",
+        "id": "tool_translator",
+        "name": "Realtime Translator",
+        "icon": "assets/icons/icon_sys_translator.ico",
+        "types": "*",
+        "scope": "items",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 501,
+        "dependencies": []
+    },
+    {
+        "category": "Tools",
+        "id": "video_downloader_gui",
+        "name": "YouTube Downloader",
+        "icon": "assets/icons/icon_video_downloader.ico",
+        "types": "*",
+        "scope": "items",
+        "status": "COMPLETE",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "environment": "system",
+        "order": 500
+    },
+    {
         "category": "Video",
         "id": "vid_arrange_sequence",
         "name": "Arrange Image Sequences",

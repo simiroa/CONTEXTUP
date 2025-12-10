@@ -2,115 +2,128 @@
 
 Use this checklist to verify that all features of ContextUp are working correctly.
 
-## 1. System & Manager
-- [ ] **ContextUp Manager** (`sys_manager_gui`)
-    - [ ] Opens successfully.
-    - [ ] "Register Menu" works.
-    - [ ] **Updates & Health Tab** (v3.2):
-        - [ ] "Update All Libraries" runs successfully.
-        - [ ] "Library Cleaner" lists installed packages.
-        - [ ] "Uninstall" button works (and protects critical libs).
-    - [ ] **Smart Dependency System**:
-        - [ ] Missing dependencies show "Setup Required" (Yellow).
-        - [ ] Clicking inactive tool opens Install Dialog.
-        - [ ] Installation completes and tool becomes active.
-- [ ] **Open Recent Folders** (`sys_open_recent`)
-    - [ ] Shows list of recently accessed folders.
-    - [ ] Clicking a folder opens it.
-
-## 2. File & Folder Operations
-- [ ] **Move to New Folder** (`sys_move_to_new_folder`)
-    - [ ] Moves selected files to a new folder.
-    - [ ] Handles naming collisions.
-- [ ] **Find Missing Frames** (`sys_find_missing_frames`)
-    - [ ] Detects gaps in image sequences (e.g., `shot.001.png`, `shot.003.png`).
-- [ ] **Arrange Sequences** (`sys_arrange_sequences`)
-    - [ ] Groups files by prefix into folders.
-- [ ] **Smart Rename** (`sys_smart_rename`)
-    - [ ] Batch rename with prefix/suffix/replace.
-    - [ ] Real-time preview works.
-
-## 3. Image Tools
-- [ ] **Convert Format** (`image_format_convert`)
-    - [ ] Converts images (JPG, PNG, WEBP, etc.).
-- [ ] **Resize to POT** (`image_resize_pot`)
-    - [ ] Resizes to Power-of-Two (e.g., 512x512).
-- [ ] **Remove EXIF** (`image_remove_exif`)
-    - [ ] Strips metadata.
-- [ ] **EXR Tools**
-    - [ ] **Split Layers** (`image_exr_split`): Splits EXR into separate images.
-    - [ ] **Merge Layers** (`image_exr_merge`): Merges images into one EXR.
-- [ ] **AI Upscale** (`image_upscale_ai`)
-    - [ ] Upscales image x2 or x4.
-- [ ] **Remove Background** (`image_remove_bg_ai`)
-    - [ ] Removes background using RMBG-2.0.
-- [ ] **Analyze Image** (`image_analyze_ollama`)
-    - [ ] Describes image content using Ollama.
-
-## 4. Video & Audio Tools
-- [ ] **YouTube Downloader** (`video_downloader_gui`)
-    - [ ] Analyzes URL.
-    - [ ] Downloads video (Best/4K/1080p).
-    - [ ] Queue works.
-    - [ ] History saves correctly.
-- [ ] **Convert Video** (`video_convert`)
-    - [ ] Converts video formats (MP4, MOV, etc.).
-    - [ ] Creates Proxy (1/2 res).
-- [ ] **Sequence to Video** (`video_seq_to_video`)
-    - [ ] Converts image sequence to MP4.
-- [ ] **Frame Interpolation** (`video_frame_interp`)
-    - [ ] Increases framerate (AI).
-- [ ] **Generate Subtitles** (`video_generate_subtitle`)
-    - [ ] Generates .srt file from video.
-- [ ] **Audio Tools** (`video_audio_tools`)
-    - [ ] Extracts audio.
-    - [ ] Removes audio.
-- [ ] **Audio Converter** (`audio_convert_format`)
-    - [ ] Converts audio formats.
-
-## 5. 3D Tools
-- [ ] **Convert Mesh** (`mesh_convert_format`)
-    - [ ] Converts OBJ/FBX/GLTF.
+## 1. 3D Tools
 - [ ] **Auto LOD Generator** (`mesh_auto_lod`)
-    - [ ] Generates LODs (decimation).
-    - [ ] Bakes textures (Normal/AO).
-- [ ] **Convert CAD** (`cad_convert_obj`)
-    - [ ] Converts STEP/IGES to OBJ.
+    - [ ] Generates simplified mesh (LOD).
+- [ ] **Convert CAD to OBJ** (`3d_convert_obj`)
+    - [ ] Converts STEP/IGES files to OBJ.
+- [ ] **Convert Mesh Format** (`mesh_convert_format`)
+    - [ ] Converts between OBJ, FBX, GLTF, etc.
+- [ ] **Extract Textures from FBX** (`mesh_extract_textures`)
+    - [ ] Extracts embedded textures from binary FBX.
+- [ ] **Open with Mayo** (`mayo_open`)
+    - [ ] Launches Mayo 3D viewer.
 
-## 6. AI Generation
-- [ ] **PBR Generator** (`ai_pbr_gen`)
-    - [ ] Generates Normal/Roughness maps from image.
-- [ ] **Make Tileable** (`ai_maketile`)
-    - [ ] Makes texture seamless.
-- [ ] **Style Transfer** (`ai_style_change`)
-    - [ ] Applies style to image.
-- [ ] **Inpaint/Outpaint** (`ai_inpaint`, `ai_outpaint`)
-    - [ ] Modifies image content.
+## 2. AI Tools
+- [ ] **Gemini Image Tool** (`ai_img_lab`)
+    - [ ] Analyzes/Processes image using Gemini API.
+- [ ] **Prompt Master** (`prompt_master`)
+    - [ ] Opens prompt management interface.
+- [ ] **Remove Background** (`img_remove_bg`)
+    - [ ] Removes image background using RMBG-2.0.
+- [ ] **Marigold PBR Gen** (`img_marigold_pbr`)
+    - [ ] Generates PBR maps (Normal/Depth/Displacement) from image.
+- [ ] **Frame Interpolation (AI)** (`vid_frame_interp`)
+    - [ ] Increases video framerate using AI Interpolation.
+- [ ] **Separate Stems (AI)** (`aud_separate_stems`)
+    - [ ] Separates audio into stems (Vocals, Drums, Bass, Other) using AI.
 
-## 7. Utilities
-- [ ] **Real-time Translator** (`sys_translator`)
-    - [ ] Translates clipboard text.
-    - [ ] Overlay window works.
-- [ ] **Clipboard AI** (`sys_clipboard_ai`)
-    - [ ] Analyzes clipboard content.
-- [ ] **PDF Tools**
-    - [ ] **Merge PDFs** (`sys_pdf_merge`).
-    - [ ] **Split PDF** (`sys_pdf_split`).
+## 3. Audio Tools
+- [ ] **Convert Format** (`aud_convert`)
+    - [ ] Converts audio files (WAV, MP3, etc.).
+- [ ] **Extract BGM (Filter)** (`aud_extract_bgm`)
+    - [ ] Filters out voice using FFmpeg/demucs algorithms.
+- [ ] **Extract Voice (Filter)** (`aud_extract_voice`)
+    - [ ] Filters out BGM.
+- [ ] **Normalize Volume** (`aud_normalize`)
+    - [ ] Normalizes audio volume (Loudnorm).
+- [ ] **Separate Stems (AI)** (`aud_separate_stems`)
+    - [ ] Separates audio into stems (Vocals, Drums, Bass, Other) using AI.
 
-## 8. Stability Tiers (Unified Environment)
+## 4. Clipboard Tools
+- [ ] **Analyze Clipboard Error** (`tool_analyze_error`)
+    - [ ] Analyzes error message in clipboard.
+- [ ] **Copy My Info** (`clipboard_copy_info`)
+    - [ ] Copies user info/system info to clipboard.
+- [ ] **Open Path from Clipboard** (`clipboard_open_from_path`)
+    - [ ] Opens file/folder path from clipboard content.
+- [ ] **Save Clipboard Image Here** (`clipboard_save_image`)
+    - [ ] Saves image in clipboard to current folder.
 
-To ensure stability in the unified embedded environment, tools are classified into two tiers:
+## 5. Document Tools
+- [ ] **Analyze Document (Ollama)** (`doc_analyze_ollama`)
+    - [ ] Summarizes/Analyzes PDF content using Ollama.
+- [ ] **Merge PDFs** (`doc_pdf_merge`)
+    - [ ] Merges multiple PDF files.
+- [ ] **Split PDF** (`doc_pdf_split`)
+    - [ ] Splits PDF into pages or ranges.
 
-### 🟢 Safe Tier (Standard)
-*   **Description**: Uses only standard Python libraries or lightweight dependencies (Pillow, Requests).
-*   **Risk**: Low. Should work on any Windows machine.
-*   **Tools**: Rename, File Ops, Document Tools, Basic Image/Audio conversion.
+## 6. Tools
+- [ ] **Realtime Translator** (`tool_translator`)
+    - [ ] Real-time translation tool (Window/Item scope).
+- [ ] **YouTube Downloader** (`video_downloader_gui`)
+    - [ ] Downloads video from URL.
 
-### 🟠 Sensitive Tier (AI/Heavy)
-*   **Description**: Depends on complex binaries (PyTorch, CUDA, FFmpeg) running in the embedded environment.
-*   **Risk**: Moderate. Sensitive to driver versions and path lengths.
-*   **Tools**: Remove Background, AI Upscale, Frame Interpolation, Auto LOD, YouTube Downloader.
-*   **Verification**: Run `tests/verify_ai_env.py` to check if these libraries load correctly.
+## 7. Image Tools
+- [ ] **AI Upscale** (`img_upscale_ai`)
+    - [ ] Upscales image using Real-ESRGAN.
+- [ ] **Marigold PBR Gen** (`img_marigold_pbr`)
+    - [ ] Generates PBR maps (Normal/Depth/Displacement) from image.
+- [ ] **Merge to EXR** (`img_merge_exr`)
+    - [ ] Merges multiple images into layers of one EXR file.
+- [ ] **Remove Background** (`img_remove_bg`)
+    - [ ] Removes image background using RMBG-2.0.
+- [ ] **Remove Metadata (EXIF)** (`img_remove_exif`)
+    - [ ] Strips EXIF data.
+- [ ] **Resize (Power of 2)** (`img_resize_pot`)
+    - [ ] Resizes image to nearest Power of 2 dimensions.
+- [ ] **Split EXR Layers** (`img_split_exr`)
+    - [ ] Extracts layers from EXR to separate images.
+
+## 8. Rename Tools
+- [ ] **Batch Rename...** (`rename_batch`)
+    - [ ] Renames multiple files with pattern.
+- [ ] **Renumber Sequence...** (`rename_sequence`)
+    - [ ] Renumbers file sequences.
+
+## 9. System Tools
+- [ ] **ContextUp Manager** (`app_manager`)
+    - [ ] Opens settings and dependency manager.
+- [ ] **Copy UNC Path** (`sys_copy_unc_path`)
+    - [ ] Copies network path to clipboard.
+- [ ] **Create Symlink Folder** (`file_create_symlink`)
+    - [ ] Creates symbolic link for selected folder.
+- [ ] **Move into New Folder** (`file_move_in_new_folder`)
+    - [ ] Moves selection to a new folder.
+- [ ] **Power Finder** (`tool_finder`)
+    - [ ] Advanced file search tool.
+- [ ] **Remove Empty Subfolders** (`dir_clean_empty`)
+    - [ ] Recursively removes empty directories.
+- [ ] **Reopen Last Closed Folder** (`file_reopen_recent`)
+    - [ ] Reopens the most recently closed explorer window path.
+- [ ] **Unwrap Folder** (`dir_flatten`)
+    - [ ] Moves content up one level and deletes folder.
+
+## 10. Video Tools
+- [ ] **Arrange Image Sequences** (`vid_arrange_sequence`)
+    - [ ] Organizes image sequences into folders.
+- [ ] **Convert Format** (`vid_convert`)
+    - [ ] Converts video formats.
+- [ ] **Create Proxy Media** (`vid_create_proxy`)
+    - [ ] Creates lower resolution proxy for editing.
+- [ ] **Extract Audio** (`vid_extract_audio`)
+    - [ ] Extracts audio track from video.
+- [ ] **Find Missing Frames** (`vid_find_missing_frames`)
+    - [ ] Identifies gaps in image sequences.
+- [ ] **Frame Interpolation (30fps)** (`vid_frame_interp_30fps`)
+    - [ ] Standard frame blending interpolation.
+
+- [ ] **Generate Subtitles (AI)** (`vid_subtitle_gen`)
+    - [ ] Generates SRT subtitles using Whisper.
+- [ ] **Image Sequence to Video** (`vid_from_sequence`)
+    - [ ] Compiles image sequence into video file.
+- [ ] **Remove Audio Track** (`vid_mute`)
+    - [ ] Removes audio from video file.
 
 ---
 

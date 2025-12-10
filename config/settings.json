@@ -14,7 +14,7 @@
         "Document": "#f1c40f",
         "Custom": "#ecf0f1",
         "AI": "#3498DB",
-        "Etc": "#E74C3C",
+        "Tools": "#E74C3C",
         "System": "#2ECC71",
         "Rename": "#F1C40F",
         "Clipboard": "#9B59B6"
@@ -27,7 +27,7 @@
         "AI",
         "3D",
         "Audio",
-        "Etc",
+        "Tools",
         "Document",
         "System",
         "Rename",
@@ -35,5 +35,6 @@
         "Clipboard",
         "Sys",
         "Custom"
-    ]
+    ],
+    "GEMINI_API_KEY": "AIzaSyCygvKPU0T6ZZKCdWCpPHQqtg7d_RtXAsc"
 }

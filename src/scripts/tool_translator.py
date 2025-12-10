@@ -20,7 +20,7 @@ except: pass
 from utils.gui_lib import BaseWindow
 from core.logger import setup_logger
 
-logger = setup_logger("sys_translator")
+logger = setup_logger("tool_translator")
 
 class ToolTip:
     def __init__(self, widget, text):

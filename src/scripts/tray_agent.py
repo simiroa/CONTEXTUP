@@ -112,7 +112,7 @@ def main():
 def open_translator():
     try:
         # Launch sys_translator.py directly
-        translator_script = src_dir / "scripts" / "sys_translator.py"
+        translator_script = src_dir / "scripts" / "tool_translator.py"
         python_exe = sys.executable
         
         # Use simple python.exe with CREATE_NO_WINDOW

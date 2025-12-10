@@ -114,7 +114,7 @@ def build_handler_map():
         "clipboard_open_from_path": lambda p, s=None: _lazy("scripts.tray_modules.clipboard_opener", "open_folder_from_clipboard")(),
         "clipboard_copy_info": lambda p, s=None: _lazy("scripts.tray_modules.my_info", "show_my_info_menu")(),
         "file_reopen_recent": "recent_folder",
-        "tool_translator": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "sys_translator.py")]),
+        "tool_translator": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "tool_translator.py")]),
         "rename_batch": _lazy("scripts.rename_tools", "run_rename_gui"),
         "rename_sequence": _lazy("scripts.rename_tools", "run_renumber_gui"),
         "tool_analyze_clipboard": _lazy("scripts.prompt_master", "open_prompt_master"),
