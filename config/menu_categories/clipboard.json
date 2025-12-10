@@ -8,8 +8,6 @@
         "scope": "background",
         "status": "COMPLETE",
         "enabled": true,
-        "status": "COMPLETE",
-        "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
         "environment": "system",
