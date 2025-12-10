@@ -11,4 +11,16 @@ requests
 # pynput is used for global hotkeys if needed, moving to core is safer
 pynput
 keyboard
+keyboard
 send2trash
+yt-dlp
+ffmpeg-python
+rembg
+# Unified AI Dependencies (formerly Conda)
+torch
+torchvision
+torchaudio
+numpy
+# For other AI tools if needed
+open_clip_torch
+tqdm
