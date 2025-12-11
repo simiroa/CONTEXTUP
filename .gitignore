@@ -21,3 +21,5 @@ history_*.png
 example/
 *.pth
 config/copy_my_info.json
+assets/icons/backup_*/
+docs/user/backup/

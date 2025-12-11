@@ -1,17 +1,17 @@
 @echo off
 cd /d "%~dp0"
 
-REM 1. Check for Virtual Environment (Priority)
-if exist "tools\contextup_venv\Scripts\python.exe" (
-    echo [Using Virtual Environment]
-    "tools\contextup_venv\Scripts\python.exe" "src\scripts\manager_gui.py"
-    goto :EOF
-)
-
-REM 2. Fallback to Embedded Python (Legacy)
+REM 1. Check for Embedded Python (Primary)
 if exist "tools\python\python.exe" (
     echo [Using Embedded Python]
     "tools\python\python.exe" "src\scripts\manager_gui.py"
+    goto :EOF
+)
+
+REM 2. Fallback to Virtual Environment (Legacy)
+if exist "tools\contextup_venv\Scripts\python.exe" (
+    echo [Using Virtual Environment]
+    "tools\contextup_venv\Scripts\python.exe" "src\scripts\manager_gui.py"
     goto :EOF
 )
 

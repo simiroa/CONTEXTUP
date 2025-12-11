@@ -1,7 +1,7 @@
 # Development Guidelines & Best Practices
 
 ## 1. Registry & Context Menu
-*   **Unified Menu Key**: Always register tools under a single main key (e.g., `HKCU\Software\Classes\*\shell\CreatorTools_v2`) to prevent menu fragmentation.
+*   **Unified Menu Key**: Always register tools under a single main key (e.g., `HKCU\Software\Classes\*\shell\ContextUp`) to prevent menu fragmentation.
 *   **Visibility Control**: Use the `AppliesTo` registry value to filter visibility based on file extensions or properties (e.g., `System.FileExtension:=.jpg OR System.FileExtension:=.png`). Avoid creating separate keys for every file type.
 *   **Scope Management**:
     *   `Files`: Register under `*`.

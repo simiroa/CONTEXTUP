@@ -161,9 +161,12 @@ class RegistryManager:
             parent_key_path = f"{base_key_path}\\{safe_key_name}"
             
             try:
+                # Use ContextUp.ico for all context menu icons
+                contextup_icon = str(Path(__file__).parent.parent.parent / "assets" / "icons" / "ContextUp.ico")
+                
                 with winreg.CreateKey(winreg.HKEY_CURRENT_USER, parent_key_path) as key:
                     winreg.SetValueEx(key, "MUIVerb", 0, winreg.REG_SZ, submenu_name)
-                    winreg.SetValueEx(key, "Icon", 0, winreg.REG_SZ, "imageres.dll,203") 
+                    winreg.SetValueEx(key, "Icon", 0, winreg.REG_SZ, contextup_icon)
                     winreg.SetValueEx(key, "SubCommands", 0, winreg.REG_SZ, "")
                     winreg.SetValueEx(key, "ContextUpManaged", 0, winreg.REG_SZ, "true")
                     

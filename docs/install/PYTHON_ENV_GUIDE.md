@@ -7,8 +7,8 @@ This document outlines the dual-Python architecture used in ContextUp and lists 
 ContextUp utilizes two distinct Python environments to balance system integration with feature portability.
 
 ### 1. System Python (External)
-*   **Path**: `C:\Python314\python.exe` (or user's system python)
-*   **Version**: Python 3.14.0 (Latest)
+*   **Path**: System Python (user's installed Python, e.g., `C:\Python3xx\python.exe`)
+*   **Version**: Python 3.10+ (Latest recommended)
 *   **Purpose**: Handles GUI applications (`tkinter` based) and system-level integrations.
 *   **Why**: The embedded Python often lacks full `tkinter` support or specific system DLLs required for complex GUIs.
 

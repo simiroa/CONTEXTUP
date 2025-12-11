@@ -38,9 +38,12 @@ class ContextUpManager(ctk.CTk):
         # was: self.registry_manager = RegistryManager(menu_config)
         
         # Setup Window
-        self.title("ContextUp Manager v3.0 (Refactored)")
+        self.title("ContextUp Manager v3.0")
         self.geometry("1100x800")
         ctk.set_default_color_theme("blue")
+        
+        # Set window icon - single ContextUp icon for all
+        self._set_app_icon()
         
         # --- Category Sync Logic ---
         # Ensure all categories in the config exist in settings
@@ -53,9 +56,23 @@ class ContextUpManager(ctk.CTk):
         
         self._create_sidebar()
         self._create_main_area()
-        self._init_frames()
         
-        # Default View
+        # Lazy frame initialization - frames created on first access
+        self.frames = {}
+        self._frame_factories = {
+            "editor": lambda: MenuEditorFrame(
+                self.main_frame, 
+                self.config_manager, 
+                self.settings,
+                on_save_registry=self.apply_registry_changes
+            ),
+            "categories": lambda: CategoriesFrame(self.main_frame, self.settings, self.config_manager),
+            "settings": lambda: SettingsFrame(self.main_frame, self.settings, self.package_manager),
+            "updates": lambda: UpdatesFrame(self.main_frame, self.package_manager),
+            "logs": lambda: LogsFrame(self.main_frame, self.root_dir),
+        }
+        
+        # Default View (only editor frame created at startup)
         self.show_frame("editor")
         
         # Status Check Loop
@@ -64,6 +81,24 @@ class ContextUpManager(ctk.CTk):
         # Auto-start Tray if enabled
         if self.settings.get("TRAY_ENABLED", False):
             self.after(2000, self._auto_start_tray)
+
+    def _set_app_icon(self):
+        """Set window icon and Windows taskbar icon."""
+        try:
+            # Set AppUserModelID for Windows Taskbar Icon grouping
+            import ctypes
+            myappid = 'hg.contextup.manager.3.0'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except:
+            pass
+        
+        try:
+            # Main ContextUp icon - single source of truth
+            icon_path = self.root_dir / "assets" / "icons" / "ContextUp.ico"
+            if icon_path.exists():
+                self.iconbitmap(str(icon_path))
+        except Exception as e:
+            logging.warning(f"Failed to set app icon: {e}")
 
     def _auto_start_tray(self):
         if not self.process_manager.is_running():
@@ -153,28 +188,29 @@ class ContextUpManager(ctk.CTk):
             logging.error(f"Registry Update Failed: {e}")
             messagebox.showerror("Error", f"Failed to update registry: {e}")
 
-    def _init_frames(self):
-        self.frames = {}
-        
-        # Pass dependencies
-        self.frames["editor"] = MenuEditorFrame(
-            self.main_frame, 
-            self.config_manager, 
-            self.settings,
-            on_save_registry=self.apply_registry_changes
-        )
-        self.frames["categories"] = CategoriesFrame(self.main_frame, self.settings, self.config_manager)
-        self.frames["settings"] = SettingsFrame(self.main_frame, self.settings, self.package_manager)
-        self.frames["updates"] = UpdatesFrame(self.main_frame, self.package_manager)
-        self.frames["logs"] = LogsFrame(self.main_frame, self.root_dir)
-        
-        for f in self.frames.values():
-            f.grid(row=0, column=0, sticky="nsew")
+    def _create_frame_lazy(self, name: str):
+        """Create a frame on-demand (lazy initialization)."""
+        if name in self._frame_factories:
+            frame = self._frame_factories[name]()
+            frame.grid(row=0, column=0, sticky="nsew")
+            return frame
+        return None
 
     def show_frame(self, name):
+        # Lazy create frame if not exists
+        if name not in self.frames:
+            frame = self._create_frame_lazy(name)
+            if frame:
+                self.frames[name] = frame
+                logging.info(f"Lazy-loaded frame: {name}")
+        
         frame = self.frames.get(name)
         if frame:
             frame.tkraise()
+            
+            # Trigger on_visible callback if frame supports it (for deferred loading)
+            if hasattr(frame, 'on_visible'):
+                frame.on_visible()
             
             # Highlight button
             for n, btn in self.nav_buttons.items():

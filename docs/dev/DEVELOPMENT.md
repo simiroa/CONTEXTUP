@@ -7,7 +7,6 @@
 -   **`config`**: Configuration files (`menu_config.json`, `settings.json`).
 -   **`config/menu_categories`**: Split definition files for menu items (Source of Truth).
 -   **`tools`**: Helper scripts (`manage_icons.py`, `setup_tools.py`) and external binaries.
--   **`libs`**: External libraries and addons.
 -   **`assets`**: Icons and other resources.
 
 ## Adding a New Feature

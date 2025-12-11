@@ -45,7 +45,7 @@
         "category": "System",
         "id": "dir_flatten",
         "name": "Unwrap Folder",
-        "icon": "assets/icons/icon_sys_move_to_new_folder.ico",
+        "icon": "assets/icons/icon_sys_unwrap_folder.ico",
         "types": "*",
         "scope": "directory",
         "status": "COMPLETE",

@@ -17,7 +17,6 @@
 | | Extract BGM (Filter) | `aud_extract_bgm` | ✅ Ready | 🟢 Std | FFmpeg filter |
 | | Extract Voice (Filter) | `aud_extract_voice` | ✅ Ready | 🟢 Std | FFmpeg filter |
 | | Normalize Volume | `aud_normalize` | ✅ Ready | 🟢 Std | Loudnorm |
-| | Normalize Volume | `aud_normalize` | ✅ Ready | 🟢 Std | Loudnorm |
 | **Clipboard** | Analyze Clipboard Error | `tool_analyze_error` | ✅ Ready | 🟢 Std | |
 | | Copy My Info | `clipboard_copy_info` | ✅ Ready | 🟢 Std | |
 | | Open Path from Clipboard | `clipboard_open_from_path` | ✅ Ready | 🟢 Std | Hotkey: `Ctrl+Alt+V` |
@@ -29,7 +28,6 @@
 | | YouTube Downloader | `video_downloader_gui` | ✅ Ready | 🟠 AI/Bin | yt-dlp |
 | **Image** | AI Upscale | `img_upscale_ai` | ✅ Ready | 🟠 AI/Bin | Real-ESRGAN / Torch |
 
-| | Merge to EXR | `img_merge_exr` | ✅ Ready | 🟢 Std | |
 | | Merge to EXR | `img_merge_exr` | ✅ Ready | 🟢 Std | |
 | | Remove Metadata (EXIF) | `img_remove_exif` | ✅ Ready | 🟢 Std | |
 | | Resize (Power of 2) | `img_resize_pot` | ✅ Ready | 🟢 Std | |

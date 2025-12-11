@@ -64,6 +64,19 @@ def pre_kill_existing():
 
 
 def build_icon_image():
+    """Load the main ContextUp icon for tray."""
+    try:
+        # Load ContextUp.ico - single source of truth
+        icon_path = src_dir.parent / "assets" / "icons" / "ContextUp.ico"
+        if icon_path.exists():
+            img = Image.open(icon_path)
+            # Resize for tray (typically 64x64 or 32x32)
+            img = img.resize((64, 64), Image.Resampling.LANCZOS)
+            return img
+    except Exception as e:
+        logger.warning(f"Failed to load ContextUp.ico: {e}")
+    
+    # Fallback: Generate a simple icon if file not found
     size = 64
     img = Image.new("RGBA", (size, size), (52, 152, 219, 255))
     dc = ImageDraw.Draw(img)
@@ -94,6 +107,15 @@ def write_handshake(port):
 def main():
     setup_file_logging()
     logger.info("Tray Agent Starting...")
+    
+    # Set Windows AppUserModelID for proper notification icon/name
+    try:
+        import ctypes
+        myappid = 'hg.contextup.tray.3.0'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        logger.info(f"Set AppUserModelID: {myappid}")
+    except Exception as e:
+        logger.warning(f"Failed to set AppUserModelID: {e}")
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=54321, help="UDP Port for listening")

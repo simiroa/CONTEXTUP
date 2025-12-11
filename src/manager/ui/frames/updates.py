@@ -25,8 +25,25 @@ class UpdatesFrame(ctk.CTkFrame):
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
         
-        # Initial scan
-        self.refresh_deps()
+        # Deferred loading flag - check on first view instead of init
+        self._deps_loaded = False
+        self._show_loading_placeholder()
+
+    def _show_loading_placeholder(self):
+        """Show a placeholder message until deps are loaded."""
+        for w in self.scroll_frame.winfo_children():
+            w.destroy()
+        ctk.CTkLabel(
+            self.scroll_frame, 
+            text="Click 'Check Updates' to scan dependencies...",
+            text_color="gray"
+        ).pack(pady=20)
+
+    def on_visible(self):
+        """Called when this frame becomes visible - trigger deferred loading."""
+        if not self._deps_loaded:
+            self._deps_loaded = True
+            self.refresh_deps()
 
     def refresh_deps(self):
         # Run in thread to not freeze UI

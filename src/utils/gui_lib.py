@@ -39,15 +39,12 @@ class BaseWindow(ctk.CTk):
 
         # Set icon if available
         try:
-            # Priority: assets/icons/icon_context_up.ico -> assets/icon.ico
+            # Main ContextUp icon - single source of truth for all windows
             assets_dir = Path(__file__).parent.parent.parent / "assets"
-            main_icon = assets_dir / "icons" / "icon_context_up.ico"
-            legacy_icon = assets_dir / "icon.ico"
+            main_icon = assets_dir / "icons" / "ContextUp.ico"
             
             if main_icon.exists():
                 self.iconbitmap(main_icon)
-            elif legacy_icon.exists():
-                self.iconbitmap(legacy_icon)
         except:
             pass
             

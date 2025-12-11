@@ -421,12 +421,21 @@ class MenuEditorFrame(ctk.CTkFrame):
         # Ensure order is fresh
         self.recalculate_orders()
         
-        if self.config_manager.save_config(self.items, self.settings):
-             # Trigger Registry Update if available
-             if self.on_save_registry:
-                 self.on_save_registry()
-             else:
-                 tkinter.messagebox.showinfo("Success", "Configuration saved (Registry not updated).")
+        # save_config now returns (success, message) tuple
+        result = self.config_manager.save_config(self.items, self.settings)
+        
+        if isinstance(result, tuple):
+            success, message = result
         else:
-             tkinter.messagebox.showerror("Error", "Failed to save.")
+            # Backward compatibility
+            success, message = result, "Configuration saved."
+        
+        if success:
+            # Trigger Registry Update if available
+            if self.on_save_registry:
+                self.on_save_registry()
+            else:
+                tkinter.messagebox.showinfo("Success", message)
+        else:
+            tkinter.messagebox.showerror("Error", message)
 
