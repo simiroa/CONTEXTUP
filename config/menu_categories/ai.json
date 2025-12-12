@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 201,
+        "order": 601,
         "gui": true,
         "dependencies": [
             "torch",
@@ -26,7 +26,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 202,
+        "order": 602,
         "gui": true,
         "dependencies": [
             "faster-whisper"
@@ -41,7 +41,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 203,
+        "order": 603,
         "gui": false,
         "dependencies": [
             "realesrgan-ncnn-vulkan"
@@ -56,7 +56,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 204,
+        "order": 604,
         "gui": false,
         "dependencies": [
             "rembg",
@@ -73,7 +73,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 205,
+        "order": 605,
         "gui": true,
         "dependencies": [
             "diffusers",
@@ -91,7 +91,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 206,
+        "order": 606,
         "gui": true,
         "dependencies": [
             "google-genai"
@@ -107,7 +107,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 207,
+        "order": 607,
         "gui": true,
         "dependencies": [
             "google-genai",
@@ -124,7 +124,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 208,
+        "order": 608,
         "gui": true,
         "dependencies": [
             "spleeter"
@@ -139,7 +139,7 @@
         "scope": "both",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 209,
+        "order": 609,
         "gui": true,
         "dependencies": [
             "paddleocr",

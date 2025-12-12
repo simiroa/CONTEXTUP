@@ -57,6 +57,10 @@ class ContextUpManager(ctk.CTk):
         self._create_sidebar()
         self._create_main_area()
         
+        # Resize debounce for performance
+        self._resize_timer = None
+        self.bind("<Configure>", self._on_resize)
+        
         # Lazy frame initialization - frames created on first access
         self.frames = {}
         self._frame_factories = {
@@ -99,6 +103,23 @@ class ContextUpManager(ctk.CTk):
                 self.iconbitmap(str(icon_path))
         except Exception as e:
             logging.warning(f"Failed to set app icon: {e}")
+    
+    def _on_resize(self, event):
+        """Debounced resize handler to prevent layout thrashing."""
+        # Only handle main window resize (not child widgets)
+        if event.widget != self:
+            return
+        
+        if self._resize_timer:
+            self.after_cancel(self._resize_timer)
+        
+        # Delay layout update by 150ms
+        self._resize_timer = self.after(150, self._on_resize_complete)
+    
+    def _on_resize_complete(self):
+        """Called after resize debounce period."""
+        self._resize_timer = None
+        self.update_idletasks()
 
     def _auto_start_tray(self):
         if not self.process_manager.is_running():
@@ -125,13 +146,9 @@ class ContextUpManager(ctk.CTk):
         
         # Spacer
         ctk.CTkLabel(self.sidebar, text="").grid(row=8, column=0)
-        
-        # Refresh Control
-        self.btn_refresh = ctk.CTkButton(self.sidebar, text="⟳ Refresh Menu", fg_color=("gray70", "gray30"), hover_color=("gray60", "gray40"),
-                                       command=self.refresh_app)
-        self.btn_refresh.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="ew")
-
+        ctk.CTkLabel(self.sidebar, text="").grid(row=9, column=0)
         ctk.CTkLabel(self.sidebar, text="").grid(row=10, column=0)
+
         
         # Tray Controls
         self.tray_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
@@ -236,7 +253,7 @@ class ContextUpManager(ctk.CTk):
         
     def _check_tray_status(self):
         self._update_tray_ui()
-        self.after(5000, self._check_tray_status)
+        self.after(10000, self._check_tray_status)  # 10s instead of 5s for performance
 
     def _update_tray_ui(self):
         running = self.process_manager.is_running()

@@ -4,11 +4,11 @@
         "id": "image_convert",
         "name": "Image Convert",
         "icon": "assets/icons/icon_image_format_convert.ico",
-        "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr;.webp;.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr;.webp;.ico;.dds",
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 901,
+        "order": 401,
         "gui": true,
         "dependencies": [
             "Pillow"
@@ -23,7 +23,7 @@
         "scope": "items",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 902,
+        "order": 402,
         "gui": true,
         "dependencies": [
             "OpenEXR",
@@ -39,7 +39,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 903,
+        "order": 403,
         "gui": true,
         "dependencies": [
             "Pillow"
@@ -54,7 +54,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 904,
+        "order": 404,
         "gui": true,
         "dependencies": [
             "OpenEXR",
@@ -70,7 +70,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 905,
+        "order": 405,
         "gui": true,
         "dependencies": [
             "Pillow"
@@ -85,7 +85,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 906,
+        "order": 406,
         "gui": false,
         "dependencies": [
             "Pillow",
@@ -101,7 +101,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 907,
+        "order": 407,
         "gui": false,
         "dependencies": [
             "Pillow",

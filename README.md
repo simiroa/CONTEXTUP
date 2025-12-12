@@ -1,12 +1,16 @@
 # ContextUp
 
+![Version](https://img.shields.io/badge/version-3.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
 **ContextUp**은 Windows 우클릭 컨텍스트 메뉴를 강력한 생산성 도구로 탈바꿈시키는 확장 프로그램입니다.
 
 AI 기반 이미지/비디오 처리부터 3D 파일 변환, 시스템 유틸리티까지 다양한 기능을 **파일 우클릭**만으로 즉시 사용할 수 있습니다.
 
 > **핵심 철학**: 모든 기능은 **내장 Python(Embedded Python)** 환경에서 실행되어 사용자 시스템에 영향을 주지 않습니다.
+
+📋 **[변경 기록 보기](CHANGELOG.md)**
 
 ---
 

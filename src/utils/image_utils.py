@@ -41,9 +41,9 @@ def scan_for_images(target=None, recursive=False):
                 pass
     
     valid_files = []
-    # Extensions to fast-accept without opening (unless corrupt, but we assume file extension trust mostly)
-    # Added .jfif, .svg (maybe? PIL supports some), .webp
-    valid_exts = {'.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.tif', '.webp', '.tga', '.ico', '.exr', '.jfif'}
+    # Extensions to fast-accept without opening
+    # DDS added for input support (Pillow can read, but not write DDS)
+    valid_exts = {'.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.tif', '.webp', '.tga', '.ico', '.exr', '.jfif', '.dds'}
     
     checked_count = 0
     

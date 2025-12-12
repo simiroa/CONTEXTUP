@@ -17,6 +17,12 @@ class MenuEditorFrame(ctk.CTkFrame):
         self.row_widgets = {} # {id: widget}
         self.view_mode = "Grouped" # Grouped | Flat
         
+        # Widget pooling for performance
+        self._row_pool = []  # List of reusable row widgets
+        self._header_pool = []  # List of reusable header widgets
+        self._active_rows = []  # Currently visible rows
+        self._active_headers = []  # Currently visible headers
+        
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1) 
         
@@ -42,12 +48,24 @@ class MenuEditorFrame(ctk.CTkFrame):
         self.btn_bulk = ctk.CTkButton(toolbar, text="Bulk Action ▼", width=100, command=self.show_bulk_menu)
         self.btn_bulk.pack(side="left", padx=5, pady=5)
         
+        # Refresh Menu (next to Bulk Action)
+        ctk.CTkButton(toolbar, text="⟳ Refresh", width=80, fg_color=("gray70", "gray30"), 
+                     hover_color=("gray60", "gray40"),
+                     command=self._refresh_from_disk).pack(side="left", padx=5, pady=5)
+        
         # Right: Core Actions
         ctk.CTkButton(toolbar, text="Save Changes", width=100, command=self.save_final).pack(side="right", padx=5, pady=5)
         ctk.CTkButton(toolbar, text="Auto Organize", width=100, fg_color="#F39C12", hover_color="#D68910", 
                     command=self.auto_organize).pack(side="right", padx=5, pady=5)
         ctk.CTkButton(toolbar, text="+ Add Item", fg_color="#2ECC71", hover_color="#27AE60", width=90,
                     command=self.open_add_dialog).pack(side="right", padx=10, pady=5)
+    
+    def _refresh_from_disk(self):
+        """Reload config from disk and refresh list."""
+        self.config_manager.load_config(force_reload=True)
+        self.load_items()
+        tkinter.messagebox.showinfo("Refreshed", "Menu configuration reloaded from disk.")
+
 
     def _setup_filters(self):
         filter_frame = ctk.CTkFrame(self, height=40, fg_color="transparent")
@@ -165,8 +183,19 @@ class MenuEditorFrame(ctk.CTkFrame):
     # Removed duplicate select_all which was below
 
     def refresh_list(self, _=None):
-        # Clear
-        for widget in self.scroll_frame.winfo_children(): widget.destroy()
+        # Freeze scroll frame during rebuild
+        self.scroll_frame.grid_remove()
+        
+        # Return active rows/headers to pool (hide, don't destroy)
+        for row in self._active_rows:
+            row.pack_forget()
+            self._row_pool.append(row)
+        for header in self._active_headers:
+            header.pack_forget()
+            self._header_pool.append(header)
+        
+        self._active_rows = []
+        self._active_headers = []
         self.item_vars.clear()
         self.row_widgets.clear()
         
@@ -178,32 +207,61 @@ class MenuEditorFrame(ctk.CTkFrame):
             if search and search not in item.get('name', '').lower(): continue
             filtered.append(item)
             
-        # --- AUTO ORDER RENDER ---
-        # Sort key: (Category Index, Item Name) OR (Category Index, Current Order)
-        # We want to respect existing order within category if possible, or name.
-        # But the Requirement is "Use category list to determine first digits, rest is auto".
-        
+        # Sort
         order_list = self.settings.get("CATEGORY_ORDER", [])
         
         def sort_key(x):
             c = x.get('category', 'Other')
             try: c_idx = order_list.index(c)
             except: c_idx = 99
-            
-            # Secondary sort: existing order
             return (c_idx, int(x.get('order', 9999)))
 
         filtered.sort(key=sort_key)
         self.filtered_items = filtered
         
         if self.view_mode == "Grouped":
-            self._render_grouped(filtered, order_list)
+            self._render_grouped_pooled(filtered, order_list)
         else:
-            self._render_flat(filtered)
-            
-    def _render_grouped(self, items, order_list):
-        # We prefer to iterate through order_list to maintain category order
-        # group items first
+            self._render_flat_pooled(filtered)
+        
+        # Unfreeze scroll frame
+        self.scroll_frame.grid()
+    
+    def _get_or_create_header(self, cat, color, count):
+        """Get a header from pool or create new one."""
+        if self._header_pool:
+            header = self._header_pool.pop()
+            # Update existing header
+            for child in header.winfo_children():
+                child.destroy()
+        else:
+            header = ctk.CTkFrame(self.scroll_frame, height=30, fg_color="transparent")
+        
+        ctk.CTkLabel(header, text=f"{cat}", font=ctk.CTkFont(size=14, weight="bold"), 
+                   fg_color=color, corner_radius=6, text_color="white").pack(side="left")
+        ctk.CTkLabel(header, text=f" ({count}) items", text_color="gray").pack(side="left", padx=5)
+        
+        header.pack(fill="x", pady=(10, 2))
+        self._active_headers.append(header)
+        return header
+    
+    def _get_or_create_row(self, item, flat):
+        """Get a row from pool or create new one, then update with item data."""
+        if self._row_pool:
+            row = self._row_pool.pop()
+            # Clear existing content
+            for child in row.winfo_children():
+                child.destroy()
+        else:
+            row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
+        
+        self._populate_row(row, item, flat)
+        row.pack(fill="x", padx=5, pady=2)
+        self._active_rows.append(row)
+        self.row_widgets[item['id']] = row
+        return row
+    
+    def _render_grouped_pooled(self, items, order_list):
         groups = {cat: [] for cat in order_list}
         groups['Other'] = []
         
@@ -216,55 +274,32 @@ class MenuEditorFrame(ctk.CTkFrame):
             group_items = groups.get(cat, [])
             if not group_items: continue
             
-            # Header
             color = self.settings.get("CATEGORY_COLORS", {}).get(cat, "gray")
-            header = ctk.CTkFrame(self.scroll_frame, height=30, fg_color="transparent")
-            header.pack(fill="x", pady=(10, 2))
+            self._get_or_create_header(cat, color, len(group_items))
             
-            # Show Priority Range?
-            # Show Priority Range?
-            try: idx = order_list.index(cat) 
-            except: idx = 99
-            # prio_text = f"[{ (idx+1)*1000 }s]" if idx != 99 else "[Last]"
-            # ctk.CTkLabel(header, text=prio_text, text_color="gray", width=50).pack(side="left")
-            
-            ctk.CTkLabel(header, text=f"{cat}", font=ctk.CTkFont(size=14, weight="bold"), 
-                       fg_color=color, corner_radius=6, text_color="white").pack(side="left")
-            ctk.CTkLabel(header, text=f" ({len(group_items)}) items", text_color="gray").pack(side="left", padx=5)
-            
-            # Items
-            for idx, item in enumerate(group_items):
-                self._create_item_row(self.scroll_frame, item, idx, len(group_items), flat=False)
+            for item in group_items:
+                self._get_or_create_row(item, flat=False)
 
-    def _render_flat(self, items):
-        for idx, item in enumerate(items):
-            self._create_item_row(self.scroll_frame, item, idx, len(items), flat=True)
-
-    def _create_item_row(self, parent, item, index, total, flat):
-        row = ctk.CTkFrame(parent, fg_color="transparent")
-        row.pack(fill="x", padx=5, pady=2)
-        self.row_widgets[item['id']] = row
-        
+    def _render_flat_pooled(self, items):
+        for item in items:
+            self._get_or_create_row(item, flat=True)
+    
+    def _populate_row(self, row, item, flat):
+        """Populate a row with item data (reused from _create_item_row)."""
         # [Select]
         chk_var = ctk.BooleanVar(value=False)
         self.item_vars[item['id']] = chk_var
         ctk.CTkCheckBox(row, text="", variable=chk_var, width=24).pack(side="left", padx=2)
         
         # [Enabled Toggle]
-        # Use BooleanVar for robust state tracking
         enabled_var = ctk.BooleanVar(value=item.get('enabled', True))
-        
-        def on_toggle_switch():
-            item['enabled'] = enabled_var.get()
-            # print(f"Toggled {item['name']}: {item['enabled']}") # Debug
-            
-        switch = ctk.CTkSwitch(row, text="", width=40, height=20, variable=enabled_var, command=on_toggle_switch)
-        switch.pack(side="left", padx=5)
+        def on_toggle(i=item, v=enabled_var):
+            i['enabled'] = v.get()
+        ctk.CTkSwitch(row, text="", width=40, height=20, variable=enabled_var, 
+                     command=lambda: on_toggle()).pack(side="left", padx=5)
         
         # [Icon]
-        icon_path = item.get('icon', '')
-        icon_img = IconManager.load_icon(icon_path)
-        
+        icon_img = IconManager.load_icon(item.get('icon', ''))
         if icon_img:
             ctk.CTkLabel(row, text="", image=icon_img, width=30).pack(side="left", padx=2)
         else:
@@ -274,41 +309,36 @@ class MenuEditorFrame(ctk.CTkFrame):
         name_frame = ctk.CTkFrame(row, fg_color="transparent")
         name_frame.pack(side="left", fill="x", expand=True)
         
-        name_txt = item.get('name', 'Unnamed')
         if flat:
-             cat = item.get('category', 'Custom')
-             color = self.settings.get("CATEGORY_COLORS", {}).get(cat, "gray")
-             ctk.CTkLabel(name_frame, text="█", text_color=color).pack(side="left", padx=2)
+            cat = item.get('category', 'Custom')
+            color = self.settings.get("CATEGORY_COLORS", {}).get(cat, "gray")
+            ctk.CTkLabel(name_frame, text="█", text_color=color).pack(side="left", padx=2)
              
-        ctk.CTkLabel(name_frame, text=name_txt, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+        ctk.CTkLabel(name_frame, text=item.get('name', 'Unnamed'), 
+                    font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
         
-         # [Hotkey]
+        # [Hotkey]
         hotkey = item.get('hotkey', '')
         if hotkey:
-             ctk.CTkLabel(row, text=f"{hotkey}", text_color="orange", width=60).pack(side="left", padx=5)
+            ctk.CTkLabel(row, text=hotkey, text_color="orange", width=60).pack(side="left", padx=5)
 
         # [Order Control]
-        # Up/Down Arrows
         order_frame = ctk.CTkFrame(row, fg_color="transparent")
         order_frame.pack(side="left", padx=5)
-        
-        btn_up = ctk.CTkButton(order_frame, text="▲", width=20, height=20, fg_color="transparent", text_color="gray", hover_color="#333",
-                             command=lambda i=item: self.move_item(i, -1))
-        btn_up.pack(side="left", padx=0)
-        
-        btn_down = ctk.CTkButton(order_frame, text="▼", width=20, height=20, fg_color="transparent", text_color="gray", hover_color="#333",
-                               command=lambda i=item: self.move_item(i, 1))
-        btn_down.pack(side="left", padx=0)
-
-        # Removed raw number display as requested
+        ctk.CTkButton(order_frame, text="▲", width=20, height=20, fg_color="transparent", 
+                     text_color="gray", hover_color="#333",
+                     command=lambda i=item: self.move_item(i, -1)).pack(side="left")
+        ctk.CTkButton(order_frame, text="▼", width=20, height=20, fg_color="transparent", 
+                     text_color="gray", hover_color="#333",
+                     command=lambda i=item: self.move_item(i, 1)).pack(side="left")
 
         # [Edit]
         ctk.CTkButton(row, text="Edit", width=50, height=24, 
-                    command=lambda i=item: self.open_edit_dialog(i)).pack(side="left", padx=5)
+                     command=lambda i=item: self.open_edit_dialog(i)).pack(side="left", padx=5)
                     
-        # [Location] (Subtitle)
-        sub = item.get('submenu', 'ContextUp')
-        ctk.CTkLabel(row, text=sub, text_color="gray", width=80).pack(side="right", padx=5)
+        # [Location]
+        ctk.CTkLabel(row, text=item.get('submenu', 'ContextUp'), 
+                    text_color="gray", width=80).pack(side="right", padx=5)
 
     def recalculate_orders(self):
         """Force apply the category priority logic to all items.

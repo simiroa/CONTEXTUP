@@ -10,9 +10,9 @@ from tkinter import messagebox
 logger = logging.getLogger("manager.core.packages")
 
 class PackageManager:
-    def __init__(self, root_dir: Path):
-        self.root_dir = root_dir
-        self.req_path = root_dir / "requirements.txt"
+    def __init__(self, root_dir):
+        self.root_dir = Path(root_dir) if not isinstance(root_dir, Path) else root_dir
+        self.req_path = self.root_dir / "requirements.txt"
         
     def get_installed_packages(self) -> dict:
         """Return dict of {package_name: version} using pip list --json."""

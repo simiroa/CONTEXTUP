@@ -8,7 +8,7 @@
         "scope": "items",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 601,
+        "order": 201,
         "gui": false,
         "dependencies": [
             "PyPDF2"
@@ -23,7 +23,7 @@
         "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 602,
+        "order": 202,
         "gui": false,
         "dependencies": [
             "PyPDF2"

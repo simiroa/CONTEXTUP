@@ -138,6 +138,7 @@ def build_handler_map():
         "analyze_error": _lazy("scripts.clipboard_tools", "analyze_error"),
         "open_from_clipboard": lambda p, s=None: _lazy("scripts.tray_modules.clipboard_opener", "open_folder_from_clipboard")(),
         "save_clipboard_image": _lazy("scripts.sys_tools", "save_clipboard_image"),
+        "copy_unc_path": _lazy("scripts.sys_tools", "copy_unc_path"),
 
         # === Document ===
         "pdf_merge": lambda p, s=None: _lazy("scripts.sys_tools", "pdf_merge")(p, selection=s),

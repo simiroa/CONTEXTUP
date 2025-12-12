@@ -8,7 +8,7 @@
         "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 501,
+        "order": 1101,
         "gui": true,
         "dependencies": [
             "yt-dlp"
@@ -23,7 +23,7 @@
         "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 502,
+        "order": 1102,
         "gui": true,
         "dependencies": [
             "nllb"

@@ -393,46 +393,73 @@ def main():
                     popup = tk.Menu(root, tearoff=0, font=("Segoe UI", 10))
                     
                     # Build menu items similar to tray
-                    # Recent Folders
-                    try:
-                        from scripts.tray_modules.recent_folders import RecentFolders
-                        recent = RecentFolders(None)
-                        recent.start()
-                        recent_folders = recent.config.get("folders", [])[:5]
-                        
-                        if recent_folders:
-                            recent_menu = tk.Menu(popup, tearoff=0)
-                            for folder in recent_folders:
-                                folder_path = Path(folder)
-                                recent_menu.add_command(
-                                    label=folder_path.name,
-                                    command=lambda f=folder: subprocess.Popen(f'explorer "{f}"', shell=True)
-                                )
-                            popup.add_cascade(label="Recent Folders", menu=recent_menu)
-                            popup.add_separator()
-                    except Exception as e:
-                        logger.debug(f"Recent folders not available: {e}")
+                    
+                    # Reopen Last Closed Folder (read from log file)
+                    def reopen_last_action():
+                        try:
+                            log_file = Path(__file__).resolve().parents[1] / "logs" / "recent_folders.log"
+                            if log_file.exists():
+                                with open(log_file, "r", encoding="utf-8") as f:
+                                    lines = f.readlines()
+                                if lines:
+                                    # Get last line
+                                    last_line = lines[-1].strip()
+                                    # Format: "timestamp\tpath"
+                                    if "\t" in last_line:
+                                        folder_path = last_line.split("\t", 1)[1]
+                                        if Path(folder_path).exists():
+                                            subprocess.Popen(f'explorer "{folder_path}"', shell=True)
+                                            logger.info(f"Reopened folder: {folder_path}")
+                                        else:
+                                            logger.warning(f"Folder no longer exists: {folder_path}")
+                        except Exception as e:
+                            logger.error(f"Reopen last failed: {e}")
+                        root.destroy()
+                    
+                    popup.add_command(label="Reopen Last Closed Folder", command=reopen_last_action)
                     
                     # Copy My Info
                     try:
                         from scripts.tray_modules.copy_my_info import CopyMyInfoModule
                         info_mod = CopyMyInfoModule(None)
                         info_mod.start()
-                        info_items = info_mod.config.get("items", [])
+                        info_items = info_mod._load_items()
                         
                         if info_items:
                             info_menu = tk.Menu(popup, tearoff=0)
                             for item in info_items:
                                 label = item.get("label", "")
-                                value = item.get("value", "")
+                                content = item.get("content", "")
                                 info_menu.add_command(
                                     label=label,
-                                    command=lambda v=value: (root.clipboard_clear(), root.clipboard_append(v), root.update())
+                                    command=lambda v=content: (root.clipboard_clear(), root.clipboard_append(v), root.update())
                                 )
                             popup.add_cascade(label="Copy My Info", menu=info_menu)
-                            popup.add_separator()
                     except Exception as e:
                         logger.debug(f"Copy My Info not available: {e}")
+                    
+                    # Open Folder from Clipboard (direct implementation)
+                    def open_clipboard_folder():
+                        try:
+                            import pyperclip
+                            content = pyperclip.paste().strip()
+                            # Remove quotes if present
+                            if content.startswith('"') and content.endswith('"'):
+                                content = content[1:-1]
+                            
+                            path = Path(content)
+                            if path.exists() and path.is_dir():
+                                subprocess.Popen(f'explorer "{path}"', shell=True)
+                                logger.info(f"Opened folder from clipboard: {path}")
+                            else:
+                                logger.warning(f"Clipboard does not contain valid folder: {content}")
+                        except Exception as e:
+                            logger.error(f"Open clipboard folder failed: {e}")
+                        root.destroy()
+                    
+                    popup.add_command(label="Open Folder from Clipboard", command=open_clipboard_folder)
+                    
+                    popup.add_separator()
                     
                     # Tools
                     popup.add_command(label="Translator", command=open_translator)

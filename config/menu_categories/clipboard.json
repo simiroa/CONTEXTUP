@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "order": 1001,
+        "order": 901,
         "gui": false,
         "dynamic_submenu": "copy_my_info",
         "dependencies": []
@@ -23,7 +23,7 @@
         "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 1002,
+        "order": 902,
         "gui": true,
         "dependencies": [
             "google-genai"
@@ -39,7 +39,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "hotkey": "<ctrl>+<alt>+v",
-        "order": 1003,
+        "order": 903,
         "gui": false,
         "dependencies": []
     },
@@ -53,10 +53,26 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "order": 1004,
+        "order": 904,
         "gui": false,
         "dependencies": [
             "Pillow"
+        ]
+    },
+    {
+        "category": "Clipboard",
+        "id": "copy_unc_path",
+        "name": "Copy UNC Path",
+        "icon": "assets/icons/icon_sys_copy_info.ico",
+        "types": "*",
+        "scope": "both",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "order": 905,
+        "gui": false,
+        "dependencies": [
+            "pyperclip",
+            "pywin32"
         ]
     }
 ]

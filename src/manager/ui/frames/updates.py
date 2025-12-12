@@ -55,13 +55,13 @@ class UpdatesFrame(ctk.CTkFrame):
         # Define common heavy libs to check explicitly (as per original tool)
         common_libs = [
             ("torch", "PyTorch (AI Core)"),
-            ("rembg", "Rembg (Background functionality)"),
+            ("rembg", "Rembg (Background Removal)"),
             ("customtkinter", "CustomTkinter (GUI)"),
             ("pystray", "Pystray (System Tray)"),
             ("Pillow", "Pillow (Image Processing)"),
             ("google-generativeai", "Gemini API"),
-            ("moviepy", "MoviePy (Video)"),
-            ("numpy", "NumPy")
+            ("numpy", "NumPy"),
+            ("pyperclip", "Pyperclip (Clipboard)"),
         ]
         
         # Clear UI

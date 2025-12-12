@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 701,
+        "order": 1001,
         "gui": false,
         "dependencies": []
     },
@@ -23,7 +23,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 702,
+        "order": 1002,
         "gui": false,
         "dependencies": []
     },
@@ -37,7 +37,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "order": 703,
+        "order": 1003,
         "gui": false,
         "dependencies": []
     },
@@ -51,7 +51,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 704,
+        "order": 1004,
         "gui": false,
         "dependencies": []
     },
@@ -64,7 +64,7 @@
         "scope": "folder",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 705,
+        "order": 1005,
         "gui": true,
         "dependencies": []
     },
@@ -77,7 +77,7 @@
         "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 706,
+        "order": 1006,
         "gui": false,
         "dependencies": []
     },
@@ -92,7 +92,7 @@
         "submenu": "ContextUp",
         "show_in_tray": true,
         "hotkey": "<ctrl>+<alt>+<shift>+f1",
-        "order": 707,
+        "order": 1007,
         "gui": true,
         "dependencies": [
             "customtkinter"

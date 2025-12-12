@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 301,
+        "order": 701,
         "gui": true,
         "dependencies": [
             "pymeshlab"
@@ -25,7 +25,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 302,
+        "order": 702,
         "gui": false,
         "dependencies": [
             "mayo"
@@ -41,7 +41,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 303,
+        "order": 703,
         "gui": false,
         "dependencies": [
             "blender"
@@ -57,7 +57,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 304,
+        "order": 704,
         "gui": false,
         "dependencies": [
             "mayo"
@@ -73,7 +73,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 305,
+        "order": 705,
         "gui": false,
         "dependencies": [
             "blender"

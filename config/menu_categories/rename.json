@@ -8,7 +8,7 @@
         "scope": "items",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 801,
+        "order": 301,
         "gui": true,
         "dependencies": []
     },
@@ -21,7 +21,7 @@
         "scope": "items",
         "enabled": true,
         "submenu": "ContextUp",
-        "order": 802,
+        "order": 302,
         "gui": true,
         "dependencies": []
     }

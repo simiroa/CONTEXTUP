@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 401,
+        "order": 801,
         "gui": true,
         "dependencies": [
             "ffmpeg"
@@ -25,7 +25,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 402,
+        "order": 802,
         "gui": true,
         "dependencies": [
             "ffmpeg"
@@ -41,7 +41,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 403,
+        "order": 803,
         "gui": true,
         "dependencies": [
             "ffmpeg"
@@ -57,7 +57,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "order": 404,
+        "order": 804,
         "gui": false,
         "dependencies": [
             "ffmpeg"
