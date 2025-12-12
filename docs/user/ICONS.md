@@ -37,6 +37,9 @@
 | `icon_image_analyze_ollama.ico` | **(Focus)** A chrome ring framing a floating cyan sphere |
 | `icon_image_smart_tag.ico` | **(Identity)** A small metal tag attached to a large smooth sphere |
 | `icon_image_texture_tools.ico` | **(Surface)** A sphere split in half: one side smooth chrome, one side wireframe |
+| `icon_texture_packer.ico` | **(Pack)** Three colored metal spheres (Red, Green, Blue) merging into one composite sphere |
+| `icon_normal_flip.ico` | **(Mirror)** A cyan arrow flipping vertically on a reflective metal surface |
+| `icon_simple_pbr.ico` | **(Basic)** A simple matte sphere with subtle surface detail and gradient lighting |
 
 ## 3. Video Tools (Theme: Anodized Pink Aluminum)
 
@@ -80,6 +83,7 @@
 | `icon_sys_copy_unc_path.ico` | **(Cloud)** A stylized metal cloud shape connected to a block |
 | `icon_sys_finder.ico` | **(Find)** A beam of light hitting a white metal object in the dark |
 | `icon_sys_copy_info.ico` | **(Clone)** A metal object reflecting perfectly in a mirror |
+| `icon_sys_copy_content.ico` | **(Duplicate)** A white metal sheet splitting into two identical sheets |
 | `icon_sys_open_path.ico` | **(Passage)** Two heavy metal doors sliding apart |
 | `icon_sys_open_recent_folder.ico` | **(Time)** A spiral shape made of white metal |
 

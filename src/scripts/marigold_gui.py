@@ -46,7 +46,7 @@ class CTkToolTip:
 
 class MarigoldGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__(title="Marigold PBR Generator", width=500, height=750)
+        super().__init__(title="Marigold PBR Generator", width=440, height=580)
         
         self.target_path = Path(target_path)
         if not self.target_path.exists():
@@ -56,192 +56,213 @@ class MarigoldGUI(BaseWindow):
             
         self.files = [self.target_path]
         
-        # UI State
-        self.var_depth = ctk.BooleanVar(value=True)
-        self.var_normal = ctk.BooleanVar(value=True)
-        self.var_flip_y = ctk.BooleanVar(value=False)
+        # Get input image size
+        try:
+            with Image.open(self.target_path) as img:
+                self.input_width, self.input_height = img.size
+        except:
+            self.input_width, self.input_height = 0, 0
         
+        # UI State - Material Maps (require Albedo)
         self.var_albedo = ctk.BooleanVar(value=False)
         self.var_roughness = ctk.BooleanVar(value=False)
         self.var_metallicity = ctk.BooleanVar(value=False)
-        self.var_orm = ctk.BooleanVar(value=False)
         
-        self.var_model_ver = ctk.StringVar(value="v1-1")
-        self.var_processing_res = ctk.IntVar(value=768) # Default Marigold
-        self.var_steps = ctk.IntVar(value=10) # Speed default
-        self.var_ensemble = ctk.IntVar(value=1) # Speed default
-        self.var_fp16 = ctk.BooleanVar(value=True) # Checkbox for Half Precision
+        # UI State - Geometry Maps (use input directly)
+        self.var_depth = ctk.BooleanVar(value=False)
+        self.var_normal = ctk.BooleanVar(value=True)
+        
+        # Export Options
+        self.var_flip_y = ctk.BooleanVar(value=False)
+        self.var_orm = ctk.BooleanVar(value=False)
+        self.var_invert_roughness = ctk.BooleanVar(value=False)
+        self.var_output_res = ctk.StringVar(value="768")  # Output resolution
+        
+        # Technical Settings
+        self.var_processing_res = ctk.IntVar(value=768)
+        self.var_steps = ctk.IntVar(value=10)
+        self.var_ensemble = ctk.IntVar(value=1)
+        self.var_fp16 = ctk.BooleanVar(value=True)
         
         self.create_widgets()
         
 
     def create_widgets(self):
-        # 1. File Info (Minimal Header)
-        # Use Entry for compact path display instead of bulky list
+        # 1. File Info (Compact Header)
         target_name = self.files[0].name if self.files else "Unknown"
+        size_info = f"  ({self.input_width}×{self.input_height})" if self.input_width > 0 else ""
         
         info_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        info_frame.pack(fill="x", padx=10, pady=(15, 5))
+        info_frame.pack(fill="x", padx=10, pady=(10, 5))
         
-        # Icon
-        icon_lbl = ctk.CTkLabel(info_frame, text="📄", font=("Arial", 16))
-        icon_lbl.pack(side="left", padx=(5, 10))
+        icon_lbl = ctk.CTkLabel(info_frame, text="📄", font=("Arial", 14))
+        icon_lbl.pack(side="left", padx=(5, 8))
         
-        # Filename Entry (Read-only)
-        self.ent_file = ctk.CTkEntry(info_frame, height=30)
+        self.ent_file = ctk.CTkEntry(info_frame, height=26)
         self.ent_file.pack(side="left", fill="x", expand=True)
-        self.ent_file.insert(0, target_name)
+        self.ent_file.insert(0, f"{target_name}{size_info}")
         self.ent_file.configure(state="readonly")
         
         # Main Content
         content = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         content.pack(fill="both", expand=True, padx=10, pady=0)
         
-        # --- TOP SECTION: OUTPUTS ---
-        top_frame = ctk.CTkFrame(content, fg_color="transparent")
-        top_frame.pack(fill="x", pady=(5, 5))
+        # === SECTION 1: Material Maps (Top - Most Important) ===
+        mat_frame = ctk.CTkFrame(content)
+        mat_frame.pack(fill="x", pady=(5, 3))
         
-        # Use Grid for equal 50/50 split to avoid right-side clipping
-        top_frame.grid_columnconfigure(0, weight=1)
-        top_frame.grid_columnconfigure(1, weight=1)
+        mat_header = ctk.CTkFrame(mat_frame, fg_color="transparent")
+        mat_header.pack(fill="x", padx=10, pady=(6, 2))
+        ctk.CTkLabel(mat_header, text="Material Maps", font=("Arial", 11, "bold")).pack(side="left")
+        ctk.CTkLabel(mat_header, text="(Auto-Albedo)", font=("Arial", 9), text_color="gray").pack(side="left", padx=5)
         
-        # 1A. Target Maps (Left)
-        map_frame = ctk.CTkFrame(top_frame)
-        map_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=0)
+        mat_inner = ctk.CTkFrame(mat_frame, fg_color="transparent")
+        mat_inner.pack(fill="x", padx=10, pady=(0, 6))
         
-        ctk.CTkLabel(map_frame, text="Target Maps", font=("Arial", 12, "bold")).pack(anchor="w", padx=10, pady=(8, 2))
+        ctk.CTkCheckBox(mat_inner, text="Albedo", variable=self.var_albedo, width=80).pack(side="left", padx=(0, 8))
+        ctk.CTkCheckBox(mat_inner, text="Roughness", variable=self.var_roughness, width=95).pack(side="left", padx=8)
+        ctk.CTkCheckBox(mat_inner, text="Metallic", variable=self.var_metallicity, width=80).pack(side="left", padx=8)
         
-        map_inner = ctk.CTkFrame(map_frame, fg_color="transparent")
-        map_inner.pack(fill="both", padx=10, pady=5)
+        # === SECTION 2: Geometry Maps ===
+        geo_frame = ctk.CTkFrame(content)
+        geo_frame.pack(fill="x", pady=3)
         
-        ctk.CTkCheckBox(map_inner, text="Depth", variable=self.var_depth).pack(anchor="w", pady=1)
-        ctk.CTkCheckBox(map_inner, text="Normal", variable=self.var_normal).pack(anchor="w", pady=1)
+        geo_header = ctk.CTkFrame(geo_frame, fg_color="transparent")
+        geo_header.pack(fill="x", padx=10, pady=(6, 2))
+        ctk.CTkLabel(geo_header, text="Geometry Maps", font=("Arial", 11, "bold")).pack(side="left")
+        ctk.CTkLabel(geo_header, text="(Direct)", font=("Arial", 9), text_color="gray").pack(side="left", padx=5)
         
-        ctk.CTkFrame(map_inner, height=1, fg_color="gray30").pack(fill="x", pady=4)
+        geo_inner = ctk.CTkFrame(geo_frame, fg_color="transparent")
+        geo_inner.pack(fill="x", padx=10, pady=(0, 6))
         
-        ctk.CTkCheckBox(map_inner, text="Albedo", variable=self.var_albedo).pack(anchor="w", pady=1)
-        ctk.CTkCheckBox(map_inner, text="Roughness", variable=self.var_roughness).pack(anchor="w", pady=1)
-        ctk.CTkCheckBox(map_inner, text="Metallicity", variable=self.var_metallicity).pack(anchor="w", pady=1)
-
-        # 1B. Export Format (Right)
-        fmt_frame = ctk.CTkFrame(top_frame)
-        fmt_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0), pady=0)
+        ctk.CTkCheckBox(geo_inner, text="Depth", variable=self.var_depth, width=70).pack(side="left", padx=(0, 8))
+        ctk.CTkCheckBox(geo_inner, text="Normal", variable=self.var_normal, width=80).pack(side="left", padx=8)
         
-        ctk.CTkLabel(fmt_frame, text="Export Format", font=("Arial", 12, "bold")).pack(anchor="w", padx=10, pady=(8, 2))
-        
-        fmt_inner = ctk.CTkFrame(fmt_frame, fg_color="transparent")
-        fmt_inner.pack(fill="both", padx=10, pady=5)
-        
-        # Shortened text slightly to prevent clipping
-        cb_flip = ctk.CTkCheckBox(fmt_inner, text="DX Normal", variable=self.var_flip_y)
-        cb_flip.pack(anchor="w", pady=1)
-        CTkToolTip(cb_flip, "Flip Y (Green Channel) for DirectX/Unreal.")
-        
-        ctk.CTkFrame(fmt_inner, height=1, fg_color="gray30").pack(fill="x", pady=4)
-        
-        cb_orm = ctk.CTkCheckBox(fmt_inner, text="Unreal ORM", variable=self.var_orm)
-        cb_orm.pack(anchor="w", pady=1)
-        CTkToolTip(cb_orm, "Packed: R=Occlusion, G=Roughness, B=Metallicity")
-        
-        # --- BOTTOM SECTION: QUALITY ---
-        
+        # === SECTION 3: Quality Settings ===
         qual_frame = ctk.CTkFrame(content)
-        qual_frame.pack(fill="x", pady=5)
+        qual_frame.pack(fill="x", pady=3)
         
-        # Quality Header & Presets (Centered)
+        # Presets
         h_frame = ctk.CTkFrame(qual_frame, fg_color="transparent")
-        h_frame.pack(anchor="center", pady=(10, 5)) 
+        h_frame.pack(anchor="center", pady=(6, 4))
         
-        ctk.CTkLabel(h_frame, text="Quality:", font=("Arial", 12, "bold")).pack(side="left", padx=5)
+        ctk.CTkLabel(h_frame, text="Quality:", font=("Arial", 10, "bold")).pack(side="left", padx=5)
         
-        # Presets inline
         def create_preset_btn(name, mode, tip):
-            btn = ctk.CTkButton(h_frame, text=name, width=60, height=24, fg_color="#4a4a4a", command=lambda: self.set_preset(mode))
-            btn.pack(side="left", padx=3)
+            btn = ctk.CTkButton(h_frame, text=name, width=55, height=20, fg_color="#4a4a4a", font=("Arial", 10), command=lambda: self.set_preset(mode))
+            btn.pack(side="left", padx=2)
             CTkToolTip(btn, tip)
             
-        create_preset_btn("Speed", "speed", "Fast preview.\n10 Steps, 512px.")
-        create_preset_btn("Balanced", "balanced", "Good balance.\n20 Steps, 768px.")
-        create_preset_btn("Quality", "quality", "Best details.\n50 Steps, Native Res.")
+        create_preset_btn("Speed", "speed", "10 Steps, 512px")
+        create_preset_btn("Balanced", "balanced", "20 Steps, 768px")
+        create_preset_btn("Quality", "quality", "50 Steps, Native")
 
-        # Sliders Area
+        # Sliders
         slider_frame = ctk.CTkFrame(qual_frame, fg_color=("gray90", "gray16"))
-        slider_frame.pack(fill="x", padx=10, pady=5)
+        slider_frame.pack(fill="x", padx=10, pady=4)
         
         # Steps
         s_row = ctk.CTkFrame(slider_frame, fg_color="transparent")
         s_row.pack(fill="x", padx=5, pady=2)
-        lbl_s = ctk.CTkLabel(s_row, text="Steps:", width=50, anchor="w")
-        lbl_s.pack(side="left")
-        CTkToolTip(lbl_s, "More steps = Less noise, better structure.")
-        
-        ctk.CTkSlider(s_row, from_=1, to=50, number_of_steps=49, variable=self.var_steps, height=16).pack(side="left", fill="x", expand=True, padx=5)
-        lbl_s_val = ctk.CTkLabel(s_row, text="10", width=30)
+        ctk.CTkLabel(s_row, text="Steps:", width=45, anchor="w", font=("Arial", 10)).pack(side="left")
+        ctk.CTkSlider(s_row, from_=1, to=50, number_of_steps=49, variable=self.var_steps, height=12).pack(side="left", fill="x", expand=True, padx=5)
+        lbl_s_val = ctk.CTkLabel(s_row, text="10", width=25, font=("Arial", 10))
         lbl_s_val.pack(side="right")
         self.var_steps.trace("w", lambda *a: lbl_s_val.configure(text=str(int(self.var_steps.get()))))
 
         # Passes
         e_row = ctk.CTkFrame(slider_frame, fg_color="transparent")
-        e_row.pack(fill="x", padx=5, pady=5)
-        lbl_e = ctk.CTkLabel(e_row, text="Passes:", width=50, anchor="w")
-        lbl_e.pack(side="left")
-        CTkToolTip(lbl_e, "Ensemble Size (Detail Quality).\nRuns multiple times to reduce noise.")
-        
-        ctk.CTkSlider(e_row, from_=1, to=10, number_of_steps=9, variable=self.var_ensemble, height=16).pack(side="left", fill="x", expand=True, padx=5)
-        lbl_e_val = ctk.CTkLabel(e_row, text="1", width=30)
+        e_row.pack(fill="x", padx=5, pady=2)
+        ctk.CTkLabel(e_row, text="Passes:", width=45, anchor="w", font=("Arial", 10)).pack(side="left")
+        ctk.CTkSlider(e_row, from_=1, to=10, number_of_steps=9, variable=self.var_ensemble, height=12).pack(side="left", fill="x", expand=True, padx=5)
+        lbl_e_val = ctk.CTkLabel(e_row, text="1", width=25, font=("Arial", 10))
         lbl_e_val.pack(side="right")
         self.var_ensemble.trace("w", lambda *a: lbl_e_val.configure(text=str(int(self.var_ensemble.get()))))
 
-        # Tech Specs Bar
-        tech_frame = ctk.CTkFrame(qual_frame, fg_color="transparent")
-        tech_frame.pack(fill="x", padx=10, pady=(5, 10))
+        # === SECTION 4: Export Options ===
+        export_frame = ctk.CTkFrame(content)
+        export_frame.pack(fill="x", pady=(3, 5))
         
-        # Model
-        ctk.CTkLabel(tech_frame, text="Ver:").pack(side="left")
-        cm_ver = ctk.CTkComboBox(tech_frame, variable=self.var_model_ver, values=["v1-0", "v1-1"], width=70, height=24)
-        cm_ver.pack(side="left", padx=2)
-        CTkToolTip(cm_ver, "v1-1: Newer.\nv1-0: Legacy.")
+        ctk.CTkLabel(export_frame, text="Export Options", font=("Arial", 11, "bold")).pack(anchor="w", padx=10, pady=(6, 4))
         
-        # Res
-        ctk.CTkLabel(tech_frame, text="Res:").pack(side="left", padx=(10, 0))
-        cm_res = ctk.CTkComboBox(tech_frame, variable=self.var_processing_res, values=["0", "512", "768", "1024"], width=70, height=24)
-        cm_res.pack(side="left", padx=2)
-        CTkToolTip(cm_res, "Processing Res.\n0 = Native.")
+        export_inner = ctk.CTkFrame(export_frame, fg_color="transparent")
+        export_inner.pack(fill="x", padx=10, pady=(0, 6))
         
-        # FP16
-        cb_fp = ctk.CTkCheckBox(tech_frame, text="FP16", variable=self.var_fp16, checkbox_width=20, checkbox_height=20)
-        cb_fp.pack(side="right")
-        CTkToolTip(cb_fp, "Use Half Precision (Recommended).")
+        # Row 1: Output Size + FP16
+        row1 = ctk.CTkFrame(export_inner, fg_color="transparent")
+        row1.pack(fill="x", pady=2)
+        
+        ctk.CTkLabel(row1, text="Output Size:", font=("Arial", 10)).pack(side="left")
+        cm_res = ctk.CTkComboBox(row1, variable=self.var_output_res, values=["512", "768", "1024", "2048", "Native"], width=75, height=22)
+        cm_res.pack(side="left", padx=5)
+        CTkToolTip(cm_res, "Final output resolution")
+        
+        # Sync with processing res
+        def on_res_change(*args):
+            val = self.var_output_res.get()
+            if val == "Native":
+                self.var_processing_res.set(0)
+            else:
+                try:
+                    self.var_processing_res.set(int(val))
+                except:
+                    self.var_processing_res.set(768)
+        self.var_output_res.trace("w", on_res_change)
+        
+        ctk.CTkCheckBox(row1, text="FP16", variable=self.var_fp16, checkbox_width=16, checkbox_height=16, font=("Arial", 10)).pack(side="right")
+        
+        # Row 2: Normal options
+        row2 = ctk.CTkFrame(export_inner, fg_color="transparent")
+        row2.pack(fill="x", pady=2)
+        
+        cb_flip = ctk.CTkCheckBox(row2, text="DX Normal", variable=self.var_flip_y, width=95, font=("Arial", 10))
+        cb_flip.pack(side="left")
+        CTkToolTip(cb_flip, "Flip Y for DirectX/Unreal")
+        
+        cb_orm = ctk.CTkCheckBox(row2, text="ORM Pack", variable=self.var_orm, width=90, font=("Arial", 10))
+        cb_orm.pack(side="left", padx=10)
+        CTkToolTip(cb_orm, "R=AO, G=Roughness, B=Metallic")
+        
+        cb_smooth = ctk.CTkCheckBox(row2, text="Invert Rough.", variable=self.var_invert_roughness, width=105, font=("Arial", 10))
+        cb_smooth.pack(side="left", padx=10)
+        CTkToolTip(cb_smooth, "Roughness → Smoothness")
 
-        # Run
-        self.btn_run = ctk.CTkButton(self.main_frame, text="Generate PBR Maps", height=40, font=("Arial", 13, "bold"), command=self.start_generation)
-        self.btn_run.pack(fill="x", side="bottom", padx=15, pady=15)
-        
-        self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray", height=20)
-        self.lbl_status.pack(side="bottom", pady=0)
-        
-        self.progress = ctk.CTkProgressBar(self.main_frame, height=10)
+        # === Bottom: Status & Button ===
+        self.progress = ctk.CTkProgressBar(self.main_frame, height=6)
         self.progress.pack(side="bottom", fill="x", padx=15, pady=(0, 5))
         self.progress.set(0)
+        
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray", height=16, font=("Arial", 10))
+        self.lbl_status.pack(side="bottom", pady=0)
+        
+        self.btn_run = ctk.CTkButton(self.main_frame, text="Generate PBR Maps", height=36, font=("Arial", 12, "bold"), command=self.start_generation)
+        self.btn_run.pack(fill="x", side="bottom", padx=15, pady=(5, 6))
 
     def set_preset(self, mode):
         if mode == "speed":
             self.var_steps.set(10)
             self.var_ensemble.set(1)
-            self.var_processing_res.set(512)
+            self.var_output_res.set("512")
         elif mode == "balanced":
             self.var_steps.set(20)
             self.var_ensemble.set(3)
-            self.var_processing_res.set(768)
+            self.var_output_res.set("768")
         elif mode == "quality":
             self.var_steps.set(50)
             self.var_ensemble.set(5)
-            self.var_processing_res.set(0) # Native res for max quality
+            self.var_output_res.set("Native")
             
     def start_generation(self):
-        if not any([self.var_depth.get(), self.var_normal.get(), self.var_albedo.get(), self.var_roughness.get(), self.var_metallicity.get(), self.var_orm.get()]):
+        has_geometry = self.var_depth.get() or self.var_normal.get()
+        has_material = self.var_albedo.get() or self.var_roughness.get() or self.var_metallicity.get() or self.var_orm.get()
+        
+        if not has_geometry and not has_material:
             messagebox.showwarning("Warning", "Select at least one map type.")
             return
+        
+        # Auto-enable Albedo if material maps are selected
+        if has_material and not self.var_albedo.get():
+            self.var_albedo.set(True)
             
         self.btn_run.configure(state="disabled", text="Processing...")
         self.progress.configure(mode="indeterminate")
@@ -251,10 +272,9 @@ class MarigoldGUI(BaseWindow):
         
     def run_process(self):
         try:
-            self.update_status("Starting Diffusers...")
+            self.update_status("Starting Marigold...")
             
-            args = []
-            args.append(str(self.target_path))
+            args = [str(self.target_path)]
             
             if self.var_depth.get(): args.append("--depth")
             if self.var_normal.get(): args.append("--normal")
@@ -264,18 +284,12 @@ class MarigoldGUI(BaseWindow):
             if self.var_orm.get(): args.append("--orm")
             
             if self.var_flip_y.get(): args.append("--flip_y")
+            if self.var_invert_roughness.get(): args.append("--invert_roughness")
             
-            args.append("--res")
-            args.append(str(self.var_processing_res.get()))
-            
-            args.append("--ensemble")
-            args.append(str(int(self.var_ensemble.get())))
-            
-            args.append("--steps")
-            args.append(str(int(self.var_steps.get())))
-            
-            args.append("--model_version")
-            args.append(self.var_model_ver.get())
+            args.extend(["--res", str(self.var_processing_res.get())])
+            args.extend(["--ensemble", str(int(self.var_ensemble.get()))])
+            args.extend(["--steps", str(int(self.var_steps.get()))])
+            args.extend(["--model_version", "v1-1"])  # Hardcoded to latest
             
             if self.var_fp16.get():
                 args.append("--fp16")
@@ -299,14 +313,12 @@ class MarigoldGUI(BaseWindow):
         self.lbl_status.configure(text="Complete")
         self.btn_run.configure(state="normal", text="Generate PBR Maps")
         
-        # Ask to open folder
         parent_dir = self.target_path.parent
-        if messagebox.askyesno("Success", f"Maps generated successfully!\n\nOpen output folder?\n{parent_dir}"):
+        if messagebox.askyesno("Success", f"Maps generated!\n\nOpen folder?"):
             try:
                 os.startfile(parent_dir)
             except Exception as e:
                 messagebox.showerror("Error", f"Could not open folder:\n{e}")
-        # self.destroy() # Optional: Keep open to verify? Let's close for now or keep open. User might want to tweak.
         
     def finish_error(self, error_msg):
         self.progress.stop()
@@ -321,7 +333,13 @@ def run_marigold_gui(target_path):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        run_marigold_gui(sys.argv[1])
+        from utils.batch_runner import collect_batch_context
+        
+        batch_files = collect_batch_context("marigold_pbr", sys.argv[1], timeout=0.3)
+        
+        if batch_files is None:
+            sys.exit(0)
+        
+        run_marigold_gui(str(batch_files[0]))
     else:
-        # Test Stub
         pass

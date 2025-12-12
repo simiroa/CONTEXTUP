@@ -1,28 +1,28 @@
 [
     {
         "category": "Rename",
-        "id": "rename_batch",
-        "name": "Batch Rename...",
+        "id": "batch_rename",
+        "name": "Batch Rename",
         "icon": "assets/icons/icon_sys_batch_rename.ico",
         "types": "*",
         "scope": "items",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 301
+        "order": 801,
+        "gui": true,
+        "dependencies": []
     },
     {
         "category": "Rename",
-        "id": "rename_sequence",
-        "name": "Renumber Sequence...",
+        "id": "renumber_sequence",
+        "name": "Renumber Sequence",
         "icon": "assets/icons/icon_sys_renumber.ico",
-        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp;.obj;.fbx;.abc;.usd;.gltf;.glb;.ply;.stl;.mp4;.mov;.avi;.mkv",
+        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp;.ico",
         "scope": "items",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 302
+        "order": 802,
+        "gui": true,
+        "dependencies": []
     }
 ]

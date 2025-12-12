@@ -20,7 +20,7 @@
     *   **Focus**: Always force the root window to focus (`root.attributes("-topmost", True)`, `root.lift()`) to prevent dialogs from appearing behind Explorer.
     *   **Consolidated Dialogs**: For tools requiring input (e.g., "Sequence to Video"), show a single dialog gathering all parameters (FPS, Codec, etc.) upfront, rather than a chain of popups.
 *   **Dispatching**:
-    *   Ensure every new tool ID in `menu_config.json` has a corresponding handler in `src/core/menu.py`.
+    *   Ensure every new tool ID in `config/menu_categories/*.json` has a corresponding handler in `src/core/menu.py`.
     *   Missing handlers cause silent failures (script exits immediately).
 
 ## 3. Python & Environment

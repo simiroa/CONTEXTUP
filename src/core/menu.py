@@ -81,80 +81,75 @@ def build_handler_map():
     Exposed for testing to ensure config/menu dispatch stays in sync.
     """
     return {
-        # Image
-        "image_format_convert": _lazy("scripts.gemini_image_tools", "convert_format"),
-        "img_remove_exif": _lazy("scripts.gemini_image_tools", "remove_exif"),
-        "img_resize_pot": _lazy("scripts.gemini_image_tools", "resize_pot"),
-        "img_split_exr": _lazy("scripts.gemini_image_tools", "exr_split"),
-        "img_merge_exr": _lazy("scripts.gemini_image_tools", "exr_merge"),
-        "img_upscale_ai": _lazy("scripts.upscale_tools", "upscale_image"),
-        "img_remove_bg": _lazy("scripts.ai_tools", "remove_background"),
-        "img_marigold_pbr": _lazy("scripts.marigold_gui", "run_marigold_gui"),
-        "ai_analyze_img": _lazy("scripts.prompt_master", "open_prompt_master"),
-        "ai_img_lab": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "ai_standalone" / "gemini_img_tools.py"), str(p) if 'p' in locals() else ""]),
+        # === Image ===
+        "image_convert": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "image_convert_gui.py"), str(p)]),
+        "merge_to_exr": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "exr_tools_gui.py"), str(p)]),
+        "resize_power_of_2": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "image_resize_gui.py"), str(p)]),
+        "split_exr": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "exr_tools_gui.py"), str(p)]),
+        "texture_packer_orm": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "texture_packer_gui.py"), str(p)]),
+        "normal_flip_green": _lazy("scripts.normal_tools", "flip_normal_green"),
+        "simple_normal_roughness": _lazy("scripts.normal_tools", "generate_simple_normal_roughness"),
 
-        # AI (Gemini image tools)
-        "ai_style_change": "ai_tab",
-        "ai_pbr_gen": "ai_tab",
-        "ai_maketile": "ai_tab",
-        "ai_weathering": "ai_tab",
-        "ai_to_prompt": "ai_tab",
-        "ai_outpaint": "ai_tab",
-        "ai_inpaint": "ai_tab",
-        # Sys / Doc / CAD
-        "app_manager": lambda p, s=None: _open_manager(),
-        "doc_pdf_merge": lambda p, s=None: _lazy("scripts.sys_tools", "pdf_merge")(p, selection=s),
-        "doc_pdf_split": _lazy("scripts.sys_tools", "pdf_split"),
-        "file_move_in_new_folder": lambda p, s=None: _lazy("scripts.sys_tools", "move_to_new_folder")(p, selection=s),
-        "dir_clean_empty": _lazy("scripts.sys_tools", "clean_empty_dirs"),
-        "vid_arrange_sequence": lambda p, s=None: _lazy("scripts.sys_tools", "arrange_sequences")(p, selection=s),
-        "vid_find_missing_frames": lambda p, s=None: _lazy("scripts.sys_tools", "find_missing_frames")(p, selection=s),
-        "clipboard_copy_info_legacy": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "ai_standalone" / "clipboard_ai_tool.py")]),
-        "clipboard_save_image": _lazy("scripts.sys_tools", "save_clipboard_image"),
-        "doc_analyze_ollama": _lazy("scripts.prompt_master", "open_prompt_master"),
-        "clipboard_open_from_path": lambda p, s=None: _lazy("scripts.tray_modules.clipboard_opener", "open_folder_from_clipboard")(),
-        "clipboard_copy_info": lambda p, s=None: _lazy("scripts.tray_modules.my_info", "show_my_info_menu")(),
-        "file_reopen_recent": "recent_folder",
-        "tool_translator": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "tool_translator.py")]),
-        "rename_batch": _lazy("scripts.rename_tools", "run_rename_gui"),
-        "rename_sequence": _lazy("scripts.rename_tools", "run_renumber_gui"),
-        "tool_analyze_clipboard": _lazy("scripts.prompt_master", "open_prompt_master"),
-        "tool_analyze_error": _lazy("scripts.clipboard_tools", "analyze_error"),
-        "3d_convert_obj": _lazy("scripts.mayo_tools", "convert_cad"),
-        # Video
-        "vid_from_sequence": _lazy("scripts.video_tools", "seq_to_video"),
-        "vid_convert": _lazy("scripts.video_tools", "convert_video"),
-        "vid_frame_interp": _lazy("scripts.frame_interp_tools", "interpolate_frames"),
-        "vid_frame_interp_30fps": _lazy("scripts.video_tools", "frame_interp_30fps"),
-        "vid_subtitle_gen": _lazy("scripts.subtitle_tools", "generate_subtitles"),
-        "video_audio_tools": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "video"]),
-        "video_downloader_gui": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "video_downloader_gui.py")]),
-        
-        # Audio
-        "aud_convert": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "convert"]),
-        "aud_separate_stems": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "separate"]),
-        "aud_normalize": _lazy("scripts.audio_tools", "optimize_volume"),
-        "aud_extract_bgm": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "filter"]),
-        "aud_extract_voice": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "filter"]),
-
-        # Video / Audio Misc
-        "vid_create_proxy": _lazy("scripts.video_tools", "create_proxy"),
-        "vid_extract_audio": _lazy("scripts.video_tools", "extract_audio"),
-        "vid_mute": _lazy("scripts.video_tools", "remove_audio"),
-
-        # Mesh / Mayo
-        "mesh_convert_format": _lazy("scripts.blender_tools", "convert_mesh"),
-        "mesh_auto_lod": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "mesh_lod_gui.py"), str(p)]),
-        "mesh_extract_textures": _lazy("scripts.blender_tools", "extract_textures"),
-        "mayo_open": _lazy("scripts.mayo_tools", "open_with_mayo"),
-        # Prompt Master
+        # === AI ===
+        "ocr_paddle": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "ai_standalone" / "pdf_ocr_tool.py"), str(p)]),
+        "frame_interpolation_ai": _lazy("scripts.frame_interp_tools", "interpolate_frames"),
+        "subtitle_ai": _lazy("scripts.subtitle_tools", "generate_subtitles"),
+        "ai_upscale": _lazy("scripts.upscale_tools", "upscale_image"),
+        "remove_background": _lazy("scripts.ai_tools", "remove_background"),
+        "marigold_pbr": _lazy("scripts.marigold_gui", "run_marigold_gui"),
         "prompt_master": _lazy("scripts.prompt_master", "open_prompt_master"),
-        
-        # System (New)
-        "file_create_symlink": _lazy("scripts.sys_tools", "create_symlink"),
-        "tool_finder": _lazy("scripts.finder", "open_finder"),
-        "dir_flatten": _lazy("scripts.sys_tools", "flatten_directory"),
-        "dir_unwrap": _lazy("scripts.sys_tools", "flatten_directory"),
+        "gemini_image_tool": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "ai_standalone" / "gemini_img_tools.py"), str(p)]),
+        "separate_stems_ai": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "separate"]),
+
+        # === Video ===
+        "arrange_sequences": lambda p, s=None: _lazy("scripts.sys_tools", "arrange_sequences")(p, selection=s),
+        "video_convert": _lazy("scripts.video_tools", "convert_video"),
+        "extract_audio": _lazy("scripts.video_tools", "extract_audio"),
+        "find_missing_frames": lambda p, s=None: _lazy("scripts.sys_tools", "find_missing_frames")(p, selection=s),
+        "interpolate_30fps": _lazy("scripts.video_tools", "frame_interp_30fps"),
+        "create_proxy": _lazy("scripts.video_tools", "create_proxy"),
+        "remove_audio": _lazy("scripts.video_tools", "remove_audio"),
+        "sequence_to_video": _lazy("scripts.video_tools", "seq_to_video"),
+
+        # === Audio ===
+        "audio_convert": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "convert"]),
+        "extract_bgm": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "filter"]),
+        "extract_voice": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "audio_studio_gui.py"), str(p), "--tab", "filter"]),
+        "normalize_volume": _lazy("scripts.audio_tools", "optimize_volume"),
+
+        # === System ===
+        "clean_empty_folders": _lazy("scripts.sys_tools", "clean_empty_dirs"),
+        "move_to_new_folder": lambda p, s=None: _lazy("scripts.sys_tools", "move_to_new_folder")(p, selection=s),
+        "reopen_recent": "recent_folder",
+        "unwrap_folder": _lazy("scripts.sys_tools", "flatten_directory"),
+        "finder": _lazy("scripts.finder", "open_finder"),
+        "create_symlink": _lazy("scripts.sys_tools", "create_symlink"),
+        "manager": lambda p, s=None: _open_manager(),
+
+        # === 3D ===
+        "auto_lod": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "mesh_lod_gui.py"), str(p)]),
+        "cad_to_obj": _lazy("scripts.mayo_tools", "convert_cad"),
+        "mesh_convert": _lazy("scripts.blender_tools", "convert_mesh"),
+        "open_with_mayo": _lazy("scripts.mayo_tools", "open_with_mayo"),
+        "extract_textures": _lazy("scripts.blender_tools", "extract_textures"),
+
+        # === Clipboard ===
+        "copy_my_info": lambda p, s=None: _lazy("scripts.tray_modules.my_info", "show_my_info_menu")(),
+        "analyze_error": _lazy("scripts.clipboard_tools", "analyze_error"),
+        "open_from_clipboard": lambda p, s=None: _lazy("scripts.tray_modules.clipboard_opener", "open_folder_from_clipboard")(),
+        "save_clipboard_image": _lazy("scripts.sys_tools", "save_clipboard_image"),
+
+        # === Document ===
+        "pdf_merge": lambda p, s=None: _lazy("scripts.sys_tools", "pdf_merge")(p, selection=s),
+        "pdf_split": _lazy("scripts.sys_tools", "pdf_split"),
+
+        # === Rename ===
+        "batch_rename": _lazy("scripts.rename_tools", "run_rename_gui"),
+        "renumber_sequence": _lazy("scripts.rename_tools", "run_renumber_gui"),
+
+        # === Tools ===
+        "youtube_downloader": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "video_downloader_gui.py")]),
+        "translator": lambda p, s=None: subprocess.Popen([sys.executable, str(src_dir / "scripts" / "tool_translator.py")]),
     }
 
 

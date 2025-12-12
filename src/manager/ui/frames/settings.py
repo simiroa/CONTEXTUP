@@ -22,16 +22,90 @@ class SettingsFrame(ctk.CTkFrame):
         self.tool_entries = {}
         
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(4, weight=1)
+        self.grid_rowconfigure(5, weight=1)
         
+        self._setup_startup()
         self._setup_dashboard()
         self._setup_config()
         self._setup_api()
+    
+    def _setup_startup(self):
+        """Setup startup and general options section."""
+        import sys
+        import winreg
+        
+        startup_frame = ctk.CTkFrame(self, corner_radius=10)
+        startup_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
+        
+        header = ctk.CTkFrame(startup_frame, fg_color="transparent")
+        header.pack(fill="x", padx=20, pady=(15, 10))
+        ctk.CTkLabel(header, text="General Settings", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+        
+        # Check current startup state
+        def is_startup_enabled():
+            try:
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
+                    r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_READ)
+                try:
+                    winreg.QueryValueEx(key, "ContextUpTray")
+                    winreg.CloseKey(key)
+                    return True
+                except FileNotFoundError:
+                    winreg.CloseKey(key)
+                    return False
+            except Exception:
+                return False
+        
+        self.var_startup = ctk.BooleanVar(value=is_startup_enabled())
+        
+        def toggle_startup():
+            try:
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
+                    r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_SET_VALUE)
+                
+                if self.var_startup.get():
+                    # Get tray agent path
+                    src_dir = Path(__file__).parent.parent.parent.parent
+                    tray_script = src_dir / "scripts" / "tray_agent.py"
+                    python_exe = sys.executable
+                    
+                    tray_cmd = f'"{python_exe}" "{tray_script}"'
+                    winreg.SetValueEx(key, "ContextUpTray", 0, winreg.REG_SZ, tray_cmd)
+                    logger.info(f"Enabled Windows startup: {tray_cmd}")
+                else:
+                    try:
+                        winreg.DeleteValue(key, "ContextUpTray")
+                        logger.info("Disabled Windows startup")
+                    except FileNotFoundError:
+                        pass
+                
+                winreg.CloseKey(key)
+            except Exception as e:
+                logger.error(f"Failed to toggle startup: {e}")
+                messagebox.showerror("Error", f"Failed to change startup setting: {e}")
+        
+        options_frame = ctk.CTkFrame(startup_frame, fg_color="transparent")
+        options_frame.pack(fill="x", padx=20, pady=(0, 15))
+        
+        # Startup checkbox
+        ctk.CTkCheckBox(options_frame, text="Windows 시작시 트레이 자동 실행", 
+                       variable=self.var_startup, command=toggle_startup).pack(anchor="w", pady=5)
+        
+        # Feedback button
+        def open_feedback():
+            import webbrowser
+            webbrowser.open("https://github.com/simiroa/CONTEXTUP/issues/new")
+        
+        btn_row = ctk.CTkFrame(options_frame, fg_color="transparent")
+        btn_row.pack(fill="x", pady=10)
+        ctk.CTkButton(btn_row, text="📝 피드백 보내기", width=150, height=32,
+                     fg_color="#6c757d", hover_color="#5a6268",
+                     command=open_feedback).pack(side="left")
         
     def _setup_dashboard(self):
         # 1. Missing Components Dashboard
         dash_frame = ctk.CTkFrame(self, fg_color=("gray90", "gray20"), corner_radius=10)
-        dash_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
+        dash_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
         
         # Header
         dash_header = ctk.CTkFrame(dash_frame, fg_color="transparent")
@@ -49,7 +123,7 @@ class SettingsFrame(ctk.CTkFrame):
     def _setup_config(self):
         # 2. Configuration Management
         config_frame = ctk.CTkFrame(self, corner_radius=10)
-        config_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
+        config_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
         
         header_row = ctk.CTkFrame(config_frame, fg_color="transparent")
         header_row.pack(fill="x", padx=20, pady=15)
@@ -126,7 +200,7 @@ class SettingsFrame(ctk.CTkFrame):
     def _setup_api(self):
         # 3. API Configuration
         api_frame = ctk.CTkFrame(self, corner_radius=10)
-        api_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
+        api_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
         
         api_header = ctk.CTkFrame(api_frame, fg_color="transparent")
         api_header.pack(fill="x", padx=20, pady=15)

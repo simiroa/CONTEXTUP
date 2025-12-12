@@ -75,9 +75,6 @@ class RegistryManager:
             item_applies_to = {} # item_id -> AppliesTo string
 
             for item in self.config.items:
-                if item.get('status') != 'COMPLETE':
-                    continue
-                
                 if not item.get('enabled', True):
                     continue
                 
@@ -140,6 +137,7 @@ class RegistryManager:
                     )
                     self._register_submenu_group(target, submenu_name, items, placeholder, item_applies_to)
             
+            self._bypass_selection_limit()
             logger.info("Registration complete.")
             
         except Exception as e:
@@ -254,7 +252,13 @@ class RegistryManager:
                         with winreg.CreateKey(winreg.HKEY_CURRENT_USER, child_key) as k:
                             winreg.SetValue(k, "", winreg.REG_SZ, label) # MUIVerb
                             winreg.SetValueEx(k, "MUIVerb", 0, winreg.REG_SZ, label)
-                            winreg.SetValueEx(k, "Icon", 0, winreg.REG_SZ, "imageres.dll,242")
+                            
+                            # Use custom icon if available, else generic
+                            copy_icon_path = Path(__file__).parent.parent.parent / "assets" / "icons" / "icon_sys_copy_content.ico"
+                            if copy_icon_path.exists():
+                                winreg.SetValueEx(k, "Icon", 0, winreg.REG_SZ, str(copy_icon_path))
+                            else:
+                                winreg.SetValueEx(k, "Icon", 0, winreg.REG_SZ, "imageres.dll,242")
                             
                             with winreg.CreateKey(winreg.HKEY_CURRENT_USER, f"{child_key}\\command") as ck:
                                 winreg.SetValue(ck, "", winreg.REG_SZ, cmd)
@@ -280,7 +284,10 @@ class RegistryManager:
                         if item_icon:
                             winreg.SetValueEx(key, "Icon", 0, winreg.REG_SZ, item_icon)
                         
-                        if item_applies_to and item_id in item_applies_to:
+                        # AppliesTo typically kills "Background" items because they don't have extensions.
+                        # Only apply AppliesTo if we are NOT in Directory\Background, OR if the rule is generic enough.
+                        # For now, simplistic rule: Don't apply file extensions checks to Background.
+                        if item_applies_to and item_id in item_applies_to and reg_class != "Directory\\Background":
                             winreg.SetValueEx(key, "AppliesTo", 0, winreg.REG_SZ, item_applies_to[item_id])
                         
                         winreg.SetValueEx(key, "ContextUpManaged", 0, winreg.REG_SZ, "true")
@@ -288,8 +295,7 @@ class RegistryManager:
                     # Command
                     command_key_path = f"{item_key_path}\\command"
                     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, command_key_path) as key:
-                        env = item.get("environment", "embedded")
-                        cmd = self._get_command(item_id, placeholder, env)
+                        cmd = self._get_command(item_id, placeholder, "embedded")
                         winreg.SetValue(key, "", winreg.REG_SZ, cmd)
                         
             except Exception as e:
@@ -380,6 +386,21 @@ class RegistryManager:
                 logger.warning(f"Error scanning {base_path}: {e}")
 
         logger.info("Unregistration complete.")
+
+    def _bypass_selection_limit(self):
+        """
+        Sets MultipleInvokePromptMinimum to avoids context menu disappearance 
+        when selecting >15 files.
+        """
+        try:
+            key_path = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer"
+            with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
+                # Set to 500 (decimal)
+                winreg.SetValueEx(key, "MultipleInvokePromptMinimum", 0, winreg.REG_DWORD, 500)
+                logger.info("Set MultipleInvokePromptMinimum to 500")
+        except Exception as e:
+            logger.warning(f"Failed to set MultipleInvokePromptMinimum: {e}")
+
 
     def _delete_key_recursive(self, root, key_path):
         try:

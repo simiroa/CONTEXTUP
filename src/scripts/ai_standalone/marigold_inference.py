@@ -11,6 +11,9 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore")
 
+# Allow large images (disable decompression bomb check)
+Image.MAX_IMAGE_PIXELS = None
+
 def main():
     parser = argparse.ArgumentParser(description="Marigold PBR Inference")
     parser.add_argument("input_image", help="Path to input image")
@@ -23,6 +26,7 @@ def main():
     parser.add_argument("--res", type=int, default=768, help="Processing resolution (0 for native)")
     parser.add_argument("--ensemble", type=int, default=1, help="Ensemble size")
     parser.add_argument("--flip_y", action="store_true", help="Flip Normal Y Channel (DirectX)")
+    parser.add_argument("--invert_roughness", action="store_true", help="Invert Roughness to Smoothness")
     parser.add_argument("--steps", type=int, default=10, help="Inference steps")
     parser.add_argument("--model_version", type=str, default="v1-1", help="Model version (v1-0 or v1-1)")
     parser.add_argument("--fp16", action="store_true", help="Use Half Precision")
@@ -176,8 +180,17 @@ def main():
                         print(f"Saved: {input_path.stem}_albedo.png")
 
                     if args.roughness:
-                        save_output(comp1[:, :, 0], input_path.with_name(f"{input_path.stem}_roughness.png"), "roughness")
-                        print(f"Saved: {input_path.stem}_roughness.png")
+                        r_data = comp1[:, :, 0]
+                        if args.invert_roughness:
+                            # Invert: Roughness -> Smoothness
+                            if r_data.min() < 0:
+                                r_data = (r_data + 1.0) / 2.0
+                            r_data = 1.0 - r_data
+                            out_name = f"{input_path.stem}_smoothness.png"
+                        else:
+                            out_name = f"{input_path.stem}_roughness.png"
+                        save_output(r_data, input_path.with_name(out_name), "roughness")
+                        print(f"Saved: {out_name}")
 
                     if args.metallicity:
                         save_output(comp1[:, :, 1], input_path.with_name(f"{input_path.stem}_metallicity.png"), "metallicity")

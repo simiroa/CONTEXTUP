@@ -15,24 +15,18 @@ src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
 from utils.ai_runner import run_ai_script
-from utils.explorer import get_selection_from_explorer
 from utils.gui_lib import BaseWindow
+from utils.image_utils import scan_for_images
 
 class UpscaleGUI(BaseWindow):
     def __init__(self, target_path):
         super().__init__(title="ContextUp AI Upscale", width=500, height=650)
         self.target_path = target_path
         
-        self.selection = get_selection_from_explorer(target_path)
-        if not self.selection:
-            self.selection = [target_path]
-        
-        # Filter for image files
-        img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'}
-        self.files_to_process = [Path(p) for p in self.selection if Path(p).suffix.lower() in img_exts]
+        self.files_to_process, self.scan_count = scan_for_images(target_path)
         
         if not self.files_to_process:
-            messagebox.showinfo("Info", "No image files selected.")
+            messagebox.showinfo("Info", f"No image files found.\nScanned {self.scan_count} items.")
             self.destroy()
             return
 

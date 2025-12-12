@@ -1,67 +1,66 @@
 [
     {
         "category": "Audio",
-        "id": "aud_convert",
-        "name": "Convert Format",
+        "id": "audio_convert",
+        "name": "Audio Convert",
         "icon": "assets/icons/icon_audio_convert_format.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 801,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 401,
+        "gui": true,
+        "dependencies": [
+            "ffmpeg"
+        ]
     },
     {
         "category": "Audio",
-        "id": "aud_extract_bgm",
-        "name": "Extract BGM (Filter)",
+        "id": "extract_bgm",
+        "name": "Extract BGM",
         "icon": "assets/icons/icon_audio_extract_bgm.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 802,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 402,
+        "gui": true,
+        "dependencies": [
+            "ffmpeg"
+        ]
     },
     {
         "category": "Audio",
-        "id": "aud_extract_voice",
-        "name": "Extract Voice (Filter)",
+        "id": "extract_voice",
+        "name": "Extract Voice",
         "icon": "assets/icons/icon_audio_extract_voice.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 803
+        "order": 403,
+        "gui": true,
+        "dependencies": [
+            "ffmpeg"
+        ]
     },
     {
         "category": "Audio",
-        "id": "aud_normalize",
+        "id": "normalize_volume",
         "name": "Normalize Volume",
         "icon": "assets/icons/icon_audio_optimize_vol.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 804,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 404,
+        "gui": false,
+        "dependencies": [
+            "ffmpeg"
+        ]
     }
 ]

@@ -227,7 +227,14 @@ def run_gui(target_path):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        run_gui(sys.argv[1])
+        anchor = sys.argv[1]
+        
+        # Mutex - ensure only one GUI window opens
+        from utils.batch_runner import collect_batch_context
+        if collect_batch_context("video_convert", anchor, timeout=0.2) is None:
+            sys.exit(0)
+        
+        run_gui(anchor)
     else:
-        # Debug mode
         run_gui(str(Path.home() / "Videos"))
+

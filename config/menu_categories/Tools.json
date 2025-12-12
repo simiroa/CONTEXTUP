@@ -1,29 +1,32 @@
 [
     {
         "category": "Tools",
-        "id": "video_downloader_gui",
+        "id": "youtube_downloader",
         "name": "YouTube Downloader",
         "icon": "assets/icons/icon_video_downloader.ico",
         "types": "*",
-        "scope": "items",
-        "status": "COMPLETE",
+        "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 1101
+        "order": 501,
+        "gui": true,
+        "dependencies": [
+            "yt-dlp"
+        ]
     },
     {
         "category": "Tools",
-        "id": "tool_translator",
-        "name": "Realtime Translator",
+        "id": "translator",
+        "name": "Translator",
         "icon": "assets/icons/icon_sys_translator.ico",
         "types": "*",
         "scope": "background",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 1102,
-        "dependencies": []
+        "order": 502,
+        "gui": true,
+        "dependencies": [
+            "nllb"
+        ]
     }
 ]

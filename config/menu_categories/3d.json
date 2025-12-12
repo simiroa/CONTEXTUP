@@ -1,81 +1,82 @@
 [
     {
         "category": "3D",
-        "id": "mesh_auto_lod",
-        "name": "Auto LOD Generator (PyMeshLab)",
+        "id": "auto_lod",
+        "name": "Auto LOD",
         "icon": "assets/icons/icon_mesh_lod.ico",
         "types": ".obj;.ply;.stl;.off;.gltf;.glb;.fbx",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "order": 301,
+        "gui": true,
         "dependencies": [
             "pymeshlab"
-        ],
-        "order": 701
+        ]
     },
     {
         "category": "3D",
-        "id": "3d_convert_obj",
-        "name": "Convert CAD to OBJ",
+        "id": "cad_to_obj",
+        "name": "CAD to OBJ",
         "icon": "assets/icons/icon_cad_convert_obj.ico",
         "types": ".step;.stp;.iges;.igs",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 702
+        "order": 302,
+        "gui": false,
+        "dependencies": [
+            "mayo"
+        ]
     },
     {
         "category": "3D",
-        "id": "mesh_convert_format",
-        "name": "Convert Mesh Format",
+        "id": "mesh_convert",
+        "name": "Mesh Convert",
         "icon": "assets/icons/icon_mesh_convert_format.ico",
         "types": ".fbx;.obj;.gltf;.glb;.usd;.abc;.ply;.stl",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 703
+        "order": 303,
+        "gui": false,
+        "dependencies": [
+            "blender"
+        ]
     },
     {
         "category": "3D",
-        "id": "mayo_open",
+        "id": "open_with_mayo",
         "name": "Open with Mayo",
         "icon": "assets/icons/icon_3d_mayo.ico",
         "types": ".step;.stp;.iges;.igs;.obj;.stl;.glb;.gltf",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 704,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 304,
+        "gui": false,
+        "dependencies": [
+            "mayo"
+        ]
     },
     {
         "category": "3D",
-        "id": "mesh_extract_textures",
-        "name": "Extract Textures from FBX",
+        "id": "extract_textures",
+        "name": "Extract Textures",
         "icon": "assets/icons/icon_mesh_extract_textures.ico",
         "types": ".fbx;.obj;.gltf;.glb;.usd",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 705,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 305,
+        "gui": false,
+        "dependencies": [
+            "blender"
+        ]
     }
 ]

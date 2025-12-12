@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent.parent # src/scripts/install_contextup.py -> ROOT
 TOOLS_DIR = ROOT_DIR / "tools"
 PYTHON_DIR = TOOLS_DIR / "python"
-REQUIREMENTS_FILE = ROOT_DIR / "requirements_core.txt"
+REQUIREMENTS_FILE = ROOT_DIR / "requirements.txt"
 
 # IndyGreg Python Build Standalone 3.11.9 (Shared Install Only)
 # URL for x86_64-pc-windows-msvc-shared-install_only

@@ -1,89 +1,85 @@
 [
     {
         "category": "AI",
-        "id": "vid_frame_interp",
-        "name": "Frame Interpolation (AI)",
+        "id": "frame_interpolation_ai",
+        "name": "Frame Interpolation AI",
         "icon": "assets/icons/icon_video_frame_interp.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 601,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 201,
+        "gui": true,
+        "dependencies": [
+            "torch",
+            "rife-ncnn-vulkan"
+        ]
     },
     {
         "category": "AI",
-        "id": "vid_subtitle_gen",
-        "name": "Generate Subtitles (AI)",
+        "id": "subtitle_ai",
+        "name": "Subtitle AI",
         "icon": "assets/icons/icon_video_generate_subtitle.ico",
         "types": ".mp4;.mov;.avi;.mkv",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 602,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 202,
+        "gui": true,
+        "dependencies": [
+            "faster-whisper"
+        ]
     },
     {
         "category": "AI",
-        "id": "img_upscale_ai",
+        "id": "ai_upscale",
         "name": "AI Upscale",
         "icon": "assets/icons/icon_image_upscale_ai.ico",
         "types": ".jpg;.jpeg;.png;.webp;.bmp",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 603,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 203,
+        "gui": false,
+        "dependencies": [
+            "realesrgan-ncnn-vulkan"
+        ]
     },
     {
         "category": "AI",
-        "id": "img_remove_bg",
+        "id": "remove_background",
         "name": "Remove Background",
         "icon": "assets/icons/icon_image_remove_bg_ai.ico",
         "types": ".jpg;.jpeg;.png;.webp;.bmp",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
+        "order": 204,
+        "gui": false,
         "dependencies": [
             "rembg",
             "torch",
             "Pillow"
-        ],
-        "order": 604,
-        "command": "",
-        "hotkey": ""
+        ]
     },
     {
         "category": "AI",
-        "id": "img_marigold_pbr",
-        "name": "Marigold PBR Gen",
+        "id": "marigold_pbr",
+        "name": "Marigold PBR",
         "icon": "assets/icons/icon_ai_pbr.ico",
         "types": ".jpg;.jpeg;.png;.webp;.tga;.bmp",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 605,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 205,
+        "gui": true,
+        "dependencies": [
+            "diffusers",
+            "torch",
+            "accelerate"
+        ]
     },
     {
         "category": "AI",
@@ -91,49 +87,63 @@
         "name": "Prompt Master",
         "icon": "assets/icons/icon_ai_prompt_master.ico",
         "types": "*",
-        "scope": "both",
-        "status": "COMPLETE",
+        "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 606,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 206,
+        "gui": true,
+        "dependencies": [
+            "google-genai"
+        ]
     },
     {
         "category": "AI",
-        "id": "ai_img_lab",
-        "name": "[Gemini] Image Tool",
+        "id": "gemini_image_tool",
+        "name": "Gemini Image Tool",
         "icon": "assets/icons/icon_ai_gemini_vision.ico",
         "types": ".jpg;.jpeg;.png;.webp;.tga;.tif;.tiff",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 607,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 207,
+        "gui": true,
+        "dependencies": [
+            "google-genai",
+            "Pillow"
+        ]
     },
     {
         "category": "AI",
-        "id": "aud_separate_stems",
-        "name": "Separate Stems (AI)",
+        "id": "separate_stems_ai",
+        "name": "Separate Stems AI",
         "icon": "assets/icons/icon_audio_separate_stems.ico",
         "types": ".wav;.mp3;.ogg;.flac;.m4a",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 608,
-        "command": "",
-        "hotkey": "",
-        "dependencies": []
+        "order": 208,
+        "gui": true,
+        "dependencies": [
+            "spleeter"
+        ]
+    },
+    {
+        "category": "AI",
+        "id": "ocr_paddle",
+        "name": "OCR Paddle",
+        "icon": "assets/icons/icon_doc_analyze_ollama.ico",
+        "types": ".pdf;.png;.jpg;.jpeg;.bmp;.tiff;.webp",
+        "scope": "both",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "order": 209,
+        "gui": true,
+        "dependencies": [
+            "paddleocr",
+            "paddlepaddle"
+        ]
     }
 ]

@@ -378,6 +378,93 @@ def main():
         except Exception as e:
             logger.error(f"Failed to load hotkeys from config: {e}")
 
+        # === Global Context Menu Hotkey ===
+        def show_popup_menu():
+            """Show tray-like popup menu at mouse cursor position."""
+            import tkinter as tk
+            
+            def _show():
+                try:
+                    root = tk.Tk()
+                    root.withdraw()
+                    root.attributes('-topmost', True)
+                    root.overrideredirect(True)
+                    
+                    popup = tk.Menu(root, tearoff=0, font=("Segoe UI", 10))
+                    
+                    # Build menu items similar to tray
+                    # Recent Folders
+                    try:
+                        from scripts.tray_modules.recent_folders import RecentFolders
+                        recent = RecentFolders(None)
+                        recent.start()
+                        recent_folders = recent.config.get("folders", [])[:5]
+                        
+                        if recent_folders:
+                            recent_menu = tk.Menu(popup, tearoff=0)
+                            for folder in recent_folders:
+                                folder_path = Path(folder)
+                                recent_menu.add_command(
+                                    label=folder_path.name,
+                                    command=lambda f=folder: subprocess.Popen(f'explorer "{f}"', shell=True)
+                                )
+                            popup.add_cascade(label="Recent Folders", menu=recent_menu)
+                            popup.add_separator()
+                    except Exception as e:
+                        logger.debug(f"Recent folders not available: {e}")
+                    
+                    # Copy My Info
+                    try:
+                        from scripts.tray_modules.copy_my_info import CopyMyInfoModule
+                        info_mod = CopyMyInfoModule(None)
+                        info_mod.start()
+                        info_items = info_mod.config.get("items", [])
+                        
+                        if info_items:
+                            info_menu = tk.Menu(popup, tearoff=0)
+                            for item in info_items:
+                                label = item.get("label", "")
+                                value = item.get("value", "")
+                                info_menu.add_command(
+                                    label=label,
+                                    command=lambda v=value: (root.clipboard_clear(), root.clipboard_append(v), root.update())
+                                )
+                            popup.add_cascade(label="Copy My Info", menu=info_menu)
+                            popup.add_separator()
+                    except Exception as e:
+                        logger.debug(f"Copy My Info not available: {e}")
+                    
+                    # Tools
+                    popup.add_command(label="Translator", command=open_translator)
+                    popup.add_separator()
+                    popup.add_command(label="ContextUp Manager", command=open_manager)
+                    popup.add_separator()
+                    popup.add_command(label="Close", command=root.destroy)
+                    
+                    # Get mouse position
+                    x, y = root.winfo_pointerx(), root.winfo_pointery()
+                    
+                    # Show popup
+                    try:
+                        popup.tk_popup(x, y)
+                    finally:
+                        popup.grab_release()
+                    
+                    root.mainloop()
+                    
+                except Exception as e:
+                    logger.error(f"Popup menu failed: {e}")
+            
+            # Run in separate thread to avoid blocking
+            threading.Thread(target=_show, daemon=True).start()
+        
+        # Register global hotkey for popup menu
+        try:
+            keyboard.add_hotkey("ctrl+shift+c", show_popup_menu)
+            logger.info("Registered Global Context Menu Hotkey: Ctrl+Shift+C")
+        except Exception as e:
+            logger.error(f"Failed to register popup menu hotkey: {e}")
+
     except ImportError:
         logger.warning("keyboard module not found. Hotkeys disabled.")
 

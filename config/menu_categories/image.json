@@ -1,54 +1,112 @@
 [
     {
         "category": "Image",
-        "id": "img_merge_exr",
+        "id": "image_convert",
+        "name": "Image Convert",
+        "icon": "assets/icons/icon_image_format_convert.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr;.webp;.ico",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "order": 901,
+        "gui": true,
+        "dependencies": [
+            "Pillow"
+        ]
+    },
+    {
+        "category": "Image",
+        "id": "merge_to_exr",
         "name": "Merge to EXR",
         "icon": "assets/icons/icon_image_exr_merge.ico",
         "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr",
         "scope": "items",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 401
+        "order": 902,
+        "gui": true,
+        "dependencies": [
+            "OpenEXR",
+            "Pillow"
+        ]
     },
     {
         "category": "Image",
-        "id": "img_remove_exif",
-        "name": "Remove Metadata (EXIF)",
-        "icon": "assets/icons/icon_image_remove_exif.ico",
-        "types": ".jpg;.jpeg;.png;.webp",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "environment": "system",
-        "order": 402
-    },
-    {
-        "category": "Image",
-        "id": "img_resize_pot",
-        "name": "Resize (Power of 2)",
+        "id": "resize_power_of_2",
+        "name": "Resize Power of 2",
         "icon": "assets/icons/icon_image_resize_pot.ico",
         "types": ".jpg;.jpeg;.png;.tga;.bmp;.webp;.tif;.tiff",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 403
+        "order": 903,
+        "gui": true,
+        "dependencies": [
+            "Pillow"
+        ]
     },
     {
         "category": "Image",
-        "id": "img_split_exr",
-        "name": "Split EXR Layers",
+        "id": "split_exr",
+        "name": "Split EXR",
         "icon": "assets/icons/icon_image_exr_split.ico",
         "types": ".exr",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 404
+        "order": 904,
+        "gui": true,
+        "dependencies": [
+            "OpenEXR",
+            "Pillow"
+        ]
+    },
+    {
+        "category": "Image",
+        "id": "texture_packer_orm",
+        "name": "Texture Packer ORM",
+        "icon": "assets/icons/icon_texture_packer.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.tif;.tiff;.exr",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "order": 905,
+        "gui": true,
+        "dependencies": [
+            "Pillow"
+        ]
+    },
+    {
+        "category": "Image",
+        "id": "normal_flip_green",
+        "name": "Normal Flip Green",
+        "icon": "assets/icons/icon_normal_flip.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "order": 906,
+        "gui": false,
+        "dependencies": [
+            "Pillow",
+            "numpy"
+        ]
+    },
+    {
+        "category": "Image",
+        "id": "simple_normal_roughness",
+        "name": "Simple Normal Roughness",
+        "icon": "assets/icons/icon_simple_pbr.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "order": 907,
+        "gui": false,
+        "dependencies": [
+            "Pillow",
+            "numpy",
+            "scipy"
+        ]
     }
 ]

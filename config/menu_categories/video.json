@@ -1,117 +1,126 @@
 [
     {
         "category": "Video",
-        "id": "vid_arrange_sequence",
-        "name": "Arrange Image Sequences",
+        "id": "arrange_sequences",
+        "name": "Arrange Sequences",
         "icon": "assets/icons/icon_sys_arrange_sequences.ico",
         "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp",
         "scope": "items",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 101
-    },
-    {
-        "category": "Video",
-        "id": "vid_convert",
-        "name": "Convert Format",
-        "icon": "assets/icons/icon_video_convert.ico",
-        "types": ".mp4;.mov;.avi;.mkv;.webm",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 102
-    },
-    {
-        "category": "Video",
-        "id": "vid_extract_audio",
-        "name": "Extract Audio",
-        "icon": "assets/icons/icon_video_audio_tools.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 103
-    },
-    {
-        "category": "Video",
-        "id": "vid_find_missing_frames",
-        "name": "Find Missing Frames",
-        "icon": "assets/icons/icon_sys_find_missing_frames.ico",
-        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp",
-        "scope": "items",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 104
-    },
-    {
-        "category": "Video",
-        "id": "vid_frame_interp_30fps",
-        "name": "Frame Interpolation (30fps)",
-        "icon": "assets/icons/icon_video_frame_interp.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 105
-    },
-    {
-        "category": "Video",
-        "id": "vid_create_proxy",
-        "name": "Create Proxy Media",
-        "icon": "assets/icons/icon_video_proxy.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "status": "COMPLETE",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "order": 106,
-        "command": "",
-        "hotkey": "",
+        "order": 101,
+        "gui": false,
         "dependencies": []
     },
     {
         "category": "Video",
-        "id": "vid_mute",
-        "name": "Remove Audio Track",
-        "icon": "assets/icons/icon_video_mute.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
+        "id": "video_convert",
+        "name": "Video Convert",
+        "icon": "assets/icons/icon_video_convert.ico",
+        "types": ".mp4;.mov;.avi;.mkv;.webm",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 107
+        "order": 102,
+        "gui": true,
+        "dependencies": [
+            "ffmpeg"
+        ]
     },
     {
         "category": "Video",
-        "id": "vid_from_sequence",
-        "name": "Image Sequence to Video",
-        "icon": "assets/icons/icon_video_seq_to_video.ico",
-        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff",
-        "scope": "items",
-        "status": "COMPLETE",
+        "id": "extract_audio",
+        "name": "Extract Audio",
+        "icon": "assets/icons/icon_video_audio_tools.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
-        "order": 108
+        "order": 103,
+        "gui": false,
+        "dependencies": [
+            "ffmpeg"
+        ]
+    },
+    {
+        "category": "Video",
+        "id": "find_missing_frames",
+        "name": "Find Missing Frames",
+        "icon": "assets/icons/icon_sys_find_missing_frames.ico",
+        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp",
+        "scope": "items",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "order": 104,
+        "gui": false,
+        "dependencies": []
+    },
+    {
+        "category": "Video",
+        "id": "interpolate_30fps",
+        "name": "Interpolate 30fps",
+        "icon": "assets/icons/icon_video_frame_interp.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "order": 105,
+        "gui": false,
+        "dependencies": [
+            "ffmpeg"
+        ]
+    },
+    {
+        "category": "Video",
+        "id": "create_proxy",
+        "name": "Create Proxy",
+        "icon": "assets/icons/icon_video_proxy.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "order": 106,
+        "gui": false,
+        "dependencies": [
+            "ffmpeg"
+        ]
+    },
+    {
+        "category": "Video",
+        "id": "remove_audio",
+        "name": "Remove Audio",
+        "icon": "assets/icons/icon_video_mute.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "order": 107,
+        "gui": false,
+        "dependencies": [
+            "ffmpeg"
+        ]
+    },
+    {
+        "category": "Video",
+        "id": "sequence_to_video",
+        "name": "Sequence to Video",
+        "icon": "assets/icons/icon_video_seq_to_video.ico",
+        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff",
+        "scope": "items",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "order": 108,
+        "gui": true,
+        "dependencies": [
+            "ffmpeg"
+        ]
     }
 ]

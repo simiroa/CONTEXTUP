@@ -85,11 +85,11 @@ class ItemEditorDialog(ctk.CTkToplevel):
         self.chk_enabled = ctk.CTkCheckBox(self.frame, text="Active", variable=self.enabled_var)
         self.chk_enabled.grid(row=9, column=1, sticky="w", pady=10, padx=10)
         
-        # Environment
-        ctk.CTkLabel(self.frame, text="Environment:").grid(row=10, column=0, sticky="w", pady=10, padx=10)
-        self.combo_env = ctk.CTkComboBox(self.frame, values=["embedded", "system"])
-        self.combo_env.grid(row=10, column=1, sticky="ew", pady=10, padx=10)
-        self.combo_env.set("embedded")
+        # GUI (Opens Window)
+        ctk.CTkLabel(self.frame, text="GUI:").grid(row=10, column=0, sticky="w", pady=10, padx=10)
+        self.gui_var = ctk.BooleanVar(value=True)
+        self.chk_gui = ctk.CTkCheckBox(self.frame, text="Opens GUI Window", variable=self.gui_var)
+        self.chk_gui.grid(row=10, column=1, sticky="w", pady=10, padx=10)
 
         # Dependencies
         ctk.CTkLabel(self.frame, text="Dependencies:").grid(row=11, column=0, sticky="nw", pady=10, padx=10)
@@ -122,7 +122,7 @@ class ItemEditorDialog(ctk.CTkToplevel):
         self.entry_order.insert(0, str(data.get('order', 9999)))
         self.hk_var.set(data.get('hotkey', ''))
         self.enabled_var.set(data.get('enabled', True)) # Load enabled state
-        self.combo_env.set(data.get('environment', 'embedded'))
+        self.gui_var.set(data.get('gui', True))
         deps = data.get('dependencies', [])
         self.text_deps.insert("1.0", ", ".join(deps))
 
@@ -153,8 +153,8 @@ class ItemEditorDialog(ctk.CTkToplevel):
             "submenu": self.combo_submenu.get(),
             "order": 9999, # Auto-calc handled by EditorFrame
             "hotkey": self.hk_var.get(),
-            "enabled": self.enabled_var.get(), # Use var
-            "environment": self.combo_env.get(),
+            "enabled": self.enabled_var.get(),
+            "gui": self.gui_var.get(),
             "dependencies": deps
         }
         

@@ -1,58 +1,62 @@
 [
     {
         "category": "Clipboard",
-        "id": "clipboard_copy_info",
+        "id": "copy_my_info",
         "name": "Copy My Info",
         "icon": "assets/icons/icon_sys_copy_info.ico",
         "types": "*",
         "scope": "background",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "environment": "system",
-        "order": 901,
-        "dynamic_submenu": "copy_my_info"
+        "order": 1001,
+        "gui": false,
+        "dynamic_submenu": "copy_my_info",
+        "dependencies": []
     },
     {
         "category": "Clipboard",
-        "id": "tool_analyze_error",
-        "name": "Analyze Clipboard Error",
+        "id": "analyze_error",
+        "name": "Analyze Error",
         "icon": "assets/icons/icon_sys_analyze_clipboard.ico",
         "types": "*",
         "scope": "background",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 902
+        "order": 1002,
+        "gui": true,
+        "dependencies": [
+            "google-genai"
+        ]
     },
     {
-        "id": "clipboard_open_from_path",
-        "name": "Open Path from Clipboard",
         "category": "Clipboard",
+        "id": "open_from_clipboard",
+        "name": "Open from Clipboard",
         "icon": "assets/icons/icon_sys_open_path.ico",
         "types": "*",
         "scope": "background",
+        "enabled": true,
         "submenu": "ContextUp",
         "hotkey": "<ctrl>+<alt>+v",
-        "status": "COMPLETE",
-        "enabled": true,
-        "environment": "system",
-        "order": 903
+        "order": 1003,
+        "gui": false,
+        "dependencies": []
     },
     {
         "category": "Clipboard",
-        "id": "clipboard_save_image",
-        "name": "Save Clipboard Image Here",
+        "id": "save_clipboard_image",
+        "name": "Save Clipboard Image",
         "icon": "assets/icons/icon_sys_save_clipboard.ico",
         "types": "*",
         "scope": "background",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "environment": "system",
-        "order": 904
+        "order": 1004,
+        "gui": false,
+        "dependencies": [
+            "Pillow"
+        ]
     }
 ]

@@ -45,7 +45,7 @@ sys.path.append(str(src_dir))
 try:
     from core.settings import load_settings
     from utils.gui_lib import BaseWindow
-    from utils.explorer import get_selection_from_explorer
+    from utils.image_utils import scan_for_images
     logger.info("Successfully imported local modules")
 except Exception as e:
     logger.error(f"Failed to import local modules: {e}")
@@ -267,14 +267,13 @@ class GeminiImageToolsGUI(BaseWindow):
         self.api_delay = 2.0 
         
         if target_path:
-            try:
-                self.selection = get_selection_from_explorer(target_path)
-                if not self.selection:
-                    p = Path(target_path)
-                    if p.is_file(): self.selection = [p]
-            except Exception as e:
-                print(f"Selection error: {e}")
-                logger.error(f"Selection error: {e}")
+            # Use smart scanner
+            self.selection, scan_count = scan_for_images(target_path)
+            
+            if not self.selection:
+                messagebox.showerror("Error", f"No valid image found.\nScanned {scan_count} items.")
+                self.destroy()
+                return
                 
         if not self.selection:
             messagebox.showerror("Error", "No image selected.")
@@ -413,7 +412,6 @@ class GeminiImageToolsGUI(BaseWindow):
         self.tab_view.pack(fill="both", expand=True, padx=5, pady=5)
         
         self.tab_style = self.tab_view.add("Style")
-        self.tab_pbr = self.tab_view.add("PBR Gen")
         self.tab_tile = self.tab_view.add("Tileable")
         self.tab_weather = self.tab_view.add("Weathering")
         self.tab_analyze = self.tab_view.add("Analysis")
@@ -421,7 +419,6 @@ class GeminiImageToolsGUI(BaseWindow):
         self.tab_inpaint = self.tab_view.add("Inpaint")
         
         self.setup_style_tab()
-        self.setup_pbr_tab()
         self.setup_tile_tab()
         self.setup_weather_tab()
         self.setup_analyze_tab()

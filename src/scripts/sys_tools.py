@@ -131,9 +131,6 @@ def pdf_merge(target_path: str, selection=None):
 
 def pdf_split(target_path: str):
     try:
-        from pypdf import PdfReader, PdfWriter
-        from pdf2image import convert_from_path
-        
         path = Path(target_path)
         if path.suffix.lower() != '.pdf': return
         
@@ -148,6 +145,12 @@ def pdf_split(target_path: str):
         output_dir.mkdir(exist_ok=True)
         
         if 'pdf' in mode:
+            try:
+                from pypdf import PdfReader, PdfWriter
+            except ImportError:
+                 messagebox.showerror("Error", "pypdf module not found. Please install it.")
+                 return
+
             reader = PdfReader(str(path))
             for i, page in enumerate(reader.pages):
                 writer = PdfWriter()
@@ -160,6 +163,7 @@ def pdf_split(target_path: str):
         elif 'png' in mode:
             # Requires poppler installed and in PATH
             try:
+                from pdf2image import convert_from_path
                 images = convert_from_path(str(path))
                 for i, img in enumerate(images):
                     out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.png")

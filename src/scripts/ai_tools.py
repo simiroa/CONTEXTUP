@@ -14,7 +14,7 @@ src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
 from utils.gui_lib import BaseWindow
-from utils.explorer import get_selection_from_explorer
+from utils.image_utils import scan_for_images
 from utils.ai_runner import run_ai_script
 
 class BackgroundRemovalGUI(BaseWindow):
@@ -22,15 +22,10 @@ class BackgroundRemovalGUI(BaseWindow):
         super().__init__(title="AI Background Removal", width=500, height=650)
         
         self.target_path = target_path
-        self.selection = get_selection_from_explorer(target_path)
-        if not self.selection: self.selection = [target_path]
-        
-        # Filter for image files
-        img_exts = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
-        self.files = [Path(p) for p in self.selection if Path(p).suffix.lower() in img_exts]
+        self.files, self.scan_count = scan_for_images(target_path)
         
         if not self.files:
-            messagebox.showinfo("Info", "No image files selected.")
+            messagebox.showinfo("Info", f"No image files found.\nScanned {self.scan_count} items.")
             self.destroy()
             return
 
@@ -158,4 +153,3 @@ def remove_background(target_path: str):
         app.mainloop()
     except Exception as e:
         messagebox.showerror("Error", f"Failed: {e}")
-

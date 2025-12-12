@@ -1,28 +1,32 @@
 [
     {
         "category": "Document",
-        "id": "doc_pdf_merge",
-        "name": "Merge PDFs",
+        "id": "pdf_merge",
+        "name": "PDF Merge",
         "icon": "assets/icons/icon_sys_pdf_merge.ico",
         "types": ".pdf",
         "scope": "items",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 202
+        "order": 601,
+        "gui": false,
+        "dependencies": [
+            "PyPDF2"
+        ]
     },
     {
         "category": "Document",
-        "id": "doc_pdf_split",
-        "name": "Split PDF",
+        "id": "pdf_split",
+        "name": "PDF Split",
         "icon": "assets/icons/icon_sys_pdf_split.ico",
         "types": ".pdf",
         "scope": "file",
-        "status": "COMPLETE",
         "enabled": true,
         "submenu": "ContextUp",
-        "environment": "system",
-        "order": 203
+        "order": 602,
+        "gui": false,
+        "dependencies": [
+            "PyPDF2"
+        ]
     }
 ]

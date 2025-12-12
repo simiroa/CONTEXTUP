@@ -6,7 +6,7 @@
 
 1.  **Run Installer**:
     Double-click `install.bat`.
-    *   It will download a portable version of Python 3.11.
+    *   It will download a portable version of Python 3.12.
     *   It will automatically install all dependencies (including AI libraries).
     *   It will register the Windows Context Menu.
 
@@ -24,11 +24,11 @@
 If you prefer to set up manually or are developing:
 
 1.  **Environment**:
-    Ensure you have Python 3.11+ installed.
+    Ensure you have Python 3.12+ installed.
     
 2.  **Dependencies**:
     ```powershell
-    pip install -r requirements_core.txt
+    pip install -r requirements.txt
     ```
 
 3.  **Register Menu**:
