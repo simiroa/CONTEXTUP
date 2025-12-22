@@ -11,7 +11,8 @@
 *   **`userdata`**: User-specific data and settings (Git Ignored).
 *   **`tools`**: Helper scripts and **Embedded Python Environment** (`tools/python`).
 *   **`assets`**: Icons and other visual resources.
-*   **`resources`**: **[CRITICAL]** All external binaries and AI Models/Weights.
+*   **`resources`**: AI Models/Weights and backup binaries.
+*   **`tools`**: External Tools (FFmpeg, Blender, Mayo, ComfyUI) and Python environment.
 
 ---
 

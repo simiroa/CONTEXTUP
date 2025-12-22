@@ -127,7 +127,8 @@ def register_quick_menu_hotkey(show_menu_func, hotkey: str = "ctrl+shift+c"):
     except ImportError:
         logger.warning("keyboard module not found. Quick menu hotkey disabled.")
     except Exception as e:
-        logger.error(f"Failed to register popup menu hotkey: {e}")
+        logger.error(f"Failed to register popup menu hotkey: {e}", exc_info=True)
+
 
 
 def unregister_all():

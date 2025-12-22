@@ -12,6 +12,7 @@
         "environment": "system",
         "dependencies": [],
         "external_tools": [],
+        "command": "python src/features/system/open_from_clipboard.py",
         "hotkey": "<ctrl>+<alt>+v",
         "order": 903,
         "gui": false

@@ -61,9 +61,9 @@ BASE_CORE = [
     "pyperclip",
     "xxhash",
     "Pillow",
-    "numpy",
+    "numpy<2",
     "tqdm",
-]
+],
 
 # 미디어 편집용 패키지 (Image/Video/Audio 선택 시)
 PKG_MEDIA = [
@@ -294,26 +294,75 @@ def install_packages(py_exe: Path, categories: dict[str, bool]) -> bool:
         final_pkgs.append(p)
 
     print(f"선택된 카테고리: {', '.join([k for k,v in categories.items() if v]) or '없음'}")
-    print(f"설치할 패키지 수: {len(final_pkgs)}")
+    print(f"총 설치 대상 패키지: {len(final_pkgs)}")
 
-    ok = True
+    missing_pkgs = []
     for pkg in final_pkgs:
         parts = pkg.split()
         pkg_name = parts[0]
-        if is_installed(pkg_name):
-            print(f"[SKIP] {pkg_name} already installed.")
+        # Remove version constraints for is_installed check
+        clean_name = pkg_name.split('<')[0].split('>')[0].split('=')[0].split('!')[0]
+        if is_installed(clean_name):
+            print(f"[SKIP] {clean_name} already installed.")
             continue
-        # Actually install the package
-        print(f"[INSTALL] {pkg}")
-        if not run_pip(["install"] + parts):
-            print(f"[경고] {pkg} 설치 실패")
-            ok = False
+        missing_pkgs.append(pkg)
+
+    if not missing_pkgs:
+        print("모든 패키지가 이미 설치되어 있습니다.")
+        return True
+
+    print(f"설치가 필요한 패키지: {len(missing_pkgs)}")
+    
+    # Group packages by their installation flags to batch them
+    # Simple packages vs packages with --index-url, etc.
+    standard_batch = []
+    special_batches = {} # flag_str -> list of packages
+
+    for pkg in missing_pkgs:
+        parts = pkg.split()
+        if len(parts) > 1:
+            # Has flags (like --index-url)
+            flags = " ".join(parts[1:])
+            special_batches.setdefault(flags, []).append(parts[0])
+        else:
+            standard_batch.append(parts[0])
+
+    ok = True
+
+    # 1. Install standard packages in one batch
+    if standard_batch:
+        print(f"[INSTALL-BATCH] {', '.join(standard_batch)}")
+        if not run_pip(["install"] + standard_batch):
+            print(f"[경고] 표준 패키지 배치 설치 실패. 개별 설치 시도...")
+            # Fallback to individual if batch fails
+            for p in standard_batch:
+                if not run_pip(["install", p]):
+                    print(f"[오류] {p} 설치 실패")
+                    ok = False
+
+    # 2. Install special packages in groups
+    for flags, pkgs_in_group in special_batches.items():
+        flag_parts = flags.split()
+        print(f"[INSTALL-SPECIAL] Group with flags '{flags}': {', '.join(pkgs_in_group)}")
+        # Combine group: pip install pkg1 pkg2 pkg3 --index-url ...
+        if not run_pip(["install"] + pkgs_in_group + flag_parts):
+            print(f"[경고] 특수 패키지 배치 설치 실패. 개별 설치 시도...")
+            for p in pkgs_in_group:
+                if not run_pip(["install", p] + flag_parts):
+                    print(f"[오류] {p} 설치 실패")
+                    ok = False
             
     # Run patches (e.g. basicsr hotfix)
     try:
-        sys.path.append(str(ROOT_DIR / "src" / "setup"))
-        from patch_libs import run_patches
-        run_patches()
+        patch_path = ROOT_DIR / "src" / "setup"
+        if patch_path.exists():
+            sys.path.append(str(patch_path))
+            import importlib
+            try:
+                patch_module = importlib.import_module("patch_libs")
+                patch_module.run_patches()
+            except ImportError:
+                print("[INFO] patch_libs.py not found, skipping patches.")
     except Exception as e:
         print(f"[WARN] Failed to run library patches: {e}")
 
@@ -455,7 +504,17 @@ def apply_granular_overrides(model_status: dict):
 
 
 def load_tiers() -> dict:
-    """install_tiers.json에서 티어 설정을 로드합니다."""
+    """install_tiers.json에서 티어 설정을 로드합니다 (userdata 우선)."""
+    # 1. Check userdata first (User Custom Tiers)
+    user_tiers = USERDATA_DIR / "install_tiers.json"
+    if user_tiers.exists():
+        try:
+            print(f"[INFO] 사용자 정의 티어 설정 로드: {user_tiers.name}")
+            return json.loads(user_tiers.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"[WARN] 사용자 티어 설정 로드 실패: {e}")
+
+    # 2. Check defaults
     if TIERS_FILE.exists():
         try:
             return json.loads(TIERS_FILE.read_text(encoding="utf-8"))

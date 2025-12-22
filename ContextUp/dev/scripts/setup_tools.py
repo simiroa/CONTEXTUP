@@ -15,7 +15,6 @@ AI_BIN_DIR = ROOT_DIR / "resources" / "bin"
 TEMP_DIR = TOOLS_DIR / "temp"
 
 FFMPEG_URL = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-EXIFTOOL_URL = "https://sourceforge.net/projects/exiftool/files/exiftool-13.44_64.zip/download"
 REALESRGAN_URL = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip"
 RIFE_URL = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
 
@@ -66,35 +65,7 @@ def setup_ffmpeg():
         os.remove(zip_path)
     return (target_dir / "bin" / "ffmpeg.exe").exists()
 
-def setup_exiftool():
-    target_dir = TOOLS_DIR / "exiftool"
-    if (target_dir / "exiftool.exe").exists():
-        print("✓ ExifTool이 이미 존재합니다.")
-        return True
 
-    TEMP_DIR.mkdir(parents=True, exist_ok=True)
-    zip_path = TEMP_DIR / "exiftool.zip"
-    
-    if download_file(EXIFTOOL_URL, zip_path):
-        if extract_zip(zip_path, TEMP_DIR):
-            found_exe = None
-            for root, _, files in os.walk(TEMP_DIR):
-                for file in files:
-                    if file.startswith("exiftool") and file.endswith(".exe"):
-                        found_exe = Path(root) / file
-                        break
-                if found_exe: break
-            
-            if found_exe:
-                if target_dir.exists(): 
-                    shutil.rmtree(target_dir)
-                target_dir.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(found_exe), str(target_dir / "exiftool.exe"))
-                print(f"✓ ExifTool 설치 완료: {target_dir}")
-            
-    if zip_path.exists(): 
-        os.remove(zip_path)
-    return (target_dir / "exiftool.exe").exists()
 
 def setup_realesrgan():
     # Install to resources/bin/realesrgan (AI binary)
@@ -185,7 +156,6 @@ def main():
     
     results = {
         "FFmpeg": setup_ffmpeg(),
-        "ExifTool": setup_exiftool(),
         "Real-ESRGAN": setup_realesrgan(),
         "RIFE": setup_rife(),
     }

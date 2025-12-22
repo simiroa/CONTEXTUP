@@ -31,7 +31,7 @@ install.bat
 
 **수행되는 작업:**
 1. 독립형 Python 3.11 다운로드 및 압축 해제 (`tools/python/`)
-2. `requirements.txt` 의존성 패키지 설치
+2. `src/setup/install.py`를 통한 의존성 패키지 설치 (티어별 선택)
 3. **기존 데이터 마이그레이션**: `config/`에 있던 개인 설정을 `userdata/`로 이동
 4. ContextUp Manager 자동 실행
 
@@ -49,7 +49,7 @@ install.bat
 | **Blender** | `blender/` | 3D 데이터 처리 및 베이크 |
 | **ComfyUI** | `ComfyUI/` | AI 이미지/영상 고수준 처리 |
 | **Mayo** | `Mayo/` | CAD 데이터 변환 |
-| **Real-ESRGAN**| `realesrgan/` | 이미지 업스케일 바이너리 |
+| **Real-ESRGAN**| `realesrgan/` | 이미지 업스케일 바이너리 (또는 `resources/bin/`) |
 
 ### AI 라이브러리 (Python)
 

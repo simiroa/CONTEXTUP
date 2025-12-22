@@ -5,7 +5,8 @@ import subprocess
 import sys
 import pyperclip
 
-from core.paths import COPY_MY_INFO_FILE, SCRIPTS_DIR
+from core.paths import COPY_MY_INFO_FILE, SRC_DIR
+
 
 class CopyMyInfoModule:
     def __init__(self, agent_wrapper):
@@ -38,7 +39,7 @@ class CopyMyInfoModule:
     def _open_manager_action(self):
         # Open sys_info_manager.py
         def action():
-            script = Path(__file__).parent.parent.parent / "scripts" / "sys_info_manager.py"
+            script = SRC_DIR / "scripts" / "sys_info_manager.py"
             subprocess.Popen([sys.executable, str(script)], creationflags=0x08000000)
         return action
 

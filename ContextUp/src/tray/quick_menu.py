@@ -46,6 +46,10 @@ class WINDOWCOMPOSITIONATTRIBDATA(ctypes.Structure):
         ("SizeOfData", ctypes.c_size_t)
     ]
 
+class POINT(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+
+
 def apply_blur_effect(hwnd, opacity=230):
     """Apply Windows Acrylic blur effect to window"""
     try:
@@ -84,11 +88,9 @@ class QuickMenu(ctk.CTkToplevel):
         self.pinned = False
         
         # Get mouse position accurately using Win32 API
-        import ctypes
-        class POINT(ctypes.Structure):
-            _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
         
         pt = POINT()
+
         ctypes.windll.user32.GetCursorPos(ctypes.byref(pt))
         mouse_x = pt.x
         mouse_y = pt.y
@@ -178,14 +180,28 @@ class QuickMenu(ctk.CTkToplevel):
         
         x = pt.x + 10
         y = pt.y + 10
+        logger.info(f"Showing Quick Menu at: {x}, {y} (Mouse: {pt.x}, {pt.y})")
+
         if x + menu_width > v_left + v_width: x = pt.x - menu_width - 10
         if y + menu_height > v_top + v_height: y = pt.y - menu_height - 10
         
+        # Try to handle High DPI
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except: pass
+
         self.geometry(f"{menu_width}x{menu_height}+{x}+{y}")
         self.deiconify()
+        self.lift()
+        self.attributes('-topmost', True)
         self.focus_force()
         self.attributes('-alpha', 0.95)
         self._apply_blur()
+        
+        # Double ensure visibility
+        self.after(100, lambda: self.attributes('-topmost', True))
+        self.after(100, lambda: self.lift())
+
     
     def _build_title_bar(self):
         title_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent", height=30)
@@ -547,17 +563,31 @@ def show_quick_menu():
     try:
         # Try sending UDP signal
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.settimeout(0.1)
+        sock.settimeout(None) # Blocking for reliability? No, fast fail is better.
         sock.sendto(b"show", ("127.0.0.1", QUICK_MENU_PORT))
         sock.close()
-        # We don't wait for ACK, just assume it works or fails
     except Exception:
         # Daemon not running, launch it
+        # Check if we already tried launching it to avoid infinite recursion risk? 
+        # But here we just launch process.
         script_path = str(Path(__file__).resolve())
         subprocess.Popen(
             [sys.executable, script_path, "--daemon"],
             creationflags=0x08000000
         )
+        
+        # Initial Launch Optimization:
+        # Wait a bit and try sending show signal again so user doesn't have to press twice
+        def retry_show():
+            import time
+            time.sleep(0.5) # Wait for process to start
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.sendto(b"show", ("127.0.0.1", QUICK_MENU_PORT))
+                sock.close()
+            except: pass
+            
+        threading.Thread(target=retry_show, daemon=True).start()
 
 def _run_menu():
     import argparse
@@ -571,12 +601,13 @@ def _run_menu():
     menu = QuickMenu(is_daemon=args.daemon)
     
     if args.daemon:
-        # Keep background alive
+        logger.info("Quick Menu Daemon Started")
         menu.mainloop()
     else:
-        # One-shot mode (legacy compatibility)
+        # One-shot mode
         menu.show_at_mouse()
         menu.mainloop()
+
 
 if __name__ == "__main__":
     _run_menu()

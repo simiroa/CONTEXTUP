@@ -4,7 +4,9 @@ from datetime import datetime
 
 class LeaveManagerStorage:
     def __init__(self):
-        self.userdata_dir = Path(__file__).resolve().parent.parent.parent.parent / "config" / "userdata"
+        # src/features/leave_manager/storage.py -> src/features -> src -> ContextUp -> userdata
+        # Better: use core.paths if available, but relative path fallback is fine for now
+        self.userdata_dir = Path(__file__).resolve().parent.parent.parent.parent / "userdata"
         self.data_file = self.userdata_dir / "leave_manager.json"
         
         if not self.userdata_dir.exists():

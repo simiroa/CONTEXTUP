@@ -78,12 +78,13 @@
         "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "show_in_tray": false,
+        "show_in_tray": true,
         "environment": "system",
         "dependencies": [
             "customtkinter"
         ],
         "external_tools": [],
+        "hotkey": "<alt>+<space>",
         "order": 1005,
         "gui": true
     },

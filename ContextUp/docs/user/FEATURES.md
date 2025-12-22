@@ -1,137 +1,80 @@
-# ✨ ContextUp Features
+# ✨ ContextUp 상세 기능 가이드
 
-All available tools organized by category with brief usage guides.
-
----
-
-## 🖼️ Image
-
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Image Convert** | Pillow | JPG, PNG, WEBP, TIF, TGA, BMP, EXR, HDR, ICO, DDS, HEIC, AVIF, RAW 포맷 변환 | 이미지 우클릭 → Image Convert |
-| **Resize PoT** | Pillow | 2의 거듭제곱 크기로 리사이즈 (게임 텍스처용) | 이미지 우클릭 → Resize Power of 2 |
-| **EXR Merge** | OpenEXR | 여러 이미지를 멀티채널 EXR로 병합 | 이미지 다중선택 → Merge to EXR |
-| **EXR Split** | OpenEXR | EXR 채널을 개별 이미지로 분리 | EXR 파일 우클릭 → Split EXR |
-| **Texture Packer** | Pillow | ORM 맵 패킹 (Occlusion/Roughness/Metallic) | 이미지 3개 선택 → Texture Packer |
-| **Normal Flip** | Pillow | DirectX ↔ OpenGL 노말맵 변환 | 노말맵 우클릭 → Flip Normal Y |
-| **Image Compare** | OpenCV | 두 이미지 간의 차이 분석 및 시각화 (EXR 지원) | 이미지 우클릭 → Image Compare |
+> **[At a Glance]**
+> ContextUp은 윈도우 우클릭 메뉴를 통해 파일 관리, 미디어 편집, 그리고 최첨단 로컬 AI 기능을 즉각적으로 제공하는 생산성 플랫폼입니다.
+> - **Core**: 매니저, 트레이 앱, 퀵 메뉴를 통한 통합 제어 인터페이스 제공
+> - **Tiers**: 무설치 수준의 1단계부터 고성능 GPU AI 모델을 구동하는 3단계까지 선택적 설치 가능
+> - **DCC Link**: 블렌더, ComfyUI 등 전문 도구와의 고도화된 워크플로우 연동 지원
 
 ---
 
-## 🎞️ Sequence
+## 🖥️ Core Interface (관리 인터페이스)
+**ContextUp의 모든 동작을 제어하는 3대 핵심 사용자 환경입니다.**
 
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Arrange** | Python | 이미지 시퀀스를 폴더별로 자동 정리 | 폴더 우클릭 → Arrange Sequence |
-| **Find Missing** | Python | 시퀀스 누락 프레임 탐지 | 폴더 우클릭 → Find Missing Frames |
-| **To Video** | FFmpeg | 이미지 시퀀스를 MP4/MOV로 변환 | 폴더 우클릭 → Sequence to Video |
-| **Renumber** | Python | 시퀀스 번호 재정렬 (시작번호, 간격, 패딩) | 폴더 우클릭 → Renumber Sequence |
-| **Analyze** | Python | 시퀀스 정보 분석 (프레임 수, 해상도 등) | 폴더 우클릭 → Analyze Sequence |
-
----
-
-## � Video
-
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Video Convert** | FFmpeg | MP4, MOV, AVI, MKV, WebM 포맷 변환 | 비디오 우클릭 → Video Convert |
-| **Create Proxy** | FFmpeg | 편집용 저해상도 프록시 생성 | 비디오 우클릭 → Create Proxy |
-| **Extract Audio** | FFmpeg | 비디오에서 오디오 추출 | 비디오 우클릭 → Extract Audio |
-| **Mute Video** | FFmpeg | 비디오에서 오디오 제거 | 비디오 우클릭 → Mute Video |
+| 구성 요소 | 주요 기능 | 상세 설명 |
+| :--- | :--- | :--- |
+| **Manager** ⚙️ | 통합 제어판 | 메뉴 항목 커스터마이징, API 키 관리, 외부 도구 경로 설정 및 시스템 최적화 |
+| **Tray Agent** 🛠️ | 상시 가동 엔진 | 전역 단축키 감지, 실시간 메뉴 동기화 및 백그라운드 서비스 모니터링 |
+| **Quick Menu** ⚡ | 고속 팝업 창 | 작업 중인 파일 형식에 맞춤화된 도구를 소환하는 컨텍스트 기반 런처 (`Ctrl+Shift+C`) |
 
 ---
 
-## 🎵 Audio
+## 🟢 1단계: 최소 설치 (Minimal) - 약 +15개 기능
+**시스템 기본 라이브러리(Pillow, pywin32)만 사용하는 초경량 필수 유틸리티입니다.**
 
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Audio Convert** | FFmpeg | WAV, MP3, OGG, FLAC, M4A 변환 | 오디오 우클릭 → Audio Convert |
-| **Normalize Volume** | FFmpeg | 볼륨 레벨 정규화 | 오디오 우클릭 → Normalize Volume |
-| **Extract BGM** | Demucs | 배경음악 추출 (보컬 제거) | 오디오 우클릭 → Extract BGM |
-| **Extract Voice** | Demucs | 보컬만 추출 | 오디오 우클릭 → Extract Voice |
-
----
-
-## 📄 Document
-
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Document Convert** | PyMuPDF | PDF → 이미지/텍스트/마크다운 변환 | PDF 우클릭 → Document Convert |
-| **PDF Merge** | pypdf | 여러 PDF를 하나로 병합 | PDF 다중선택 → PDF Merge |
-| **PDF OCR** | PaddleOCR | 스캔된 PDF 텍스트 인식 (한/영) | PDF 우클릭 → OCR Document |
+| 카테고리 | 아이콘 | 영문 이름 | 한글 이름 | 기능 소개 | 비고 |
+| :--- | :---: | :--- | :--- | :--- | :--- |
+| **System** | <img src="../../assets/icons/icon_sys_finder.png" width="24"> | **Finder** | 파인더 | 고속 해싱으로 중복 및 대용량 파일을 정교하게 탐색 및 관리 | `Alt+Space` |
+| **System** | <img src="../../assets/icons/icon_sys_clean_empty_dir.png" width="24"> | **Clean Folder** | 빈 폴더 정리 | 비어있는 모든 하위 디렉토리를 탐색하여 불필요한 구조 일괄 제거 | 기본 내장 |
+| **System** | <img src="../../assets/icons/icon_sys_move_to_new_folder.png" width="24"> | **Move to New** | 새 폴더로 이동 | 선택된 항목들을 담을 새 폴더를 즉시 생성 및 안전하게 이동 | Shell API |
+| **System** | <img src="../../assets/icons/icon_sys_open_recent_folder.png" width="24"> | **Reopen Recent** | 최근 폴더 열기 | 실수로 닫은 탐색기 창을 트레이 기록에서 찾아 즉시 복원 | Tray Agent |
+| **Clipboard** | <img src="../../assets/icons/icon_sys_open_path.png" width="24"> | **Open Path** | 경로 열기 | 클립보드에 복사된 경로를 감지하여 해당 위치를 즉시 탐색기로 이동 | `Ctrl+Alt+V` |
+| **Clipboard** | <img src="../../assets/icons/icon_sys_save_clip_img.png" width="24"> | **Save Clip Img** | 이미지 저장 | 클립보드의 이미지 데이터를 감지하여 즉시 파일(PNG)로 저장 | Pillow |
+| **Document** | <img src="../../assets/icons/icon_sys_pdf_merge.png" width="24"> | **PDF Merge** | PDF 병합 | 여러 개의 PDF 문서를 하나의 무결성 있는 파일로 통합 | pypdf |
 
 ---
 
-## 🧊 3D / Mesh
+## 🟡 2단계: 표준 설치 (Standard) - 약 +25개 기능
+**미디어 편집(FFmpeg, OpenCV)과 API AI를 활용한 생산성 강화 환경입니다.**
 
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Auto LOD** | PyMeshLab | 자동 LOD 메시 생성 (25%, 50%, 75%) | 메시 우클릭 → Auto LOD |
-| **CAD to OBJ** | Mayo | STEP/IGES/Catia → OBJ 변환 | CAD 파일 우클릭 → CAD to OBJ |
-| **Mesh Convert** | Blender | FBX, OBJ, GLB/GLTF 포맷 변환 | 메시 우클릭 → Mesh Convert |
-| **Extract Textures** | Blender | 메시에서 텍스처 추출 | 메시 우클릭 → Extract Textures |
-| **Remesh & Bake** | Blender | 리메시 및 텍스처 베이크 | 메시 우클릭 → Remesh & Bake |
-| **Open with Mayo** | Mayo | Mayo 뷰어로 열기 | 메시 우클릭 → Open with Mayo |
-
----
-
-## 🤖 AI
-
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **AI Upscale** | RealESRGAN | 4배 이미지 업스케일 | 이미지 우클릭 → ESRGAN Upscale |
-| **SeedVR2 Upscale**| ComfyUI | SeedVR2 모델 기반 영상 업스케일 (GPU 필수) | 비디오 우클릭 → SeedVR2 Upscale |
-| **Z Image Turbo** | ComfyUI | 초고속 AI 이미지 생성 (Real-time) | 트레이 → Z Image Turbo |
-| **Background Removal** | Rembg | AI 배경 제거 (투명 PNG) | 이미지 우클릭 → Remove Background |
-| **Marigold PBR** | Diffusers | Depth/Normal 맵 생성 | 이미지 우클릭 → Marigold PBR |
-| **RIFE Interpolation** | RIFE | 프레임 보간 (24fps→60fps) | 비디오 우클릭 → RIFE Interpolation |
-| **Whisper Subtitle** | Faster-Whisper | 자동 자막 생성 (.srt) | 비디오 우클릭 → Whisper Subtitle |
-| **Demucs Stems** | Demucs | 오디오 스템 분리 (보컬/드럼/베이스) | 오디오 우클릭 → Stem Separation |
-| **Gemini Image Tool** | Gemini API | 이미지 분석/설명 생성 | 이미지 우클릭 → Gemini Image Tool |
-| **AI Text Refiner** | Gemini/Ollama | 문법 교정, 번역, 프롬프트 최적화 (Think 모드 지원) | 퀵 메뉴/트레이 → AI Text Refiner |
-| **PaddleOCR** | PaddleOCR | 이미지/PDF 텍스트 인식 (한/영) | 이미지/PDF 우클릭 → PaddleOCR |
+| 카테고리 | 아이콘 | 영문 이름 | 한글 이름 | 기능 소개 | 비고 |
+| :--- | :---: | :--- | :--- | :--- | :--- |
+| **Image** | <img src="../../assets/icons/icon_image_format_convert.png" width="24"> | **Img Convert** | 이미지 변환 | 수십 종의 특수 포맷 및 최신 포맷을 고화질 무손실 상호 변환 | OpenCV |
+| **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Vid Convert** | 영상 변환 | 비트레이트 제어 및 코덱 변환을 통한 용량/호환성 최적화 | FFmpeg |
+| **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Interp 30fps** | 30fps 보간 | 저프레임 영상을 30fps로 부드럽게 변환 (Minterpolate) | FFmpeg |
+| **Tools** | <img src="../../assets/icons/youtube.png" width="24"> | **YouTube DL** | 유튜브 다운로드 | 스트리밍 영상 및 음원을 로컬 환경으로 무손실 수준 보존 저장 | yt-dlp |
+| **Tools** | <img src="../../assets/icons/icon_ai_text.png" width="24"> | **AI Text Lab** | 텍스트 연구소 | LLM(Gemini/Ollama)을 활용한 텍스트 번역, 정제 및 스타일 변환 | API Key |
+| **AI Light** | <img src="../../assets/icons/icon_ai_gemini_vision.png" width="24"> | **Gemini Tool** | Gemini AI 분석 | 클라우드 기반 비전 AI를 활용한 이미지 맥락 분석 및 데이터 추출 | Gemini API |
 
 ---
 
-## 🛠️ Tools
+## 🔴 3단계: 전체 설치 (AI Heavy) - 약 +20개 기능
+**내장 로컬 AI 엔진(Torch, ONNX)을 구동하여 고부하 작업을 독립적으로 처리합니다.**
 
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **YouTube Downloader** | yt-dlp | YouTube 비디오/오디오 다운로드 | 트레이 → YouTube Downloader |
-| **RT Translator** | NLLB | 오프라인 번역기 (항상 위) | 트레이 → RT Translator 또는 `Ctrl+Alt+T` |
-| **Vacance Manager** | - | 휴가 관리 (연차/대체휴가/병가 추적) | 트레이 → Vacance |
-
----
-
-## 📂 System
-
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Finder** | Python | 중복 파일 찾기, 대용량 파일 검색 | 트레이 → Finder 또는 `Alt+Space` |
-| **Batch Rename** | Python | 일괄 이름 변경 (정규식, 접두사/접미사) | 파일 선택 → Batch Rename |
-| **Clean Empty Folders** | Python | 빈 폴더 정리 | 폴더 우클릭 → Clean Empty Folders |
-| **Create Symlink** | Python | 심볼릭 링크 생성 | 파일/폴더 우클릭 → Create Symlink |
-| **Move to New Folder** | Python | 선택 항목을 새 폴더로 이동 | 파일 선택 → Move to New Folder |
-| **Unwrap Folder** | Python | 폴더 내용을 상위로 펼치기 | 폴더 우클릭 → Unwrap Folder |
+| 카테고리 | 아이콘 | 영문 이름 | 한글 이름 | 기술적 소개 | 비고 (Repository) |
+| :--- | :---: | :--- | :--- | :--- | :--- |
+| **AI Heavy** | <img src="../../assets/icons/icon_image_remove_bg_ai.png" width="24"> | **BG Removal** | 배경 제거 | Deep Learning 기반 Salient Object Detection을 통한 정교한 마스킹 | [Rembg](https://github.com/danielgatis/rembg) / [BiRefNet](https://github.com/ZhengPeng7/BiRefNet) |
+| **AI Heavy** | <img src="../../assets/icons/icon_image_upscale_ai.png" width="24"> | **AI Upscale** | AI 업스케일 | SRGAN 모델을 사용하여 이미지의 고주파 디테일 재구성 및 해상도 복원 | [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) |
+| **AI Heavy** | <img src="../../assets/icons/subtitle.png" width="24"> | **Whisper AI** | Whisper 자막 | Robust Speech-to-Text 엔진을 활용한 고정밀 오디오 전사 및 동기화 | [Faster-Whisper](https://github.com/SYSTRAN/faster-whisper) |
+| **AI Heavy** | <img src="../../assets/icons/icon_ai_pbr.png" width="24"> | **Marigold PBR** | PBR 맵 생성 | Diffusion 모델 기반 Monocular Depth Estimation을 통한 3D 텍스처 추출 | [Marigold](https://github.com/prs-eth/Marigold) |
+| **AI Heavy** | <img src="../../assets/icons/icon_audio_separate_stems.png" width="24"> | **Demucs Stems** | 음원 분리 | Source Separation 기법을 응용하여 오디오 요소를 트랙별로 완전 분리 | [Meta Demucs](https://github.com/facebookresearch/demucs) |
+| **AI Heavy** | <img src="../../assets/icons/icon_doc_analyze_ollama.png" width="24"> | **PaddleOCR** | PaddleOCR 인식 | 이미지나 PDF 내의 글자를 고성능 로컬 엔진으로 읽어 텍스트화 | [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) |
+| **AI Heavy** | <img src="../../assets/icons/icon_video_frame_interp.png" width="24"> | **RIFE Interp.** | 프레임 보간 | Real-time Intermediate Flow Estimation을 통한 시간적 해상도 확장 | [RIFE-ncnn](https://github.com/nihui/rife-ncnn-vulkan) |
 
 ---
 
-## 📋 Clipboard
+## 🏗️ DCC & Professional Link - 외부 도구 연동 기능 (약 +10개)
+**자동 설치되지 않으며, 사용자의 PC에 설치된 전문 소프트웨어나 포터블 버전을 연결해야 활성화되는 고사양 기능입니다.**
 
-| Feature | Engine | Description | Usage |
-|---------|--------|-------------|-------|
-| **Copy My Info** | Python | 자주 쓰는 정보 관리/복사 (이메일, 전화 등) | 트레이 → Copy My Info |
-| **Open from Clipboard** | Python | 클립보드 경로 열기 | `Ctrl+Alt+V` |
-| **Copy UNC Path** | Python | 네트워크 경로를 UNC 형식으로 복사 | 파일 우클릭 → Copy UNC Path |
-| **Paste to New Folder** | Python | 클립보드 파일을 새 폴더에 붙여넣기 | 바탕화면 우클릭 → Paste to New Folder |
+| 카테고리 | 아이콘 | 기능 이름 | 한글 이름 | 연동 필수 도구 | 기능 설명 |
+| :--- | :---: | :--- | :--- | :--- | :--- |
+| **3D Content** | <img src="../../assets/icons/icon_mesh_remesh_bake.ico" width="24"> | **Remesh & Bake** | 리메쉬 및 베이크 | **Blender** | 블렌더 엔진과 연동하여 고폴리곤 매쉬를 재구축하고 텍스처를 굽습니다. |
+| **3D Content** | <img src="../../assets/icons/icon_mesh_convert_format.png" width="24"> | **Mesh Convert** | 매쉬 변환 전문 | **Blender / Mayo** | FBX, OBJ, GLB 등 복잡한 3D 데이터 포맷 간의 상호 변환을 지원합니다. |
+| **Advanced AI** | <img src="../../assets/icons/icon_video_upscale_ai.ico" width="24"> | **SeedVR2** | AI 영상 개선 | **ComfyUI** | ComfyUI 워크플로우를 소환하여 영상 화질을 시네마틱 급으로 향상시킵니다. |
+| **Advanced AI** | <img src="../../assets/icons/icon_image_upscale_ai.png" width="24"> | **Z Image Turbo** | 초고속 업스케일 | **ComfyUI** | LCM/Turbo 모델을 활용하여 이미지를 즉각적으로 고해상도로 변환합니다. |
+| **Advanced AI** | <img src="../../assets/icons/icon_art.ico" width="24"> | **AI Icon Gen** | AI 아이콘 생성기 | **ComfyUI** | 생성형 AI 노드를 실행하여 텍스트로부터 윈도우용 아이콘 파일을 자동 생성합니다. |
+| **Audio Space** | <img src="../../assets/icons/icon_music.ico" width="24"> | **ACE Studio** | ACE 오디오 편집 | **ComfyUI** | ComfyUI 기반 오디오 리페인팅 및 고도화된 음성 변조 작업을 지원합니다. |
+| **Management** | <img src="../../assets/icons/ContextUp.ico" width="24"> | **Dashboard** | ComfyUI 대시보드 | **ComfyUI** | 워크플로우 관리 및 모델 다운로드 상태를 확인하는 대시보드를 엽니다. |
 
----
-
-## ⌨️ Hotkeys
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+Shift+C` | Quick Menu (반투명 팝업) |
-| `Ctrl+Alt+V` | 클립보드 경로 열기 |
-| `Ctrl+Alt+Shift+F1` | Manager 열기 |
-| `Alt+Space` | Finder 오버레이 |
+> [!TIP]
+> 위 기능들은 **Manager(매니저) -> 🛠️ Preferences** 메뉴에서 해당 소프트웨어의 실행 파일(.exe) 경로를 연결한 후 사용이 가능합니다.

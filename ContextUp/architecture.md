@@ -21,8 +21,8 @@ HG_context_v2/                    # Root (user-facing)
 │   │   │   ├── system/
 │   │   │   ├── ai/               # AI tools (Ollama, Gemini, etc.)
 │   │   │   ├── finder/           # Duplicate finder
-│   │   │   ├── vacance/          # Vacation Manager
-│   │   │   ├── tools/            # Translator, Downloader
+│   │   │   ├── leave_manager/    # Leave Manager
+│   │   │   ├── tools/            # AI Text Lab, Downloader
 │   │   │   └── prompt_master/
 │   │   ├── tray/                 # Tray agent & Quick Menu
 │   │   ├── setup/                # Installation / Migration / Uninstallation
@@ -45,7 +45,7 @@ HG_context_v2/                    # Root (user-facing)
 │   ├── tools/                    # Python (Bundled 3.11), FFmpeg, Blender, ComfyUI
 │   ├── resources/                # External resources
 │   │   ├── ai_models/            # AI Models (Marigold, Rembg, Checkpoints)
-│   │   └── bin/                  # Binaries (ExifTool, etc.)
+│   │   ├── bin/                  # Binaries (Real-ESRGAN fallback, etc.)
 │   ├── assets/                   # Icons & Media
 │   ├── logs/                     # Runtime logs
 │   └── dev/                      # Development (scripts, tests, docs)
@@ -90,12 +90,12 @@ The following features are defined in `config/categories/*.json` and implemented
 | **Sequence** | Arrange Folder, Missing Frames, To Video, Analyze, Renumber | `sequence/` |
 | **System** | Batch Rename, Unwrap Folder, Symlink, Reopen Recent, Move to Folder | `system/` |
 | **Clipboard** | Paste to New Folder, Copy UNC Path, Save Clipboard Image | `system/`, `scripts/` |
-| **Tools** | YouTube Downloader, RT Translator, Vacance Manager | `tools/`, `vacance/` |
-| **ComfyUI** | SeedVR2 Video Upscaler, Z Image Turbo | `comfyui/` |
+| **Tools** | YouTube Downloader, AI Text Lab, Leave Manager | `tools/`, `leave_manager/` |
+| **ComfyUI** | SeedVR2 Video Upscaler, Z Image Turbo, AI Audio Editor, Icon Gen | `comfyui/` |
 | **Special** | Duplicate Finder, Gemini Prompt Master | `finder/`, `prompt_master/` |
-| **System**| 🎨 AI | AI Text Refiner (Ollama/Gemini), ESRGAN, PaddleOCR, ComfyUI Tools | `src/features/tools/ai_text_refine.py`, `src/features/ai/*`, `src/features/comfyui/*` |
-| 🎞️ Sequence | Sequence Analyze, Missing Frames, Video Convert | `src/features/video/sequence_analyze.py`, `src/features/system/tools.py`, `src/features/video/tools.py` |
-| 🛠️ Tools | YouTube Downloader, RT Translator, Vacance Manager | `src/features/video/downloader_gui.py`, `src/features/system/translator.py`, `src/features/vacance/gui.py` |
+| 🎨 AI | AI Text Lab(Gemini/Ollama), ESRGAN, PaddleOCR, ComfyUI Tools | `src/features/tools/ai_text_lab.py`, `src/features/ai/*`, `src/features/comfyui/*` |
+| 🎞️ Sequence | Sequence Analyze, Missing Frames, Video Convert | `src/features/sequence/analyze.py`, `src/features/system/tools.py`, `src/features/video/convert.py` |
+| 🛠️ Tools | YouTube Downloader, AI Text Lab, Leave Manager | `src/features/tools/downloader_gui.py`, `src/features/tools/ai_text_lab.py`, `src/features/leave_manager/gui.py` |
 | 🎛️ Special | Manager, Global Finder | `src/manager/main.py`, `src/features/finder/*` |
 
 ### Data Management
