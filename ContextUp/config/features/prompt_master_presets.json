@@ -1,0 +1,25 @@
+{
+  "NanoBanana": [
+    {
+      "name": "NB - Product Hero",
+      "input1": "Hero shot of a single product with clean gradients and dramatic lighting. Emphasize silhouette and glossy highlights.",
+      "input2": "High-res, studio quality, subtle rim light",
+      "camera": "Close-up",
+      "style": "Cinematic"
+    },
+    {
+      "name": "NB - Scene Builder",
+      "input1": "Cinematic scene, add depth, foreground interest, layered composition. Encourage narrative details.",
+      "input2": "Use cinematic color grading, soft volumetric light",
+      "camera": "Wide",
+      "style": "Cinematic"
+    },
+    {
+      "name": "NB - Character Mood",
+      "input1": "Character portrait with strong mood, expressive lighting, defined shadows.",
+      "input2": "Add emotion cues: eyes, posture, atmosphere",
+      "camera": "Close-up",
+      "style": "Realistic"
+    }
+  ]
+}

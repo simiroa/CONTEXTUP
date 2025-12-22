@@ -1,0 +1,76 @@
+[
+    {
+        "category": "Clipboard",
+        "id": "open_from_clipboard",
+        "name": "Open from Clipboard",
+        "icon": "assets/icons/icon_sys_open_path.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [],
+        "external_tools": [],
+        "hotkey": "<ctrl>+<alt>+v",
+        "order": 903,
+        "gui": false
+    },
+    {
+        "category": "Clipboard",
+        "id": "save_clipboard_image",
+        "name": "Save Clipboard Image",
+        "icon": "assets/icons/icon_sys_save_clipboard.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow"
+        ],
+        "external_tools": [],
+        "order": 904,
+        "gui": false
+    },
+    {
+        "category": "Clipboard",
+        "id": "clipboard_to_new_folder",
+        "name": "Paste to New Folder",
+        "icon": "assets/icons/icon_sys_move_to_new_folder.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "pywin32"
+        ],
+        "external_tools": [],
+        "order": 906,
+        "gui": false
+    },
+    {
+        "category": "Clipboard",
+        "id": "copy_unc_path",
+        "name": "Copy UNC Path",
+        "icon": "assets/icons/icon_sys_copy_unc_path.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "pyperclip",
+            "pywin32"
+        ],
+        "external_tools": [],
+        "order": 905,
+        "gui": false
+    }
+]

@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "Photo Zoom In / Zoom Out",
+    "description": "Tags: zoom, magnify, enhance",
+    "inputs": [],
+    "options": [],
+    "template": "Zoom in 100x on this image, maintaining the original aspect ratio. Ensure that the image details remain sharp and clear, revealing intricate textures, patterns, and elements without distortion, while preserving the natural colors and quality.",
+    "example_image": "landscape.png"
+}

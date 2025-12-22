@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Change the Weather",
+    "description": "Tags: weather, environment, atmosphere",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "weather",
+            "label": "Target Weather",
+            "default": "rainy"
+        }
+    ],
+    "options": [],
+    "template": "Change the weather in {image1} to {weather}. Keep the main subject and overall scene intact. Adjust lighting, shadows, colors, and environmental effects to match the new weather. Photorealistic, seamless integration, high-resolution.",
+    "example_image": "abstract.png"
+}

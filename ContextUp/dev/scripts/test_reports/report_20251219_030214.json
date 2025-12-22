@@ -1,0 +1,30 @@
+{
+  "session_id": "20251219_030230",
+  "timestamp": "2025-12-19T03:02:30.969241",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_localization": 0,
+  "crashed": 1,
+  "results": [
+    {
+      "gui_id": "unwrap",
+      "status": "IMPORT_FAIL",
+      "script_exists": true,
+      "import_ok": false,
+      "import_error": null,
+      "launch_ok": true,
+      "launch_error": null,
+      "functional_status": "CRASHED/TIMEOUT",
+      "localization_status": "N/A",
+      "memory_usage": "N/A",
+      "process_stderr": null,
+      "window_found": false,
+      "screenshot_saved": false,
+      "screenshot_path": null,
+      "duration": 14.519345998764038,
+      "timestamp": "2025-12-19T03:02:15.842045"
+    }
+  ]
+}

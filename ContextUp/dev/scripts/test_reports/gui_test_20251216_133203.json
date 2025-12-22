@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-12-16T13:32:03.050350",
+  "project_root": "C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "partial": 0,
+    "failed": 1,
+    "skipped": 0,
+    "success_rate": "0.0%"
+  },
+  "dependencies": {
+    "PIL": true,
+    "pygetwindow": true
+  },
+  "results": [
+    {
+      "gui_id": "manager",
+      "status": "WINDOW_FAIL",
+      "script_exists": true,
+      "import_ok": true,
+      "import_error": null,
+      "launch_ok": true,
+      "launch_error": null,
+      "process_stderr": "Traceback (most recent call last):\r\n  File \"C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\src\\manager\\main.py\", line 32, in <module>\r\n    main()\r\n    ~~~~^^\r\n  File \"C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\src\\manager\\main.py\", line 26, in main\r\n    from manager.ui.app import ContextUpManager\r\n  File \"C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\src\\manager\\ui\\app.py\", line 17, in <module>\r\n    from .frames.editor import MenuEditorFrame\r\n  File \"C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\src\\manager\\ui\\frames\\editor.py\", line 48\r\n    self.btn_bulk = ctk.CTkButton(toolbar, text=\"Bulk Action ??, width=100, command=self.show_bulk_menu)\r\n                                                ^\r\nSyntaxError: unterminated string literal (detected at line 48)\r\n",
+      "window_found": false,
+      "screenshot_saved": false,
+      "screenshot_path": null,
+      "duration": 2.3309431076049805,
+      "timestamp": "2025-12-16T13:32:00.716771"
+    }
+  ]
+}

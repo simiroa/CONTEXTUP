@@ -1,0 +1,25 @@
+{
+  "session_id": "20251219_004804",
+  "timestamp": "2025-12-19T00:48:04.406467",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "results": [
+    {
+      "gui_id": "manager",
+      "status": "IMPORT_FAIL",
+      "script_exists": true,
+      "import_ok": false,
+      "import_error": null,
+      "launch_ok": true,
+      "launch_error": null,
+      "process_stderr": null,
+      "window_found": true,
+      "screenshot_saved": true,
+      "screenshot_path": "C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\dev\\docs\\gui_screenshots\\default\\manager.png",
+      "duration": 7.580272197723389,
+      "timestamp": "2025-12-19T00:47:56.218624"
+    }
+  ]
+}

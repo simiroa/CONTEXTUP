@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Image Fusion",
+    "description": "Tags: fusion, collage, blend, composite",
+    "inputs": [
+        {
+            "id": "image_list",
+            "label": "List of Images",
+            "default": "Image1, Image2"
+        }
+    ],
+    "options": [],
+    "template": "Combine multiple images ({image_list}) into a single cohesive image. Keep all key subjects recognizable and maintain their proportions and details. Blend the images naturally with consistent lighting, shadows, perspective, and style. Photorealistic, high-resolution, seamless integration.",
+    "example_image": "scifi.png"
+}

@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Enhance Image",
+    "description": "Tags: upscale, enhance, sharpen",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        }
+    ],
+    "options": [],
+    "template": "Enhance {image1} to improve overall quality and detail. Keep the original composition, colors, and style intact. Increase resolution, sharpness, texture clarity, and lighting realism. Output as a photorealistic, high-resolution image.",
+    "example_image": "scifi.png"
+}

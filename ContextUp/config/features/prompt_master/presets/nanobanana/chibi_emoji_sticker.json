@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Chibi Emoji Sticker",
+    "description": "Tags: emoji, sticker, chibi, flat design",
+    "inputs": [
+        {
+            "id": "expression",
+            "label": "Expression/Pose Action",
+            "default": "Making a playful peace sign with both hands and winking"
+        }
+    ],
+    "options": [],
+    "template": "{expression}. Maintain the chibi aesthetic. Exaggerated, expressive big eyes. Soft facial lines. Background: Vibrant red with star or colorful confetti elements for decoration. Leave some clean white space around each sticker. Aspect ratio: 9:16",
+    "example_image": "scifi.png"
+}

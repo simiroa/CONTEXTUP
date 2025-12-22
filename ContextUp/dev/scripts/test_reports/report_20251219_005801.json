@@ -1,0 +1,25 @@
+{
+  "session_id": "20251219_005806",
+  "timestamp": "2025-12-19T00:58:06.893470",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "results": [
+    {
+      "gui_id": "finder",
+      "status": "IMPORT_FAIL",
+      "script_exists": true,
+      "import_ok": false,
+      "import_error": null,
+      "launch_ok": true,
+      "launch_error": null,
+      "process_stderr": null,
+      "window_found": true,
+      "screenshot_saved": true,
+      "screenshot_path": "C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\dev\\docs\\gui_screenshots\\default\\finder.png",
+      "duration": 3.426614761352539,
+      "timestamp": "2025-12-19T00:58:02.859374"
+    }
+  ]
+}

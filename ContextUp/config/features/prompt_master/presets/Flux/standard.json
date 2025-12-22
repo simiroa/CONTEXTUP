@@ -1,0 +1,70 @@
+{
+    "engine": "Flux",
+    "name": "Flux Standard Prompt",
+    "description": "Standard prompt template for Flux image generation with style and quality controls.",
+    "inputs": [
+        {
+            "id": "subject",
+            "label": "Subject",
+            "default": ""
+        },
+        {
+            "id": "action",
+            "label": "Action/Pose",
+            "default": ""
+        },
+        {
+            "id": "environment",
+            "label": "Environment/Background",
+            "default": ""
+        },
+        {
+            "id": "details",
+            "label": "Additional Details",
+            "default": ""
+        }
+    ],
+    "options": [
+        {
+            "id": "style",
+            "label": "Art Style",
+            "choices": [
+                "photorealistic",
+                "digital art",
+                "oil painting",
+                "watercolor",
+                "anime",
+                "3D render",
+                "cinematic"
+            ],
+            "default": "photorealistic"
+        },
+        {
+            "id": "lighting",
+            "label": "Lighting",
+            "choices": [
+                "natural lighting",
+                "golden hour",
+                "studio lighting",
+                "dramatic lighting",
+                "soft lighting",
+                "neon lighting",
+                "volumetric lighting"
+            ],
+            "default": "natural lighting"
+        },
+        {
+            "id": "quality",
+            "label": "Quality Level",
+            "choices": [
+                "8k, highly detailed",
+                "4k, high quality",
+                "standard quality",
+                "artistic interpretation"
+            ],
+            "default": "8k, highly detailed"
+        }
+    ],
+    "template": "{subject}, {action}, {environment}, {style}, {lighting}, {details}, {quality}, professional composition",
+    "example_image": "abstract.png"
+}

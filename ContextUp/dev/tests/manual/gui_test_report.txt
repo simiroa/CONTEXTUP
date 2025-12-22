@@ -1,0 +1,33 @@
+GUI Launch Test Report
+============================================================
+
+manager_gui.py: OK
+
+audio_convert_gui.py: OK
+
+audio_separate_gui.py: OK
+
+audio_studio_gui.py: OK
+
+mesh_lod_gui.py: OK
+
+video_audio_gui.py: OK
+
+video_convert_gui.py: OK
+
+video_downloader_gui.py: OK
+
+video_interpolation_gui.py: OK
+
+video_seq_gui.py: OK
+
+image_tools.py: OK
+
+texture_tools.py: OK
+
+flatten_dir.py: OK
+
+archive_manager.py: OK
+
+
+Summary: 14 passed, 0 failed

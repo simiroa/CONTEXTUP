@@ -1,0 +1,77 @@
+{
+    "1": {
+        "class_type": "VHS_LoadVideo",
+        "inputs": {
+            "video": "input.mp4",
+            "force_rate": 0,
+            "force_size": "Disabled",
+            "custom_width": 512,
+            "custom_height": 512,
+            "frame_load_cap": 0,
+            "skip_first_frames": 0,
+            "select_every_nth": 1
+        }
+    },
+    "2": {
+        "class_type": "SeedVR2LoadDiTModel",
+        "inputs": {
+            "model": "seedvr2_ema_7b_sharp_fp16.safetensors",
+            "device": "cuda",
+            "torch_compile_args": "SEEDVR2_DIT"
+        }
+    },
+    "3": {
+        "class_type": "SeedVR2LoadVAEModel",
+        "inputs": {
+            "model": "ema_vae_fp16.safetensors",
+            "device": "cuda",
+            "torch_compile_args": "SEEDVR2_VAE"
+        }
+    },
+    "4": {
+        "class_type": "SeedVR2VideoUpscaler",
+        "inputs": {
+            "image": [
+                "1",
+                0
+            ],
+            "dit": [
+                "2",
+                0
+            ],
+            "vae": [
+                "3",
+                0
+            ],
+            "seed": 42,
+            "steps": 6,
+            "resolution": 2048,
+            "max_resolution": 2048,
+            "batch_size": 1,
+            "uniform_batch_size": false,
+            "color_correction": "lab",
+            "temporal_overlap": 2,
+            "prepend_frames": 0,
+            "input_noise_scale": 0.0,
+            "latent_noise_scale": 0.0,
+            "offload_device": "cpu",
+            "enable_debug": false
+        }
+    },
+    "5": {
+        "class_type": "VHS_VideoCombine",
+        "inputs": {
+            "images": [
+                "4",
+                0
+            ],
+            "frame_rate": 30,
+            "loop_count": 0,
+            "filename_prefix": "SeedVR2_Upscale",
+            "format": "video/h264-mp4",
+            "pix_fmt": "yuv420p",
+            "pingpong": false,
+            "save_output": true
+        }
+    }
+}

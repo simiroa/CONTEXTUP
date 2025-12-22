@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "iPhone Selfie",
+    "description": "Tags: selfie, realistic, amateur style, flash",
+    "inputs": [
+        {
+            "id": "names",
+            "label": "Names of Subjects",
+            "default": ""
+        },
+        {
+            "id": "location",
+            "label": "Location",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Please draw an extremely ordinary and unremarkable iPhone selfie, with no clear subject or sense of composition — just like a random snapshot taken casually. The photo should include slight motion blur, with uneven lighting caused by sunlight or indoor lights, resulting in mild overexposure. The angle is awkward, the composition is messy, and the overall aesthetic is deliberately plain — as if it were accidentally taken while pulling the phone out of a pocket. The subjects are {names}, taken at night, next to the {location}.",
+    "example_image": "abstract.png"
+}

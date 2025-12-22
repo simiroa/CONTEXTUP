@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "16-Bit Video Game Character",
+    "description": "Tags: pixel art, retro, 16-bit, game",
+    "inputs": [
+        {
+            "id": "character",
+            "label": "Character Name",
+            "default": ""
+        }
+    ],
+    "options": [],
+    "template": "Recreate this {character} as a 16-bit video game character, and place the character in a level of a 2D 16-bit platform video game.",
+    "example_image": "abstract.png"
+}

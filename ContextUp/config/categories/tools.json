@@ -1,0 +1,80 @@
+[
+    {
+        "category": "Tools",
+        "id": "copy_my_info",
+        "name": "Copy My Info",
+        "icon": "assets/icons/icon_sys_copy_info.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "dynamic_submenu": "copy_my_info",
+        "show_in_tray": true,
+        "environment": "system",
+        "dependencies": [
+            "pyperclip"
+        ],
+        "external_tools": [],
+        "order": 1100,
+        "gui": true
+    },
+    {
+        "category": "Tools",
+        "id": "youtube_downloader",
+        "name": "YouTube Downloader",
+        "icon": "assets/icons/icon_video_downloader.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "yt-dlp"
+        ],
+        "external_tools": [],
+        "order": 1101,
+        "gui": true
+    },
+    {
+        "category": "Tools",
+        "id": "ai_text_lab",
+        "name": "AI Text Lab (AI 텍스트 연구소)",
+        "icon": "assets/icons/icon_ai_text_lab.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "system",
+        "dependencies": [
+            "customtkinter",
+            "deep-translator",
+            "ollama",
+            "google-genai"
+        ],
+        "external_tools": [],
+        "order": 1102,
+        "gui": true
+    },
+    {
+        "category": "Tools",
+        "id": "leave_manager",
+        "name": "Leave Manager (휴가 관리)",
+        "icon": "assets/icons/vacance.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "system",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "gui": true,
+        "description": "Manage your vacation days and countdown to freedom."
+    }
+]

@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Add Object to Image",
+    "description": "Tags: inpainting, add object, edit",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "object",
+            "label": "Object to Add",
+            "default": "a tree"
+        }
+    ],
+    "options": [],
+    "template": "Add {object} to {image1}. Place it naturally in the scene, matching the lighting, perspective, and style. Keep the original elements unchanged. Photorealistic, seamless integration.",
+    "example_image": "landscape.png"
+}

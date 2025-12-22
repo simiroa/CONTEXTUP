@@ -1,0 +1,70 @@
+{
+    "3": {
+        "class_type": "LoadImage",
+        "inputs": {
+            "image": "example.png",
+            "upload": "image"
+        }
+    },
+    "2": {
+        "class_type": "SeedVR2LoadDiTModel",
+        "inputs": {
+            "model": "seedvr2_ema_7b_sharp_fp16.safetensors",
+            "device": "cuda",
+            "torch_compile_args": "SEEDVR2_DIT",
+            "blocks_to_swap": 36
+        }
+    },
+    "30": {
+        "class_type": "SeedVR2LoadVAEModel",
+        "inputs": {
+            "model": "ema_vae_fp16.safetensors",
+            "device": "cuda",
+            "torch_compile_args": "SEEDVR2_VAE",
+            "encode_tiled": true,
+            "decode_tiled": true,
+            "encode_tile_size": 1024,
+            "decode_tile_size": 1024
+        }
+    },
+    "4": {
+        "class_type": "SeedVR2VideoUpscaler",
+        "inputs": {
+            "image": [
+                "3",
+                0
+            ],
+            "dit": [
+                "2",
+                0
+            ],
+            "vae": [
+                "30",
+                0
+            ],
+            "seed": 42,
+            "steps": 8,
+            "resolution": 4096,
+            "max_resolution": 4096,
+            "batch_size": 1,
+            "uniform_batch_size": false,
+            "color_correction": "lab",
+            "temporal_overlap": 0,
+            "prepend_frames": 0,
+            "input_noise_scale": 0.0,
+            "latent_noise_scale": 0.0,
+            "offload_device": "cpu",
+            "enable_debug": false
+        }
+    },
+    "9": {
+        "class_type": "SaveImage",
+        "inputs": {
+            "filename_prefix": "SeedVR2_4K_Image",
+            "images": [
+                "4",
+                0
+            ]
+        }
+    }
+}

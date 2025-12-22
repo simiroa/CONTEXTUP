@@ -1,0 +1,82 @@
+{
+    "engine": "Veo3",
+    "name": "Veo3 Video Prompt",
+    "description": "Template for Google Veo3 video generation with cinematic controls.",
+    "inputs": [
+        {
+            "id": "scene",
+            "label": "Main Scene",
+            "default": ""
+        },
+        {
+            "id": "action",
+            "label": "Action/Movement",
+            "default": ""
+        },
+        {
+            "id": "environment",
+            "label": "Environment/Setting",
+            "default": ""
+        },
+        {
+            "id": "details",
+            "label": "Additional Details",
+            "default": ""
+        }
+    ],
+    "options": [
+        {
+            "id": "camera",
+            "label": "Camera Movement",
+            "choices": [
+                "static shot",
+                "slow pan",
+                "tracking shot",
+                "dolly zoom",
+                "crane shot",
+                "handheld",
+                "drone shot"
+            ],
+            "default": "static shot"
+        },
+        {
+            "id": "pace",
+            "label": "Pacing",
+            "choices": [
+                "slow motion",
+                "normal speed",
+                "time-lapse",
+                "dynamic"
+            ],
+            "default": "normal speed"
+        },
+        {
+            "id": "lighting",
+            "label": "Lighting",
+            "choices": [
+                "natural daylight",
+                "golden hour",
+                "blue hour",
+                "dramatic lighting",
+                "soft lighting",
+                "neon lit"
+            ],
+            "default": "natural daylight"
+        },
+        {
+            "id": "mood",
+            "label": "Cinematic Mood",
+            "choices": [
+                "calm and peaceful",
+                "energetic",
+                "mysterious",
+                "dramatic",
+                "dreamy",
+                "intense"
+            ],
+            "default": "calm and peaceful"
+        }
+    ],
+    "template": "{scene}, {action}, {environment}, {camera}, {pace}, {lighting}, {mood} atmosphere, {details}, cinematic quality, 4k resolution",
+    "example_image": "scifi.png"
+}

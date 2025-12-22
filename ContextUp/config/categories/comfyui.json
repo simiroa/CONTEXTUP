@@ -1,0 +1,111 @@
+{
+    "category": "Comfyui",
+    "id": "comfyui",
+    "name": "ComfyUI Tools",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "show_in_tray": false,
+    "environment": "system",
+    "dependencies": [],
+    "external_tools": [],
+    "show_in_context_menu": false,
+    "features": [
+        {
+            "category": "Comfyui",
+            "id": "seedvr2_upscaler",
+            "name": "SeedVR2 Video Upscaler",
+            "icon": "icon_video_upscale_ai.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Upscale videos using SeedVR2 (ComfyUI)",
+            "script": "src.features.comfyui.seedvr2_gui"
+        },
+        {
+            "category": "Comfyui",
+            "id": "z_image_turbo",
+            "name": "Z Image Turbo",
+            "icon": "icon_art.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests",
+                "customtkinter"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Generate images using Z Image Turbo",
+            "script": "src.features.comfyui.z_image_turbo_gui"
+        },
+        {
+            "category": "Comfyui",
+            "id": "ace_audio_editor",
+            "name": "ACE Audio Editor",
+            "icon": "icon_music.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "pygame"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "AI Audio Repainting/Editing using ACE Step",
+            "script": "src.features.comfyui.ace_audio_edit_gui",
+            "scope": "file",
+            "types": ".mp3;.wav;.flac;.ogg;.m4a"
+        },
+        {
+            "category": "Comfyui",
+            "id": "ai_icon_generator",
+            "name": "AI Icon Generator",
+            "icon": "icon_art.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "Pillow"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Generate .ICO icons from text prompts",
+            "script": "src.features.comfyui.icon_gen_gui"
+        },
+        {
+            "category": "Comfyui",
+            "id": "comfyui_dashboard",
+            "name": "Open ComfyUI Dashboard",
+            "icon": "icon_comfyui.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Start ComfyUI Server and open Web UI",
+            "script": "src.features.comfyui.open_dashboard"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "3x3 Photo Grid Pose",
+    "description": "Tags: grid, photobooth, poses",
+    "inputs": [],
+    "options": [],
+    "template": "Turn the photo into a 3x3 grid of photo strips with different studio-style poses and expressions.",
+    "example_image": "portrait.png"
+}

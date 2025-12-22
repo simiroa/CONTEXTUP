@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Change Camera Angle",
+    "description": "Tags: camera angle, perspective, viewpoint",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        }
+    ],
+    "options": [],
+    "template": "Recreate the person from {image1} in four different camera perspectives.Keep the subject’s identity, body proportions, and clothing consistent across all four images. Maintain the same background environment as {image1}, with photorealistic lighting, natural shadows, and high-quality details.\nGenerate four variations side by side:\nBird’s-eye view (from above).\nRear view (from behind).\nSide profile view.\nClose-up portrait view.",
+    "example_image": "landscape.png"
+}

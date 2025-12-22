@@ -1,0 +1,20 @@
+{
+    "engine": "nanobanana",
+    "name": "Facial Expression Control",
+    "description": "Tags: expression, face edit, emotion",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        },
+        {
+            "id": "expression",
+            "label": "Desired Expression",
+            "default": "smiling"
+        }
+    ],
+    "options": [],
+    "template": "Keep the person from {image1} unchanged, but change their facial expression to {expression}. Preserve the pose, body proportions, hairstyle, and overall appearance. Maintain realistic lighting, shadows, and photorealistic details.",
+    "example_image": "portrait.png"
+}

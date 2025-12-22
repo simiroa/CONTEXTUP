@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "Ghibli Style",
+    "description": "Tags: ghibli, anime, illustration, studio ghibli",
+    "inputs": [],
+    "options": [],
+    "template": "Redraw this photo in Ghibli style",
+    "example_image": "abstract.png"
+}

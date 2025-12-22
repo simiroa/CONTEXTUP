@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "Semantic Understanding",
+    "description": "Tags: infographic, recipe, instruction",
+    "inputs": [],
+    "options": [],
+    "template": "Create an infographic that shows how to make Thai Tom Yum Goong Soup, with ingredients and recipe in it.",
+    "example_image": "portrait.png"
+}

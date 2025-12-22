@@ -1,0 +1,18 @@
+{
+    "3": {
+        "class_type": "LoadImage",
+        "inputs": {
+            "image": "example.png"
+        }
+    },
+    "9": {
+        "class_type": "SaveImage",
+        "inputs": {
+            "filename_prefix": "dummy_test",
+            "images": [
+                "3",
+                0
+            ]
+        }
+    }
+}

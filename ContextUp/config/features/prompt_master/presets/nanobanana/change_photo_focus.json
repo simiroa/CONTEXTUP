@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "Change Photo Focus",
+    "description": "Tags: focus, depth of field, blur",
+    "inputs": [],
+    "options": [],
+    "template": "Focus on the background trees and blanket of this image, blur this kid.",
+    "example_image": "landscape.png"
+}

@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Image Outpainting",
+    "description": "Tags: outpainting, expand, widescreen",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        }
+    ],
+    "options": [],
+    "template": "Extend {image1} beyond its original borders using outpainting. Keep the main subject and composition intact. Generate new content around the edges that matches the style, colors, lighting, and perspective of the original image. Photorealistic, high-resolution, seamless integration.",
+    "example_image": "landscape.png"
+}

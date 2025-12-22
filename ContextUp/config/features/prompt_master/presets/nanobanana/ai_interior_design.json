@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "AI Interior Design",
+    "description": "Tags: interior design, room, furniture",
+    "inputs": [],
+    "options": [],
+    "template": "1️⃣ Step one: Add a comfortable gray sofa and a wooden coffee table in the center, matching the room’s contemporary style, photorealistic render.\n2️⃣ Step two: Add more furniture-like items to the foreground and more daily necessities on the table. Also, change the wallpaper to something warmer.",
+    "example_image": "scifi.png"
+}

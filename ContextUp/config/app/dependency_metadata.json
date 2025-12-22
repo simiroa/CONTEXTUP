@@ -1,0 +1,88 @@
+{
+    "customtkinter": {
+        "pip_name": "customtkinter",
+        "description": "Modern GUI framework. Required for all interfaces.",
+        "approx_size": "2 MB",
+        "is_critical": true
+    },
+    "Pillow": {
+        "pip_name": "Pillow",
+        "description": "Image processing library. Required for image tools and previews.",
+        "approx_size": "4 MB",
+        "is_critical": true
+    },
+    "yt-dlp": {
+        "pip_name": "yt-dlp",
+        "description": "Advanced video downloader for YouTube and other sites.",
+        "approx_size": "3 MB",
+        "is_critical": false
+    },
+    "rembg": {
+        "pip_name": "rembg",
+        "description": "AI tool for removing image backgrounds.",
+        "approx_size": "150 MB",
+        "is_critical": false
+    },
+    "torch": {
+        "pip_name": "torch",
+        "description": "PyTorch Deep Learning Library. Required for AI features.",
+        "approx_size": "2.5 GB",
+        "is_critical": false,
+        "install_args": [
+            "--index-url",
+            "https://download.pytorch.org/whl/cu121"
+        ]
+    },
+    "torchvision": {
+        "pip_name": "torchvision",
+        "description": "PyTorch Vision. Required for AI image processing.",
+        "approx_size": "50 MB",
+        "is_critical": false,
+        "install_args": [
+            "--index-url",
+            "https://download.pytorch.org/whl/cu121"
+        ]
+    },
+    "pymeshlab": {
+        "pip_name": "pymeshlab",
+        "description": "MeshLab Python interface for 3D model processing.",
+        "approx_size": "50 MB",
+        "is_critical": false
+    },
+    "google-generativeai": {
+        "pip_name": "google-generativeai",
+        "description": "Client for Google's Gemini AI models.",
+        "approx_size": "1 MB",
+        "is_critical": false
+    },
+    "ffmpeg-python": {
+        "pip_name": "ffmpeg-python",
+        "description": "Python bindings for FFmpeg.",
+        "approx_size": "1 MB",
+        "is_critical": false
+    },
+    "requests": {
+        "pip_name": "requests",
+        "description": "HTTP library for making API calls.",
+        "approx_size": "1 MB",
+        "is_critical": true
+    },
+    "deep-translator": {
+        "pip_name": "deep-translator",
+        "description": "Python tool to translate between different languages.",
+        "approx_size": "1 MB",
+        "is_critical": false
+    },
+    "pynput": {
+        "pip_name": "pynput",
+        "description": "Monitor and control input devices (Global Hotkeys).",
+        "approx_size": "1 MB",
+        "is_critical": false
+    },
+    "pystray": {
+        "pip_name": "pystray",
+        "description": "System tray icon support.",
+        "approx_size": "1 MB",
+        "is_critical": false
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "engine": "nanobanana",
+    "name": "Gashapon Capsule Diorama",
+    "description": "A highly detailed gashapon-style collectible diorama template.",
+    "inputs": [
+        {
+            "id": "name",
+            "label": "Name",
+            "default": ""
+        },
+        {
+            "id": "pose",
+            "label": "Iconic Pose / Style",
+            "default": ""
+        },
+        {
+            "id": "look",
+            "label": "Figure Look / Clothing / Accessories",
+            "default": ""
+        },
+        {
+            "id": "setting",
+            "label": "Relevant Setting (stadium, stage, etc.)",
+            "default": ""
+        },
+        {
+            "id": "color",
+            "label": "Base Color",
+            "default": ""
+        },
+        {
+            "id": "motifs",
+            "label": "Motifs Related to the Person",
+            "default": ""
+        },
+        {
+            "id": "labeltext",
+            "label": "Base Label (Name or Nickname)",
+            "default": ""
+        }
+    ],
+    "options": [
+        {
+            "id": "lighting",
+            "label": "Lighting Style",
+            "choices": [
+                "dramatic",
+                "cinematic",
+                "soft studio",
+                "high contrast"
+            ],
+            "default": "cinematic"
+        }
+    ],
+    "template": "A detailed, transparent gashapon capsule diorama, held between fingers, featuring {name} in their {pose}. Inside: {look}, with background elements such as {setting}. Lighting should be {lighting}, matching their theme. The capsule has a transparent top and a colored base in {color}, decorated with {motifs}. The base is labeled with {labeltext} in a matching font style. The design should look like a miniature collectible, with photorealistic detail and soft bokeh.",
+    "example_image": "abstract.png"
+}

@@ -1,0 +1,321 @@
+"""
+Batch Icon Generator using Google Generative AI (Imagen/Gemini).
+Parses docs/user/ICONS.md for prompts and generates icons.
+
+Features:
+- Parallel processing (ThreadPoolExecutor)
+- Background Removal (rembg)
+- Auto backup before regeneration
+- ICO multi-size output
+"""
+import os
+import sys
+import time
+import re
+import argparse
+from pathlib import Path
+from PIL import Image
+import io
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+
+
+# Validates and adds src to path
+# Script Location: ContextUp/dev/scripts
+# Project Root:    HG_context_v2
+project_root = Path(__file__).resolve().parents[3] # HG_context_v2
+src_path = project_root / "ContextUp" / "src"
+if src_path.exists():
+    sys.path.append(str(src_path))
+else:
+    # Try alternate relative path if standard fails
+    src_path = Path(__file__).resolve().parents[2] / "src"
+    if src_path.exists():
+        sys.path.append(str(src_path))
+    else:
+        print(f"Warning: src path not found.")
+
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    print("Error: 'google-genai' package not found. Install it with: pip install google-genai")
+    sys.exit(1)
+
+try:
+    from rembg import remove
+    print("✅ rembg successfully imported")
+except ImportError as e:
+    print(f"Warning: 'rembg' could not be imported. Error: {e}")
+    print("Background removal will be skipped. Ensure 'rembg' is installed in your active environment.")
+    remove = None
+
+# Thread-safe print
+print_lock = threading.Lock()
+
+def safe_print(*args, **kwargs):
+    with print_lock:
+        print(*args, **kwargs)
+
+def load_api_key():
+    key = os.environ.get("GEMINI_API_KEY")
+    if key: return key
+    
+    try:
+        from core.settings import load_settings
+        settings = load_settings()
+        return settings.get("GEMINI_API_KEY")
+    except:
+        pass
+    return None
+
+def parse_icons_md(md_path):
+    """Parses ICONS.md table format to extract (id, prompt, category)."""
+    prompts = {}
+    if not md_path.exists():
+        print(f"Error: {md_path} not found.")
+        return prompts
+        
+    with open(md_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            # Match table rows: | `icon_id.ico` | Prompt text | Category |
+            match = re.search(r"\|\s*`([^`]+\.ico)`\s*\|\s*([^|]+)\|\s*([^|]+)\|", line)
+            if match:
+                icon_id = match.group(1).strip()
+                prompt = match.group(2).strip()
+                category = match.group(3).strip()
+                
+                # Skip duplicates (keep first occurrence)
+                if icon_id not in prompts:
+                    prompts[icon_id] = {
+                        "prompt": prompt,
+                        "category": category
+                    }
+    return prompts
+
+def process_image(img):
+    """Applies background removal, auto-cropping, and resizing."""
+    # 1. Background Removal
+    if remove:
+        img = remove(img)
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+
+    # 2. Resizing to 256x256 (Maintain Aspect Ratio & Center)
+    if img.mode != 'RGBA':
+        img = img.convert('RGBA')
+    
+    new_img = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    img.thumbnail((256, 256), Image.Resampling.LANCZOS)
+    x = (256 - img.width) // 2
+    y = (256 - img.height) // 2
+    new_img.paste(img, (x, y), img)
+    return new_img
+
+def generate_single_icon(client, icon_id, icon_data, output_path):
+    """Generate a single icon (called by thread pool)."""
+    prompt = icon_data["prompt"]
+    category = icon_data["category"]
+    
+    # Extract theme from category
+    theme = "Vibrant, High Contrast"
+    if "(" in category:
+        extracted = category.split("(")[-1].replace(")", "").strip()
+        if extracted: theme = extracted
+
+    full_prompt = (
+        f"Generate a high-quality 3D app icon representing: {prompt}. \n"
+        "Review the following style guidelines carefully and apply them:\n"
+        "1. Style: Use a Soft Glassmorphism aesthetic with Vivid Neon Colors. The material should look like translucent frosted glass with glowing elements.\n"
+        "2. Shape: Create a free-floating abstract 3D object. It is crucial that the icon has NO background plate, NO square container, and NO squircle base. It must be just the object itself.\n"
+        "3. Lighting: Use studio lighting with a dark environment to enhance the neon glow and contrast.\n"
+        "4. View: Front-facing or isometric 3D view.\n"
+        "5. Background: A simple solid black color to allow easy background removal.\n"
+        "Please avoid: realistic photos, text, watermarks, grainy textures, or complex backgrounds."
+    )
+
+    max_retries = 3
+    base_delay = 10
+    
+    for attempt in range(max_retries):
+        try:
+            # Use Gemini 2.5 Flash Image model via generate_content method
+            response = client.models.generate_content(
+                model='gemini-2.5-flash-image',
+                contents=[full_prompt]
+            )
+            
+            # Process response parts
+            for part in response.parts:
+                if part.inline_data is not None:
+                    # Get genai Image object
+                    genai_img = part.as_image()
+                    
+                    # Convert to PIL Image using image_bytes attribute
+                    if hasattr(genai_img, 'image_bytes'):
+                        img = Image.open(io.BytesIO(genai_img.image_bytes))
+                    elif hasattr(genai_img, '_pil_image'):
+                        img = genai_img._pil_image
+                    else:
+                        # Try direct conversion as fallback
+                        img = Image.open(io.BytesIO(part.inline_data.data))
+                    
+                    # Post-processing (background removal, resize)
+                    img = process_image(img) 
+                    
+                    # Save PNG
+                    png_path = output_path.with_suffix('.png')
+                    img.save(png_path)
+                    
+                    # Save ICO (Multi-size)
+                    img.save(output_path, format='ICO', sizes=[(256, 256), (128, 128), (64, 64), (32, 32), (16, 16)])
+                    
+                    safe_print(f"  ✓ {icon_id}")
+                    return True, icon_id, None
+                elif part.text is not None:
+                    # Model returned text instead of image
+                    safe_print(f"  ℹ️ {icon_id}: Text response: {part.text[:80]}...")
+
+            return False, icon_id, "No image in response"
+
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                delay = base_delay * (2 ** attempt)
+                safe_print(f"  ⚠️ {icon_id}: Rate limit hit. Retrying in {delay}s...")
+                time.sleep(delay)
+            elif "400" in error_str or "INVALID_ARGUMENT" in error_str:
+                safe_print(f"  ❌ {icon_id}: Rejected: {error_str[:100]}...")
+                return False, icon_id, error_str
+            else:
+                return False, icon_id, error_str
+    
+    return False, icon_id, "Max retries exceeded"
+
+def backup_icons(icon_dir: Path, prompts: dict) -> str:
+    """Backup existing icons to a timestamped folder."""
+    from datetime import datetime
+    import shutil
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = icon_dir / f"backup_{timestamp}"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    
+    backed_up = 0
+    for icon_id in prompts.keys():
+        if not icon_id.endswith('.ico'):
+            icon_id += ".ico"
+        
+        ico_path = icon_dir / icon_id
+        png_path = icon_dir / icon_id.replace('.ico', '.png')
+        
+        for src_path in [ico_path, png_path]:
+            if src_path.exists():
+                shutil.copy2(src_path, backup_dir / src_path.name)
+                backed_up += 1
+    
+    if backed_up > 0:
+        print(f"📦 Backed up {backed_up} files to: {backup_dir}")
+        return str(backup_dir)
+    else:
+        backup_dir.rmdir()
+        print("ℹ️  No existing icons to backup.")
+        return ""
+
+def main():
+    parser = argparse.ArgumentParser(description="Batch ContextUp Icon Generator (Parallel)")
+    parser.add_argument("--force", action="store_true", help="Regenerate existing icons")
+    parser.add_argument("--dry-run", action="store_true", help="Do not generate, just list")
+    parser.add_argument("--workers", type=int, default=3, help="Number of parallel workers (default: 3)")
+    parser.add_argument("--no-backup", action="store_true", help="Skip backup when using --force")
+    parser.add_argument("--target", type=str, help="Generate only a specific icon (partial name match)")
+    args = parser.parse_args()
+    
+    # Setup Paths
+    # Script is in: ContextUp/dev/scripts
+    # Root is:      HG_context_v2 (3 levels up)
+    base_dir = Path(__file__).resolve().parents[2] # ContextUp root
+    md_path = base_dir / "assets" / "icons" / "PROMPTS.md"  # Single source of truth for icon prompts
+    icon_dir = base_dir / "assets" / "icons"
+    icon_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Load API Key
+    api_key = load_api_key()
+    if not api_key:
+        print("Error: GEMINI_API_KEY not found in environment or settings.json")
+        return
+        
+    client = genai.Client(api_key=api_key)
+    
+    # Parse Prompts
+    prompts = parse_icons_md(md_path)
+    print(f"Loaded {len(prompts)} prompts from ICONS.md")
+    
+    # Backup existing icons when using --force
+    if args.force and not args.no_backup:
+        backup_icons(icon_dir, prompts)
+    
+    # Build task list
+    tasks = []
+    for icon_id, icon_data in prompts.items():
+        if not icon_id.endswith('.ico'):
+            icon_id += ".ico"
+
+        # Apply target filter if specified
+        if args.target and args.target.lower() not in icon_id.lower():
+            continue
+              
+        out_path = icon_dir / icon_id
+        
+        if out_path.exists() and not args.force:
+            print(f"  [Skip] {icon_id} exists")
+            continue
+            
+        if args.dry_run:
+            print(f"[Dry Run] Would generate: {icon_id}")
+            continue
+            
+        tasks.append((icon_id, icon_data, out_path))
+    
+    if args.dry_run or not tasks:
+        print(f"\nTotal: {len(tasks)} icons to generate")
+        return
+    
+    # Parallel execution
+    print(f"\n🚀 Generating {len(tasks)} icons with {args.workers} parallel workers...\n")
+    
+    success_count = 0
+    error_count = 0
+    errors = []
+    
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+        futures = {
+            executor.submit(generate_single_icon, client, icon_id, icon_data, out_path): icon_id
+            for icon_id, icon_data, out_path in tasks
+        }
+        
+        for future in as_completed(futures):
+            icon_id = futures[future]
+            try:
+                success, name, error = future.result()
+                if success:
+                    success_count += 1
+                else:
+                    error_count += 1
+                    errors.append(f"{name}: {error}")
+            except Exception as e:
+                error_count += 1
+                errors.append(f"{icon_id}: {str(e)}")
+    
+    print(f"\n✅ Done! Generated: {success_count}, Errors: {error_count}")
+    
+    if errors:
+        print("\n❌ Errors:")
+        for err in errors[:10]:
+            print(f"  - {err}")
+        if len(errors) > 10:
+            print(f"  ... and {len(errors) - 10} more")
+
+if __name__ == "__main__":
+    main()

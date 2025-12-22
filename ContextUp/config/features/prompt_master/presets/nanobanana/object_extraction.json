@@ -1,0 +1,15 @@
+{
+    "engine": "nanobanana",
+    "name": "Object Extraction",
+    "description": "Tags: ecommerce, product, transparent background",
+    "inputs": [
+        {
+            "id": "image1",
+            "label": "Source Image",
+            "default": "Image1"
+        }
+    ],
+    "options": [],
+    "template": "Extract the clothing from {image1} and present it as a clean e-commerce product photo. Remove the model’s body completely. Keep the outfit in natural 3D shape, with realistic fabric folds, seams, and textures. Display the garment as if photographed on a mannequin or neatly laid flat, centered on a pure white or transparent background. High-resolution, professional lighting, suitable for online fashion catalog.",
+    "example_image": "landscape.png"
+}

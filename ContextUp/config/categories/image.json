@@ -1,0 +1,166 @@
+[
+    {
+        "category": "Image",
+        "id": "image_convert",
+        "name": "Image Convert",
+        "icon": "assets/icons/icon_image_format_convert.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr;.webp;.ico;.dds;.heic;.avif;.ai;.svg;.pdf;.eps;.hdr;.psd;.psb;.cr2;.nef;.arw;.dng;.orf;.rw2;.sr2;.raf;.cr3;.srw;.pef;.erf;.mos;.mrw;.kdc;.3fr;.fff;.iiq",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "numpy"
+        ],
+        "external_tools": [],
+        "order": 401,
+        "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "merge_to_exr",
+        "name": "Merge to EXR",
+        "icon": "assets/icons/icon_image_exr_merge.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr",
+        "scope": "items",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "OpenEXR",
+            "Pillow",
+            "customtkinter",
+            "opencv-python",
+            "numpy"
+        ],
+        "external_tools": [],
+        "order": 402,
+        "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "resize_power_of_2",
+        "name": "Resize Power of 2",
+        "icon": "assets/icons/icon_image_resize_pot.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.bmp;.webp;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "order": 403,
+        "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "split_exr",
+        "name": "Split EXR",
+        "icon": "assets/icons/icon_image_exr_split.ico",
+        "types": ".exr",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "OpenEXR",
+            "Pillow",
+            "customtkinter",
+            "opencv-python",
+            "numpy"
+        ],
+        "external_tools": [],
+        "order": 404,
+        "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "texture_packer_orm",
+        "name": "Texture Packer ORM",
+        "icon": "assets/icons/icon_texture_packer.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.tif;.tiff;.exr",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "numpy"
+        ],
+        "external_tools": [],
+        "order": 405,
+        "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "normal_flip_green",
+        "name": "Normal Flip Green",
+        "icon": "assets/icons/icon_normal_flip.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "numpy"
+        ],
+        "external_tools": [],
+        "order": 406,
+        "gui": false
+    },
+    {
+        "category": "Image",
+        "id": "simple_normal_roughness",
+        "name": "Simple Normal Roughness",
+        "icon": "assets/icons/icon_simple_pbr.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "numpy",
+            "scipy"
+        ],
+        "external_tools": [],
+        "order": 407,
+        "gui": false
+    },
+    {
+        "category": "Image",
+        "id": "image_compare",
+        "name": "Compare Images",
+        "icon": "assets/icons/icon_image_compare.ico",
+        "types": ".jpg;.jpeg;.png;.tga;.bmp;.tif;.tiff;.exr;.webp",
+        "scope": "items",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "system",
+        "dependencies": [
+            "Pillow",
+            "numpy",
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "order": 408,
+        "gui": true
+    }
+]

@@ -1,0 +1,30 @@
+{
+  "session_id": "20251219_012614",
+  "timestamp": "2025-12-19T01:26:14.495327",
+  "total": 1,
+  "passed": 1,
+  "failed": 0,
+  "skipped": 0,
+  "failed_localization": 0,
+  "crashed": 0,
+  "results": [
+    {
+      "gui_id": "manager",
+      "status": "PASS",
+      "script_exists": true,
+      "import_ok": true,
+      "import_error": null,
+      "launch_ok": true,
+      "launch_error": null,
+      "functional_status": "STABLE",
+      "localization_status": "PASS",
+      "memory_usage": "70.9 MB",
+      "process_stderr": null,
+      "window_found": true,
+      "screenshot_saved": true,
+      "screenshot_path": "C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\docs\\gui_screenshots\\default\\manager.png",
+      "duration": 5.0192999839782715,
+      "timestamp": "2025-12-19T01:26:08.869418"
+    }
+  ]
+}

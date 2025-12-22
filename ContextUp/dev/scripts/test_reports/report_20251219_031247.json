@@ -1,0 +1,30 @@
+{
+  "session_id": "20251219_031251",
+  "timestamp": "2025-12-19T03:12:51.786862",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_localization": 0,
+  "crashed": 0,
+  "results": [
+    {
+      "gui_id": "unwrap",
+      "status": "IMPORT_FAIL",
+      "script_exists": true,
+      "import_ok": false,
+      "import_error": null,
+      "launch_ok": true,
+      "launch_error": null,
+      "functional_status": "UNKNOWN",
+      "localization_status": "UNKNOWN",
+      "memory_usage": "N/A",
+      "process_stderr": "Traceback (most recent call last):\r\n  File \"C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\src\\features\\system\\unwrap_folder_gui.py\", line 103, in <module>\r\n    gui = UnwrapFolderGUI([target_path])\r\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"C:\\Users\\HG\\Documents\\HG_context_v2\\ContextUp\\src\\features\\system\\unwrap_folder_gui.py\", line 54, in __init__\r\n    self.create_widgets()\r\n    ^^^^^^^^^^^^^^^^^^^\r\nAttributeError: 'UnwrapFolderGUI' object has no attribute 'create_widgets'\r\n",
+      "window_found": false,
+      "screenshot_saved": false,
+      "screenshot_path": null,
+      "duration": 2.34424090385437,
+      "timestamp": "2025-12-19T03:12:48.732225"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "engine": "nanobanana",
+    "name": "3x3 Grid Portrait",
+    "description": "Tags: grid, portrait, collage",
+    "inputs": [],
+    "options": [],
+    "template": "Using the uploaded photo as a reference, generate a set of 9 vibrant half-length portraits featuring natural life. Each portrait should show a different pose and be placed in a unique setting, with rich, colorful details that highlight the diversity of nature.",
+    "example_image": "portrait.png"
+}

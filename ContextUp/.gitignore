@@ -1,0 +1,28 @@
+# User-specific data and sensitive information
+userdata/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+logs/
+*.log
+install_log.txt
+
+# Tools and bulky binaries
+tools/
+!tools/python/
+!tools/python/**
+
+# Backups
+backups/
+
+# Local workspace files
+.vscode/
+.idea/
+.venv/
+venv/
+.env

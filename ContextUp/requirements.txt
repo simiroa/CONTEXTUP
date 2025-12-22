@@ -1,0 +1,81 @@
+# ContextUp Consolidated Requirements
+# Python Version: 3.11.x (FULL installer required, NOT embeddable - tkinter needed)
+# Usage: pip install -r requirements.txt
+
+# --- Core UI & System ---
+customtkinter
+psutil
+pystray
+packaging
+pywin32
+requests
+pynput
+keyboard
+send2trash
+piexif
+pyperclip  # Clipboard handling
+xxhash  # Fast hashing for Finder (10x faster than MD5)
+
+# --- Multimedia & File Handling ---
+Pillow
+ffmpeg-python
+yt-dlp
+pypdf
+pdf2image
+imageio  # EXR/image sequence handling
+OpenEXR  # EXR file format support
+scipy  # Image/signal processing
+svglib  # SVG to Image conversion
+reportlab  # SVG rendering dependency
+pdf2docx  # PDF to Word
+pymupdf  # PDF processing (images, text, tables) - no Poppler needed
+pymupdf4llm  # PDF to Markdown (LLM optimized)
+
+# --- AI & Processing ---
+numpy<2
+tqdm
+rembg
+accelerate  # Hugging Face model loading
+diffusers  # Stable Diffusion pipelines
+transformers # Required for diffusion pipelines
+huggingface_hub
+
+# --- PyTorch (CUDA 12.1) ---
+# Ensure these match your target hardware. Defaulting to CUDA 12.1 for AI features.
+torch --index-url https://download.pytorch.org/whl/cu121
+torchvision --index-url https://download.pytorch.org/whl/cu121
+torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# --- PaddleOCR ---
+paddlepaddle-gpu
+paddleocr
+opencv-python
+
+# --- AI Models & APIs ---
+open_clip_torch
+faster-whisper
+google-generativeai
+google-genai  # Google GenAI SDK v2 (Gemini 1.5+)
+deep-translator
+kornia  # Computer Vision (Required for RMBG)
+
+# --- 3D Processing ---
+pymeshlab  # Mesh LOD generation
+rawpy  # RAW image processing (Canon CR2, Nikon NEF, Sony ARW, etc.)
+pillow-heif  # HEIC/AVIF support
+
+# --- Audio Processing ---
+demucs  # Audio stem separation (vocals, drums, bass, other)
+
+# --- Text Processing ---
+
+
+# --- AI Models & APIs ---
+ollama  # Required for local LLM/Vision tasks
+gfpgan  # Face restoration for Upscale
+
+# --- Optional / Experimental ---
+basicsr
+realesrgan
+# --- GPU Acceleration Libraries ---
+onnxruntime-gpu  # For rembg/background removal acceleration
