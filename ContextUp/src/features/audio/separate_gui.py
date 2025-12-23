@@ -18,6 +18,7 @@ sys.path.append(str(src_dir))
 from utils.gui_lib import BaseWindow
 from utils.explorer import get_selection_from_explorer
 from utils.i18n import t
+from utils.audio_player import AudioPlayer
 
 
 class AudioSeparateGUI(BaseWindow):
@@ -31,6 +32,8 @@ class AudioSeparateGUI(BaseWindow):
         self.files = []
         self.process = None
         self.is_running = False
+        self.player = AudioPlayer()
+        self.result_files = [] # Store output paths
         
         if demo:
             self.files = [Path("demo_audio.mp3")]
@@ -142,6 +145,11 @@ class AudioSeparateGUI(BaseWindow):
         self.progress.pack(fill="x", padx=20, pady=5)
         self.progress.set(0)
         
+        # Result Preview Area
+        self.res_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.res_frame.pack(fill="x", padx=20, pady=5)
+        self.res_frame.pack_forget()
+        
         # Buttons
         btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom", padx=20, pady=10)
@@ -211,6 +219,7 @@ class AudioSeparateGUI(BaseWindow):
             python_exe = sys.executable
             total = len(self.files)
             success_count = 0
+            self.result_files = []
             
             for i, path in enumerate(self.files):
                 if not self.is_running:
@@ -258,6 +267,10 @@ class AudioSeparateGUI(BaseWindow):
                     if self.process.returncode == 0:
                         success_count += 1
                         self.after(0, lambda: self.log("  ✅ Done"))
+                        # Track output stems
+                        stem_dir = output_dir / self.model_var.get() / path.stem
+                        if stem_dir.exists():
+                             self.result_files.extend(list(stem_dir.glob("*." + fmt)))
                     else:
                         self.after(0, lambda: self.log("  ❌ Failed"))
                         
@@ -269,6 +282,7 @@ class AudioSeparateGUI(BaseWindow):
             if self.is_running:
                 self.after(0, lambda: self.log(f"\n🎉 Completed: {success_count}/{total} files."))
                 if success_count > 0:
+                    self.after(0, lambda: self.show_results())
                     self.after(0, lambda: messagebox.showinfo("Success", 
                         f"Separation complete!\n\nOutput: {self.files[0].parent / 'Separated_Audio'}"))
             
@@ -279,9 +293,33 @@ class AudioSeparateGUI(BaseWindow):
         self.after(0, lambda: self.btn_run.configure(state="normal", text="Start Separation"))
         self.after(0, lambda: self.btn_close.configure(text="Close"))
 
+    def show_results(self):
+        """Show preview buttons for separated stems."""
+        for widget in self.res_frame.winfo_children():
+            widget.destroy()
+        
+        if not self.result_files:
+            return
+            
+        self.res_frame.pack(fill="x", padx=20, pady=5)
+        ctk.CTkLabel(self.res_frame, text="Preview Stems:", font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+        
+        # Limit to first few if too many
+        for i, path in enumerate(self.result_files[:8]):
+            row = ctk.CTkFrame(self.res_frame, fg_color="transparent")
+            row.pack(fill="x", pady=2)
+            
+            lbl = ctk.CTkLabel(row, text=f"• {path.name}", font=("", 11), width=200, anchor="w")
+            lbl.pack(side="left", padx=5)
+            
+            btn = ctk.CTkButton(row, text="▶ Play", width=60, height=24, 
+                                command=lambda p=path: self.player.play(p))
+            btn.pack(side="right", padx=5)
+
     def on_closing(self):
         if self.is_running and self.process:
             self.process.terminate()
+        self.player.stop()
         self.destroy()
 
 

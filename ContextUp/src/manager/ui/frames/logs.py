@@ -32,8 +32,9 @@ class LogsFrame(ctk.CTkFrame):
         
         # Create tabs
         self.log_files = {
-            "App": "app_*.log", # Wildcard logic needed
+            "App": "app_*.log",
             "Tray": "debug_*.log",
+            "ComfyUI": "comfyui_server.log",
             "Recent": "recent_folders.log"
         }
         
@@ -68,13 +69,21 @@ class LogsFrame(ctk.CTkFrame):
 
     def _read_latest_log(self, pattern):
         try:
-            # Find latest matching file
-            files = list(self.log_dir.glob(pattern))
-            if not files:
-                return f"No log files found for pattern: {pattern}"
-            
-            # Sort by modification time
-            latest = max(files, key=lambda f: f.stat().st_mtime)
+            # Handle direct file (no wildcard) vs pattern
+            if "*" not in pattern:
+                 f = self.log_dir / pattern
+                 if f.exists():
+                     latest = f
+                 else:
+                     return f"Log file not found: {pattern}"
+            else:
+                # Find latest matching file
+                files = list(self.log_dir.glob(pattern))
+                if not files:
+                    return f"No log files found for pattern: {pattern}"
+                
+                # Sort by modification time
+                latest = max(files, key=lambda f: f.stat().st_mtime)
             
             # Read last 200 lines
             text = latest.read_text(encoding="utf-8", errors="ignore")

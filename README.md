@@ -36,13 +36,14 @@ Each feature is designed to be **Zero-Friction**:
 ### 🧠 AI Powerhouse
 | Feature | Description | Engine |
 | :--- | :--- | :--- |
-| **AI Text Refiner** | Refine, translate, and summarize text instantly. | **Gemini 2.5 Flash** |
+| **AI Text Lab** | Refine, translate, and summarize text instantly. | **Gemini / Ollama** |
 | **Background Removal** | Remove backgrounds from images with one click. | **Rembg (U2Net)** |
 | **AI Upscale** | High-quality upscaling with ComfyUI support. | **RealESRGAN / ComfyUI** |
 | **Marigold PBR** | Generate Normal & Depth maps from flat images. | **Marigold** |
 | **Frame Interpolation** | Smoothen animations/videos (30fps -> 60fps). | **RIFE** |
 
 ### 🎨 Creative Tools
+*   **ComfyUI Creative Studio**: Unified workspace for prompt layers, LoRA stacking, and advanced workflows.
 *   **Format Conversion**: Supports **EXR, HDR, RAW, HEIC, WebP, DDS** and more.
 *   **Sequence Tools**: Professional tools for **Render Sequences** (Arrange, Renumber, To Video, Analyze).
 *   **Texture Packing**: Merge channels (ORM) or split EXR layers.

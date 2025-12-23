@@ -30,49 +30,8 @@
         },
         {
             "category": "Comfyui",
-            "id": "z_image_turbo",
-            "name": "Z Image Turbo",
-            "icon": "icon_art.ico",
-            "enabled": true,
-            "submenu": "ContextUp",
-            "show_in_tray": true,
-            "environment": "system",
-            "dependencies": [
-                "requests",
-                "customtkinter"
-            ],
-            "external_tools": [
-                "ComfyUI"
-            ],
-            "description": "Generate images using Z Image Turbo",
-            "script": "src.features.comfyui.z_image_turbo_gui"
-        },
-        {
-            "category": "Comfyui",
-            "id": "ace_audio_editor",
-            "name": "ACE Audio Editor",
-            "icon": "icon_music.ico",
-            "enabled": true,
-            "submenu": "ContextUp",
-            "show_in_tray": true,
-            "environment": "system",
-            "dependencies": [
-                "requests",
-                "customtkinter",
-                "pygame"
-            ],
-            "external_tools": [
-                "ComfyUI"
-            ],
-            "description": "AI Audio Repainting/Editing using ACE Step",
-            "script": "src.features.comfyui.ace_audio_edit_gui",
-            "scope": "file",
-            "types": ".mp3;.wav;.flac;.ogg;.m4a"
-        },
-        {
-            "category": "Comfyui",
-            "id": "ai_icon_generator",
-            "name": "AI Icon Generator",
+            "id": "creative_studio_z",
+            "name": "ComfyUI Creative Studio (Z)",
             "icon": "icon_art.ico",
             "enabled": true,
             "submenu": "ContextUp",
@@ -86,13 +45,55 @@
             "external_tools": [
                 "ComfyUI"
             ],
-            "description": "Generate .ICO icons from text prompts",
-            "script": "src.features.comfyui.icon_gen_gui"
+            "description": "Unified workspace for prompt layers, icon generation, and asset creation (Z-Turbo).",
+            "script": "src.features.comfyui.creative_studio_z_gui"
+        },
+        {
+            "category": "Comfyui",
+            "id": "creative_studio_advanced",
+            "name": "ComfyUI Creative Studio (Advanced)",
+            "icon": "icon_art.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "Pillow"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Professional workspace with Checkpoint, LoRA Stacking, FaceDetailer & SUPIR.",
+            "script": "src.features.comfyui.creative_studio_advanced_gui"
+        },
+        {
+            "category": "Comfyui",
+            "id": "ace_audio_editor",
+            "name": "Creative Audio Studio (ACE)",
+            "icon": "icon_music.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "system",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "pygame"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "AI Audio Generation & Editing using ACE Step",
+            "script": "src.features.comfyui.ace_audio_edit_gui",
+            "scope": "file",
+            "types": ".mp3;.wav;.flac;.ogg;.m4a"
         },
         {
             "category": "Comfyui",
             "id": "comfyui_dashboard",
-            "name": "Open ComfyUI Dashboard",
+            "name": "Open Web UI",
             "icon": "icon_comfyui.ico",
             "enabled": true,
             "submenu": "ContextUp",
@@ -104,7 +105,7 @@
             "external_tools": [
                 "ComfyUI"
             ],
-            "description": "Start ComfyUI Server and open Web UI",
+            "description": "Open ComfyUI Web UI (starts server if needed)",
             "script": "src.features.comfyui.open_dashboard"
         }
     ]

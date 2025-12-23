@@ -12,13 +12,19 @@ if torch.cuda.is_available():
 """
     return run_check("PyTorch", code)
 
-def check_paddle():
+def check_rapidocr():
     code = """
-import paddle
-print(f"Compiled with CUDA: {paddle.device.is_compiled_with_cuda()}")
-print(f"Device: {paddle.device.get_device()}")
+import onnxruntime as ort
+from rapidocr_onnxruntime import RapidOCR
+providers = ort.get_available_providers()
+print(f"Providers: {providers}")
+if 'CUDAExecutionProvider' in providers:
+    print("CUDA Provider: YES")
+else:
+    print("CUDA Provider: NO")
+print("RapidOCR: import OK")
 """
-    return run_check("PaddlePaddle (OCR)", code)
+    return run_check("RapidOCR (OCR)", code)
 
 def check_onnx():
     code = """
@@ -64,7 +70,7 @@ def run_check(name, code):
 def main():
     print("=== ContextUp GPU Health Check (Isolated) ===\n")
     check_torch()
-    check_paddle()
+    check_rapidocr()
     check_onnx()
     print("\n=== Check Complete ===")
     input("Press Enter to exit...")

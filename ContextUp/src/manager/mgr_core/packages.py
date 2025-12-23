@@ -104,10 +104,9 @@ class PackageManager:
                     except:
                         if external_tools.get_mayo_conv(): found = True
                 elif tool_lower == 'rife-ncnn-vulkan':
-                     # No direct helper? Actually external_tools might not have it.
-                     # But ai.json used it.
-                     # Let's check if it's in tools folder manually or PATH
-                     if shutil.which(tool): found = True
+                    try:
+                        if external_tools.get_rife(): found = True
+                    except: pass
                 elif tool_lower == 'realesrgan-ncnn-vulkan':
                     if external_tools.get_realesrgan(): found = True
                 elif tool_lower == 'comfyui':

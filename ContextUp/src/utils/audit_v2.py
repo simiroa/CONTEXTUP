@@ -26,7 +26,7 @@ HANDLER_MAP = {
     "esrgan_upscale": "features/image/upscale.py",
     "rmbg_background": "features/ai/tools.py",
     "marigold_pbr": "features/ai/marigold_gui.py",
-    "gemini_prompt_master": "features/prompt_master.py",
+    "prompt_master": "features/prompt_master.py",
     "gemini_image_tool": "features/ai/standalone/gemini_img_tools.py",
     "demucs_stems": "features/audio/separate_gui.py",
     "video_convert": "features/video/tools.py",
@@ -70,7 +70,7 @@ HANDLER_MAP = {
 TRACKED_LIBS = {
     "customtkinter", "Pillow", "requests", "numpy", "cv2", "torch", "yt_dlp", 
     "google-genai", "faster-whisper", "transformers", "kornia", "diffusers", 
-    "accelerate", "demucs", "paddleocr", "ollama", "openai", "moviepy", "PyPDF2"
+    "accelerate", "demucs", "rapidocr_onnxruntime", "ollama", "openai", "moviepy", "PyPDF2"
 }
 
 # Normalize library names (import name -> pip package name)
@@ -83,6 +83,7 @@ LIB_MAP = {
     "faster_whisper": "faster-whisper",
     "moviepy": "moviepy",
     "PyPDF2": "PyPDF2",
+    "rapidocr_onnxruntime": "rapidocr-onnxruntime",
     "win32api": "pywin32",
     "win32con": "pywin32",
 }

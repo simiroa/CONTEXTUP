@@ -1,5 +1,10 @@
 # User-specific data and sensitive information
 userdata/
+config/runtime/download_history.json
+src/history.json
+src/config/
+dev/tests/
+dev/scripts/test_reports/
 
 # Python cache
 __pycache__/

@@ -23,6 +23,9 @@ def main():
         
     # Import App
     # We import here to ensure sys.path is set first
+    from core.logger import setup_logger
+    setup_logger(file_prefix="app")
+    
     from manager.ui.app import ContextUpManager
     
     app = ContextUpManager(root_dir)

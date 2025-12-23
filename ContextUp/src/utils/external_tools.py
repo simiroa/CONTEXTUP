@@ -151,3 +151,17 @@ def get_comfyui():
             
     return None
 
+def get_rife():
+    """Get path to rife-ncnn-vulkan.exe."""
+    # Check resources/bin first (AI binaries)
+    ai_bin_path = Path(__file__).parent.parent.parent / "resources" / "bin" / "rife" / "rife-ncnn-vulkan.exe"
+    if ai_bin_path.exists():
+        return str(ai_bin_path)
+
+    # Fallback to tools folder
+    rife_path = _get_tools_root() / "rife" / "rife-ncnn-vulkan.exe"
+    if rife_path.exists():
+        return str(rife_path)
+    
+    # Generic check in PATH
+    return shutil.which("rife-ncnn-vulkan")

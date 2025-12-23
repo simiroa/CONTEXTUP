@@ -19,16 +19,16 @@
 *   **NEVER hardcode absolute paths** (e.g., `C:\Users\...`).
 *   **ALWAYS** use relative paths derived from `pathlib.Path(__file__)`.
 *   **NEVER** modify the project root structure without explicit user approval.
-    *   Root must only contain: `install.bat`, `manager.bat`, `uninstall.bat`, `README.md`, `ContextUp/`, `tools/`.
+    *   Root should only contain: `install.bat`, `manager.bat`, `uninstall.bat`, `README.md`, `CHANGELOG.md`, `CREDITS.md`, `시작하기.md`, `ContextUp/`.
 
 ### 3. Configuration
-*   **NEVER modify `config/menu_config.json` directly.**
-    *   This file is generated.
-*   **ALWAYS** edit the specific category file in `config/menu/categories/` (e.g., `image.json`, `ai.json`).
+*   **NEVER modify generated menu config files directly** (if present).
+    *   These files are generated.
+*   **ALWAYS** edit the specific category file in `config/categories/` (e.g., `image.json`, `ai.json`).
 
 ### 4. External Binaries
 *   **NEVER** ask the user to download FFmpeg or other tools manually and put them in `C:\`.
-*   **ALWAYS** expect and place binaries in `ContextUp/resources/bin/`.
+*   **ALWAYS** prefer `ContextUp/tools/` for external tools. AI binaries may also live in `ContextUp/resources/bin/`.
 
 ---
 
@@ -47,4 +47,4 @@
 ### 3. Testing
 *   Before marking a task as done, verify:
     1.  Does `manager.bat` launch?
-    2.  Does the new feature crash correctly (check `logs/debug.log`)?
+    2.  Does the new feature log correctly (check `logs/debug_YYYY-MM-DD.log`)?

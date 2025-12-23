@@ -6,7 +6,7 @@ from pathlib import Path
 
 # Paths
 ROOT_DIR = Path(__file__).parent.parent.parent
-CONFIG_DIR = ROOT_DIR / "config" / "menu" / "categories"
+CONFIG_DIR = ROOT_DIR / "config" / "categories"
 PROMPTS_FILE = ROOT_DIR / "assets" / "icons" / "PROMPTS.md"
 
 # Neon Colors per Category
@@ -20,7 +20,9 @@ CATEGORY_COLORS = {
     "System": "Azure",
     "Tools": "Red",
     "Sequence": "Violet",
-    "Video": "Purple"
+    "Video": "Purple",
+    "Comfyui": "Cyan",
+    "ComfyUI": "Cyan"
 }
 
 def load_existing_prompts():
@@ -43,18 +45,29 @@ def load_existing_prompts():
                 prompts[icon_id] = {"prompt": prompt, "category": category}
     return prompts
 
+def _normalize_items(data):
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        if isinstance(data.get("features"), list):
+            return data["features"]
+        return [data]
+    return []
+
 def scan_configs():
     icons = {}
     for json_file in CONFIG_DIR.glob("*.json"):
         with open(json_file, "r", encoding="utf-8") as f:
             try:
                 data = json.load(f)
-                for item in data:
+                items = _normalize_items(data)
+                for item in items:
                     if "icon" in item:
                         icon_path = item["icon"]
                         icon_name = os.path.basename(icon_path)
+                        category = item.get("category", data.get("category", "System") if isinstance(data, dict) else "System")
                         icons[icon_name] = {
-                            "category": item.get("category", "System"),
+                            "category": category,
                             "name": item.get("name", "")
                         }
             except Exception as e:
@@ -74,6 +87,7 @@ def main():
         category = info["category"]
         
         # Keep existing prompt if available
+        icon_key = icon_name.lower()
         if icon_name in existing_prompts:
             prompt = existing_prompts[icon_name]["prompt"]
             # Update category if changed
@@ -82,7 +96,7 @@ def main():
             # Generate new prompt
             color = CATEGORY_COLORS.get(category, "White")
             # Special case for AI Text Refine
-            if "refine" in icon_name or "grammar" in icon_name:
+            if "refine" in icon_key or "grammar" in icon_key or "text_lab" in icon_key:
                 color = "Blue/Purple"
                 desc = "Crystal pen writing on floating digital glass interface"
                 prompt = f"{desc}. Neon {color} Glow. Translucent Soft Glass."

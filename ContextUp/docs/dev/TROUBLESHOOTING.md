@@ -8,7 +8,7 @@
 
 ### Diagnosis
 1. **Check Logs**:
-   Look at `crash_log.txt` in the root folder. It captures the exact error (traceback) when the application crashes.
+   Look in `logs/debug_YYYY-MM-DD.log` (or the latest file in `logs/`). It captures the exact error (traceback) when the application crashes.
 
 2. **Common Errors**:
    - `ModuleNotFoundError: No module named ...`
@@ -21,7 +21,7 @@
 ### How to Debug Manually
 Open a command prompt or PowerShell in the project folder and run:
 ```powershell
-python src/manager/main.py
+ContextUp\tools\python\python.exe ContextUp\src\manager\main.py
 ```
 This will print the error message directly to the console so you can read it.
 
@@ -34,7 +34,7 @@ See [INSTALL.md](../user/INSTALL.md) for dependency checking steps.
 1.  **Restart Crash / Silent Exit**:
     *   **Cause**: `subprocess.check_output('tasklist')` hangs in some environments.
     *   **Fix**: Removed tasklist fallback. Now relies on **PID File** + **Handshake**.
-    *   **Verify**: Run `reprod_restart.py` to test the Stop->Start cycle.
+    *   **Verify**: Run the tray agent from CLI and exercise Stop->Start to confirm PID/handshake stability.
 
 2.  **Manager Won't Open from Tray**:
     *   **Cause**: `pythonw.exe` missing or behaving erratically in embedded environment.

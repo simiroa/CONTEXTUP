@@ -1,0 +1,90 @@
+{
+    "presets": [
+        {
+            "id": "sdxl_advanced",
+            "name": "SDXL Professional (Efficiency)",
+            "description": "Standard SDXL with LoRA Stacking and FaceDetailer.",
+            "workflow_file": "assets/workflows/sdxl_advanced.json",
+            "ui_config": {
+                "checkpoint": true,
+                "lora": true,
+                "negative": true,
+                "image_input": false,
+                "settings": true,
+                "refinement": true
+            },
+            "mappings": {
+                "checkpoint": {
+                    "node_id": "loader",
+                    "input": "ckpt_name"
+                },
+                "positive": {
+                    "node_id": "loader",
+                    "input": "positive"
+                },
+                "negative": {
+                    "node_id": "loader",
+                    "input": "negative"
+                },
+                "width": {
+                    "node_id": "loader",
+                    "input": "empty_latent_width"
+                },
+                "height": {
+                    "node_id": "loader",
+                    "input": "empty_latent_height"
+                },
+                "lora_stack": {
+                    "node_id": "stacker",
+                    "input": "loras"
+                }
+            }
+        },
+        {
+            "id": "z_image_turbo",
+            "name": "Z-Image Turbo (Fast)",
+            "description": "Hyper-fast generation using Z-Image discrete models.",
+            "workflow_file": "assets/workflows/z_image/turbo.json",
+            "ui_config": {
+                "checkpoint": false,
+                "lora": true,
+                "negative": false,
+                "image_input": false,
+                "settings": true,
+                "refinement": false
+            },
+            "mappings": {
+                "positive": {
+                    "node_id": "45",
+                    "input": "text"
+                },
+                "width": {
+                    "node_id": "41",
+                    "input": "width"
+                },
+                "height": {
+                    "node_id": "41",
+                    "input": "height"
+                },
+                "seed": {
+                    "node_id": "44",
+                    "input": "seed"
+                }
+            }
+        },
+        {
+            "id": "sdxl_i2i",
+            "name": "SDXL Image-to-Image",
+            "description": "Refine existing images or sketches.",
+            "workflow_file": "assets/workflows/sdxl_i2i.json",
+            "ui_config": {
+                "checkpoint": true,
+                "lora": true,
+                "negative": true,
+                "image_input": true,
+                "settings": true,
+                "refinement": true
+            }
+        }
+    ]
+}

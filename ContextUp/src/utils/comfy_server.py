@@ -1,72 +1,68 @@
-import os
 import sys
-import subprocess
-import time
-import psutil
-from pathlib import Path
 
-# Add src to path
-current_dir = Path(__file__).resolve().parent
-src_dir = current_dir.parent
-if str(src_dir) not in sys.path:
-    sys.path.append(str(src_dir))
-
-from manager.helpers.comfyui_client import ComfyUIManager
 from core.logger import setup_logger
+from manager.helpers.comfyui_service import ComfyUIService
 
 logger = setup_logger("comfy_server_utils")
 
+
 def is_comfy_running(port=8190):
     """Check if ComfyUI server is responding on the given port."""
-    client = ComfyUIManager(port=port)
-    return client.is_running()
+    service = ComfyUIService(port=port)
+    running, _ = service.is_running()
+    return running
+
 
 def start_comfy(port=8190):
-    """Start ComfyUI server in the background."""
-    if is_comfy_running(port):
-        logger.info(f"ComfyUI is already running on port {port}.")
-        return True, "이미 실행 중입니다."
+    """Start ComfyUI server in the background if not running."""
+    service = ComfyUIService(port=port)
+    ok, used_port, started = service.ensure_running(start_if_missing=True)
+    if ok:
+        if started:
+            logger.info(f"ComfyUI started on port {used_port}.")
+            return True, f"ComfyUI started on port {used_port}."
+        logger.info(f"ComfyUI already running on port {used_port}.")
+        return True, f"ComfyUI already running on port {used_port}."
 
-    client = ComfyUIManager(port=port)
-    # The ComfyUIManager.start() method uses subprocess.Popen without creationflags.
-    # To ensure it's hidden on Windows, we might need to monkeypatch or just use it as is if it's acceptable.
-    # Actually, ComfyUIManager.start() has a commented out creationflags.
-    
-    success = client.start()
-    if success:
-        logger.info(f"ComfyUI started successfully on port {port}.")
-        return True, "ComfyUI 서버가 시작되었습니다."
-    else:
-        logger.error(f"Failed to start ComfyUI on port {port}.")
-        return False, "ComfyUI 서버 시작에 실패했습니다."
+    logger.error("Failed to start ComfyUI.")
+    return False, "Failed to start ComfyUI."
+
 
 def stop_comfy(port=8190):
-    """Stop ComfyUI server by terminating processes using the port."""
-    logger.info(f"Stopping ComfyUI on port {port}...")
-    
-    found = False
-    for proc in psutil.process_iter(['pid', 'name', 'connections']):
-        try:
-            for conn in proc.info['connections']:
-                if conn.laddr.port == port:
-                    logger.info(f"Found process {proc.info['pid']} ({proc.info['name']}) using port {port}. Terminating...")
-                    proc.terminate()
-                    proc.wait(timeout=5)
-                    found = True
-                    break
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess, Exception):
-            continue
-            
-    if found:
-        return True, "ComfyUI 서버가 종료되었습니다."
-    else:
-        # Check if it's still running (maybe terminated by name or already stopped)
-        if not is_comfy_running(port):
-            return True, "ComfyUI 서버가 이미 종료되었거나 실행 중이지 않습니다."
-        return False, "ComfyUI 서버를 종료하지 못했습니다."
+    """Stop ComfyUI server if it was started by ContextUp."""
+    service = ComfyUIService(port=port)
+    ok, reason = service.stop(only_if_owned=True)
+    if ok:
+        logger.info("ComfyUI stopped.")
+        return True, "ComfyUI stopped."
+    if reason == "not_owned":
+        return False, "ComfyUI not owned by ContextUp. Use Force Kill if needed."
+    return False, "Failed to stop ComfyUI."
+
+
+def open_comfy_console(port=8190):
+    """Open a console window that tails ComfyUI logs."""
+    service = ComfyUIService(port=port)
+    ok, reason = service.open_console()
+    if ok and reason == "already_open":
+        return True, "ComfyUI console already open."
+    if ok:
+        return True, "ComfyUI console opened."
+    return False, "Failed to open ComfyUI console."
+
+
+def close_comfy_console(port=8190):
+    """Close the ComfyUI log console window."""
+    service = ComfyUIService(port=port)
+    ok, reason = service.close_console()
+    if ok:
+        return True, "ComfyUI console closed."
+    if reason == "not_running":
+        return False, "ComfyUI console is not running."
+    return False, "Failed to close ComfyUI console."
+
 
 if __name__ == "__main__":
-    # Test if run directly
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         if cmd == "start":
@@ -75,3 +71,7 @@ if __name__ == "__main__":
             print(stop_comfy()[1])
         elif cmd == "status":
             print("Running" if is_comfy_running() else "Stopped")
+        elif cmd == "console":
+            print(open_comfy_console()[1])
+        elif cmd == "console-close":
+            print(close_comfy_console()[1])

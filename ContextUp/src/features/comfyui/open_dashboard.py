@@ -9,23 +9,19 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from manager.helpers.comfyui_client import ComfyUIManager
+from manager.helpers.comfyui_service import ComfyUIService
 
 def main():
     print("Checking ComfyUI Server status...")
-    client = ComfyUIManager()
-    
-    if not client.is_running():
-        print("Server not running. Starting...")
-        if client.start():
-            print("Server started.")
-            # Give it a moment to initialize
-            time.sleep(2)
-        else:
-            print("Failed to start server.")
-            # Try opening anyway, maybe external instance
-            
-    url = "http://127.0.0.1:8190"
+    service = ComfyUIService()
+    ok, port, started = service.ensure_running(start_if_missing=True)
+    if not ok:
+        print("Failed to start server.")
+        port = 8190
+    elif started:
+        time.sleep(2)
+
+    url = f"http://127.0.0.1:{port}"
     print(f"Opening {url}...")
     webbrowser.open(url)
 

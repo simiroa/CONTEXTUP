@@ -42,9 +42,9 @@ def patch_basicsr():
             print(f"Patching {target_file.name}...")
             new_content = content.replace(old_import, new_import)
             target_file.write_text(new_content, encoding="utf-8")
-            print("✓ basicsr patched successfully.")
+            print("[OK] basicsr patched successfully.")
         elif new_import in content:
-            print("✓ basicsr is already patched.")
+            print("[OK] basicsr is already patched.")
         else:
             print("Warning: Could not find target import line in degradations.py. It might be a different version.")
             

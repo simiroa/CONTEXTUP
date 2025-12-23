@@ -7,12 +7,13 @@
 *   **`src/core`**: Core logic (Registry, Config, Menu, Paths).
 *   **`src/features`**: Implementation modules for features (Categorized).
 *   **`src/utils`**: Shared utilities (GUI, Explorer, Config Builder, etc.).
-*   **`config/categories`**: Feature definition files (Flattened).
+*   **`config/categories`**: Feature definition files (flattened).
+*   **`config/categories/comfyui.json`**: ComfyUI tools (nested `features` list).
 *   **`userdata`**: User-specific data and settings (Git Ignored).
-*   **`tools`**: Helper scripts and **Embedded Python Environment** (`tools/python`).
+*   **`tools`**: External tools and **Embedded Python Environment** (`tools/python`).
 *   **`assets`**: Icons and other visual resources.
 *   **`resources`**: AI Models/Weights and backup binaries.
-*   **`tools`**: External Tools (FFmpeg, Blender, Mayo, ComfyUI) and Python environment.
+*   **`dev`**: Developer scripts and verification tools.
 
 ---
 
@@ -66,27 +67,44 @@ Edit the JSON file in `config/categories/` (e.g., `image.json`).
 
 ```json
 {
+    "category": "Tools",
     "id": "my_feature",
     "name": "My Tool Name",
-    "icon": "icon_my_tool.ico",
+    "icon": "assets/icons/icon_my_tool.ico",
+    "types": ".jpg;.png",        // filter
+    "scope": "file",             // file, directory, background, tray_only
     "enabled": true,
-    "show_in_context_menu": true,
+    "submenu": "ContextUp",
     "show_in_tray": true,
-    "scope": "file",            // file, directory, or background
-    "types": ".jpg;.png",       // filter
-    "environment": "system",    // or "conda"
-    "dependencies": ["Pillow"], // items from requirements.txt
+    "environment": "system",
+    "dependencies": ["Pillow"],  // items from requirements.txt
     "external_tools": ["FFmpeg"],// binaries in tools/ or PATH
-    "description": "Short description for Item Editor",
-    "script": "src.features.image.my_tool" // Module path
+    "is_extension": true,
+    "order": 900,
+    "gui": true,
+    "description": "Short description for Item Editor"
 }
 ```
+
+For ComfyUI entries, edit `config/categories/comfyui.json` and add a new item under the `features` list with a `script` field (e.g., `src.features.comfyui.my_gui`).
 
 ### Step 5: Registry Refresh
 Run `manager.bat` or use CLI to refresh the context menu:
 ```powershell
 ContextUp\tools\python\python.exe ContextUp\manage.py register
 ```
+
+### ComfyUI Feature Addendum
+When adding new ComfyUI features, follow these rules to avoid tray/GUI breakage:
+
+*   **Startup/Attach**: Use `ComfyUIService.ensure_running()` to attach or start. Do not call `ComfyUIManager.start()` directly from GUI code.
+*   **Port/Status**: Read the active port from the service and pass it to the client (`client.set_active_port(port)`).
+*   **Paths**: Prefer `COMFYUI_PATH` pointing to the ComfyUI folder (not a `.bat`). If a launcher is required, set `COMFYUI_USE_LAUNCHER=true`.
+*   **GUI Layout**: BaseWindow uses `grid` on the root. Do not mix `pack` on the root window. If you need a status bar, use `grid`.
+*   **Logs/Console**: ComfyUI console output must stay ASCII-safe (Windows cp949). Use `ComfyUIService.open_console()` to tail `logs/comfyui_server.log`.
+*   **Tray Visibility**: For ComfyUI tools that should appear in tray, set `category: "Comfyui"` and `show_in_tray: true` in `config/categories/comfyui.json`.
+*   **External Tool Flag**: Include `"external_tools": ["ComfyUI"]` to keep dependency checks consistent.
+*   **Web UI Naming**: Use "Open Web UI" for the ComfyUI browser entry (script: `src.features.comfyui.open_dashboard`).
 
 ---
 

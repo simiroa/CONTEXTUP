@@ -47,8 +47,10 @@ def set_seed(workflow, seed=None):
 
 WORKFLOW_MAP = {
     "z_image_turbo": "ContextUp/assets/workflows/z_image/turbo.json",
-    "ace_audio_edit": "ContextUp/assets/workflows/ace_step_1_m2m_editing.json",
-    "seedvr2_upscale": "ContextUp/assets/workflows/seedvr2/upscale.json" # Placeholder if exists
+    "ace_audio_edit": "ContextUp/assets/workflows/audio/ace_step_1_m2m_editing.json",
+    "ace_audio_song": "ContextUp/assets/workflows/audio/ace_step_1_t2a_song.json",
+    "ace_audio_instrumental": "ContextUp/assets/workflows/audio/ace_step_1_t2a_instrumentals.json",
+    "seedvr2_upscale": "ContextUp/assets/workflows/seedvr2/upscale.json"
 }
 
 def get_workflow_path(key):

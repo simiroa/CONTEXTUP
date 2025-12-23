@@ -4,6 +4,7 @@ Displays a modern, translucent popup menu with blur effect
 """
 import sys
 import os
+import json
 import subprocess
 import ctypes
 from pathlib import Path
@@ -86,6 +87,10 @@ class QuickMenu(ctk.CTkToplevel):
         self.attributes('-transparentcolor', '#000001')
         
         self.pinned = False
+
+        # Close behavior for daemon vs one-shot
+        self.protocol("WM_DELETE_WINDOW", self._close_window)
+        self.bind("<FocusOut>", self._on_focus_out)
         
         # Get mouse position accurately using Win32 API
         
@@ -222,7 +227,7 @@ class QuickMenu(ctk.CTkToplevel):
             fg_color="transparent",
             hover_color=("#D0D0D0", "#C0392B"),
             text_color="gray",
-            command=self.destroy
+            command=self._close_window
         )
         btn_close.pack(side="right", padx=(5, 0))
         
@@ -251,7 +256,7 @@ class QuickMenu(ctk.CTkToplevel):
             self.btn_pin.configure(text_color="gray", fg_color="transparent")
 
     def _on_focus_out(self, event):
-        if not self.pinned:
+        if event.widget == self and not self.pinned:
             if self.is_daemon:
                 self.withdraw()
             else:
@@ -264,6 +269,12 @@ class QuickMenu(ctk.CTkToplevel):
             apply_blur_effect(hwnd, opacity=200) # Slightly more transparent
         except Exception as e:
             logger.debug(f"Blur effect error: {e}")
+
+    def _close_window(self):
+        if self.is_daemon:
+            self.withdraw()
+        else:
+            self.destroy()
     
     def build_menu(self):
         """Build menu items from JSON config"""
@@ -277,7 +288,7 @@ class QuickMenu(ctk.CTkToplevel):
         try:
             menu_config = MenuConfig()
             
-            # Get all tray items, excluding manager (bottom) and copy_my_info (top section)
+            # Get all tray items, excluding manager (bottom) and Copy My Info (Quick Actions)
             tray_items = [
                 item for item in menu_config.items 
                 if item.get("show_in_tray", False) 
@@ -297,14 +308,17 @@ class QuickMenu(ctk.CTkToplevel):
             for cat in categories:
                 categories[cat].sort(key=lambda x: x.get("order", 9999))
             
-            # 1. Quick Actions (config-based special items)
+            # 1. Copy My Info pinned to top
+            self._add_copy_my_info_section(scrollable)
+
+            # 2. Quick Actions (config-based special items)
             quick_actions = [
                 ("🔄  Reopen Last Closed Folder", self._reopen_recent, "reopen_recent"),
                 ("📂  Open from Clipboard", self._open_clipboard, "open_from_clipboard"),
             ]
             for text, handler, _ in quick_actions:
                 self._add_menu_button(scrollable, text, handler)
-            
+
             self._add_separator(scrollable)
             
             
@@ -418,65 +432,93 @@ class QuickMenu(ctk.CTkToplevel):
             else:
                 self.destroy()
 
+    def _load_copy_my_info_items(self):
+        try:
+            from core.paths import COPY_MY_INFO_FILE
+            if COPY_MY_INFO_FILE.exists():
+                with open(COPY_MY_INFO_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                items = data.get("items", [])
+                if isinstance(items, list):
+                    return items
+        except Exception as e:
+            logger.debug(f"Copy My Info load failed: {e}")
+        return []
+
     def _add_copy_my_info_section(self, parent):
         """Add Copy My Info as collapsible submenu"""
         try:
-            from tray.modules.copy_my_info import CopyMyInfoModule
-            info_mod = CopyMyInfoModule(None)
-            items = info_mod._load_items()
+            items = self._load_copy_my_info_items()
             
-            if items:
-                # Create a frame for the submenu
-                submenu_frame = ctk.CTkFrame(parent, fg_color="transparent")
-                submenu_frame.pack(fill="x", pady=1, padx=5)
-                
-                # Toggle state
-                self.info_expanded = False
-                self.info_items_frame = None
-                
-                def toggle_submenu():
-                    self.info_expanded = not self.info_expanded
-                    if self.info_expanded:
-                        toggle_btn.configure(text="📋  Copy My Info  ▼")
-                        # Show items
-                        self.info_items_frame = ctk.CTkFrame(submenu_frame, fg_color=("gray85", "#181818"), corner_radius=6)
-                        self.info_items_frame.pack(fill="x", padx=(10, 0), pady=(2, 0))
-                        
-                        for item in items:
-                            label = item.get("label", "")
-                            content = item.get("content", "")
-                            btn = ctk.CTkButton(
-                                self.info_items_frame,
-                                text=f"📄 {label}",
-                                command=lambda c=content: self._on_click(lambda: self._copy_to_clipboard(c)),
-                                anchor="w",
-                                fg_color="transparent",
-                                hover_color=("#C0C0C0", "#2A2A2A"),
-                                text_color=("gray10", "gray90"),
-                                height=30,
-                                corner_radius=4,
-                                font=("Segoe UI", 11)
-                            )
-                            btn.pack(fill="x", pady=1, padx=2)
-                    else:
-                        toggle_btn.configure(text="📋  Copy My Info  ▶")
-                        if self.info_items_frame:
-                            self.info_items_frame.destroy()
-                            self.info_items_frame = None
-                
-                toggle_btn = ctk.CTkButton(
-                    submenu_frame,
-                    text="📋  Copy My Info  ▶",
-                    command=toggle_submenu,
-                    anchor="w",
-                    fg_color="transparent",
-                    hover_color=("#D0D0D0", "#1F1F1F"),
-                    text_color=("gray10", "#E0E0E0"),
-                    height=34,
-                    corner_radius=6,
-                    font=("Segoe UI", 12)
-                )
-                toggle_btn.pack(fill="x")
+            def open_info_manager():
+                script = src_dir / "scripts" / "sys_info_manager.py"
+                subprocess.Popen([sys.executable, str(script)], creationflags=0x08000000)
+
+            # Create a frame for the submenu
+            submenu_frame = ctk.CTkFrame(parent, fg_color="transparent")
+            submenu_frame.pack(fill="x", pady=1, padx=5)
+            
+            # Toggle state
+            self.info_expanded = False
+            self.info_items_frame = None
+            
+            def toggle_submenu():
+                self.info_expanded = not self.info_expanded
+                if self.info_expanded:
+                    toggle_btn.configure(text="📋  Copy My Info  ▼")
+                    # Show items
+                    self.info_items_frame = ctk.CTkFrame(submenu_frame, fg_color=("gray85", "#181818"), corner_radius=6)
+                    self.info_items_frame.pack(fill="x", padx=(10, 0), pady=(2, 0))
+                    
+                    for item in items:
+                        label = item.get("label", "")
+                        content = item.get("content", "")
+                        btn = ctk.CTkButton(
+                            self.info_items_frame,
+                            text=f"📄 {label}",
+                            command=lambda c=content: self._on_click(lambda: self._copy_to_clipboard(c)),
+                            anchor="w",
+                            fg_color="transparent",
+                            hover_color=("#C0C0C0", "#2A2A2A"),
+                            text_color=("gray10", "gray90"),
+                            height=30,
+                            corner_radius=4,
+                            font=("Segoe UI", 11)
+                        )
+                        btn.pack(fill="x", pady=1, padx=2)
+
+                    manage_btn = ctk.CTkButton(
+                        self.info_items_frame,
+                        text="Manage Info...",
+                        command=lambda: self._on_click(open_info_manager),
+                        anchor="w",
+                        fg_color="transparent",
+                        hover_color=("#C0C0C0", "#2A2A2A"),
+                        text_color=("gray10", "gray90"),
+                        height=30,
+                        corner_radius=4,
+                        font=("Segoe UI", 11)
+                    )
+                    manage_btn.pack(fill="x", pady=(4, 1), padx=2)
+                else:
+                    toggle_btn.configure(text="📋  Copy My Info  ▶")
+                    if self.info_items_frame:
+                        self.info_items_frame.destroy()
+                        self.info_items_frame = None
+            
+            toggle_btn = ctk.CTkButton(
+                submenu_frame,
+                text="📋  Copy My Info  ▶",
+                command=toggle_submenu,
+                anchor="w",
+                fg_color="transparent",
+                hover_color=("#D0D0D0", "#1F1F1F"),
+                text_color=("gray10", "#E0E0E0"),
+                height=34,
+                corner_radius=6,
+                font=("Segoe UI", 12)
+            )
+            toggle_btn.pack(fill="x")
                 
         except Exception as e:
             logger.debug(f"Copy My Info not available: {e}")
@@ -537,13 +579,6 @@ class QuickMenu(ctk.CTkToplevel):
         success, msg = stop_comfy()
         logger.info(f"Stop ComfyUI: {msg}")
     
-    def _on_focus_out(self, event):
-        # Only close if not pinned and focuses out to another app
-        # But tkinter focus-out is tricky, sometimes fires on internal clicks
-        # We check widget to ensure it's the toplevel losing focus
-        if event.widget == self and not self.pinned:
-            self.destroy()
-
     def _start_move(self, event):
         self._drag_x = event.x
         self._drag_y = event.y
@@ -560,34 +595,59 @@ class QuickMenu(ctk.CTkToplevel):
 
 def show_quick_menu():
     """Show the Quick Menu - Use UDP signal if daemon is running, else launch process"""
-    try:
-        # Try sending UDP signal
+    def is_daemon_running():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.settimeout(None) # Blocking for reliability? No, fast fail is better.
-        sock.sendto(b"show", ("127.0.0.1", QUICK_MENU_PORT))
-        sock.close()
-    except Exception:
-        # Daemon not running, launch it
-        # Check if we already tried launching it to avoid infinite recursion risk? 
-        # But here we just launch process.
-        script_path = str(Path(__file__).resolve())
-        subprocess.Popen(
-            [sys.executable, script_path, "--daemon"],
-            creationflags=0x08000000
-        )
-        
-        # Initial Launch Optimization:
-        # Wait a bit and try sending show signal again so user doesn't have to press twice
-        def retry_show():
-            import time
-            time.sleep(0.5) # Wait for process to start
+        try:
+            sock.bind(("127.0.0.1", QUICK_MENU_PORT))
+            return False
+        except Exception:
+            return True
+        finally:
             try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                sock.sendto(b"show", ("127.0.0.1", QUICK_MENU_PORT))
                 sock.close()
-            except: pass
-            
-        threading.Thread(target=retry_show, daemon=True).start()
+            except Exception:
+                pass
+
+    def send_show():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            sock.sendto(b"show", ("127.0.0.1", QUICK_MENU_PORT))
+            return True
+        except Exception:
+            return False
+        finally:
+            try:
+                sock.close()
+            except Exception:
+                pass
+
+    if is_daemon_running():
+        if send_show():
+            return
+
+    # Daemon not running, launch it
+    script_path = str(Path(__file__).resolve())
+    subprocess.Popen(
+        [sys.executable, script_path, "--daemon"],
+        creationflags=0x08000000
+    )
+
+    # Wait a bit and try sending show signal again so user doesn't have to press twice
+    def retry_show():
+        import time
+        time.sleep(0.5)
+        send_show()
+
+    threading.Thread(target=retry_show, daemon=True).start()
+
+
+def launch_quick_menu_one_shot():
+    """Launch quick menu as a one-shot window without the daemon."""
+    script_path = str(Path(__file__).resolve())
+    subprocess.Popen(
+        [sys.executable, script_path],
+        creationflags=0x08000000
+    )
 
 def _run_menu():
     import argparse

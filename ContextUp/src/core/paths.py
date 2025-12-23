@@ -65,6 +65,8 @@ def migrate_legacy_userdata():
         (CONFIG_DIR / "copy_my_info.json", COPY_MY_INFO_FILE),
         (CONFIG_DIR / "install_profile.json", INSTALL_PROFILE_FILE),
         (CONFIG_DIR / "download_history.json", DOWNLOAD_HISTORY_FILE),
+        (CONFIG_DIR / "runtime" / "gui_states.json", GUI_STATES_FILE),
+        (CONFIG_DIR / "runtime" / "download_history.json", DOWNLOAD_HISTORY_FILE),
     ]
     
     ensure_userdata_dir()

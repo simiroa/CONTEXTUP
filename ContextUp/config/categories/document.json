@@ -52,7 +52,6 @@
             "Pillow",
             "customtkinter",
             "numpy",
-            "paddleocr",
             "pdf2docx",
             "pymupdf4llm"
         ],

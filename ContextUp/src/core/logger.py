@@ -17,7 +17,7 @@ LEVEL_MAP = {
     "Disabled": 100
 }
 
-def setup_logger(log_level_str="Debug (All)"):
+def setup_logger(log_level_str="Debug (All)", file_prefix="debug"):
     """
     Sets up the global logger based on the provided string level.
     """
@@ -38,7 +38,7 @@ def setup_logger(log_level_str="Debug (All)"):
     if level < 100:
         try:
             date_str = datetime.now().strftime("%Y-%m-%d")
-            log_file = LOG_DIR / f"debug_{date_str}.log"
+            log_file = LOG_DIR / f"{file_prefix}_{date_str}.log"
             
             file_handler = logging.FileHandler(log_file, encoding='utf-8')
             file_handler.setLevel(level)

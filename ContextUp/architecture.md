@@ -1,60 +1,62 @@
 # System Architecture
 
-> **Last Updated:** 2025-12-22  
+> **Last Updated:** 2025-12-23  
 > **Structure:** Double-Packaging (ContextUp subfolder)
 
 ## Directory Structure
 
 ```
 HG_context_v2/                    # Root (user-facing)
-├── ContextUp/                    # Core Application
-│   ├── src/
-│   │   ├── core/                 # Core logic (menu, config, registry, paths)
-│   │   ├── manager/              # Manager GUI
-│   │   ├── features/             # Feature modules (categorized)
-│   │   │   ├── audio/
-│   │   │   ├── video/
-│   │   │   ├── image/
-│   │   │   ├── document/
-│   │   │   ├── sequence/         # Sequence management tools
-│   │   │   ├── mesh/             # 3D tools (Blender, Mayo, LOD)
-│   │   │   ├── system/
-│   │   │   ├── ai/               # AI tools (Ollama, Gemini, etc.)
-│   │   │   ├── finder/           # Duplicate finder
-│   │   │   ├── leave_manager/    # Leave Manager
-│   │   │   ├── tools/            # AI Text Lab, Downloader
-│   │   │   └── prompt_master/
-│   │   ├── tray/                 # Tray agent & Quick Menu
-│   │   ├── setup/                # Installation / Migration / Uninstallation
-│   │   └── utils/                # Shared utilities (logger, gui_lib)
-│   │
-│   ├── config/                   # Static App Config (Git Managed)
-│   │   ├── categories/           # Category & Feature JSON files (Flattened)
-│   │   ├── install_tiers.json    # Installation tier definitions
-│   │   ├── i18n/                 # Localization
-│   │   └── ...
-│   │
-│   ├── userdata/                 # Dynamic User Data (Git Ignored)
-│   │   ├── settings.json         # Global settings (Theme, Paths, API Keys)
-│   │   ├── secrets.json          # Sensitive API Keys
-│   │   ├── user_overrides.json   # Menu customizations
-│   │   ├── gui_states.json       # GUI window states
-│   │   ├── copy_my_info.json     # Personal info for clipboard tools
-│   │   └── ...
-│   │
-│   ├── tools/                    # Python (Bundled 3.11), FFmpeg, Blender, ComfyUI
-│   ├── resources/                # External resources
-│   │   ├── ai_models/            # AI Models (Marigold, Rembg, Checkpoints)
-│   │   ├── bin/                  # Binaries (Real-ESRGAN fallback, etc.)
-│   ├── assets/                   # Icons & Media
-│   ├── logs/                     # Runtime logs
-│   └── dev/                      # Development (scripts, tests, docs)
-│
-├── README.md
-├── install.bat                   # → Runs setup/install.py (Migration included)
-├── manager.bat                   # → Runs manager/main.py
-└── uninstall.bat                 # → Runs setup/uninstall.py (Registry cleanup)
+|-- ContextUp/                    # Core Application
+|   |-- src/
+|   |   |-- core/                 # Core logic (menu, config, registry, paths)
+|   |   |-- manager/              # Manager GUI
+|   |   |-- features/             # Feature modules (categorized)
+|   |   |   |-- ai/
+|   |   |   |-- audio/
+|   |   |   |-- comfyui/
+|   |   |   |-- document/
+|   |   |   |-- finder/
+|   |   |   |-- image/
+|   |   |   |-- leave_manager/
+|   |   |   |-- mesh/
+|   |   |   |-- prompt_master/
+|   |   |   |-- sequence/
+|   |   |   |-- system/
+|   |   |   `-- video/
+|   |   |-- scripts/              # CLI/utility scripts
+|   |   |-- setup/                # Installation / Migration / Uninstallation
+|   |   |-- tray/                 # Tray agent & Quick Menu
+|   |   `-- utils/                # Shared utilities (logger, gui_lib)
+|   |
+|   |-- config/                   # Static app config (git managed)
+|   |   |-- categories/           # Category & Feature JSON files (Flattened)
+|   |   |-- presets/              # ComfyUI UI presets and mappings
+|   |   `-- runtime/              # Legacy runtime files (migrated to userdata)
+|   |
+|   |-- userdata/                 # User data (git ignored)
+|   |   |-- settings.json         # Global settings (Theme, Paths, API Keys)
+|   |   |-- secrets.json          # Sensitive API Keys
+|   |   |-- user_overrides.json   # Menu customizations
+|   |   |-- gui_states.json       # GUI window states
+|   |   |-- download_history.json # Downloader history
+|   |   `-- copy_my_info.json     # Personal info for clipboard tools
+|   |
+|   |-- tools/                    # Bundled Python, FFmpeg, Blender, ComfyUI
+|   |-- resources/                # External resources
+|   |-- assets/                   # Icons & Media
+|   |   |-- icons/                # Feature icons
+|   |   `-- workflows/            # ComfyUI workflow JSONs (API format)
+|   `-- logs/                     # Runtime logs
+|
+|-- README.md
+|-- CHANGELOG.md
+|-- CREDITS.md
+|-- install.bat                   # Runs setup/install.py (Migration included)
+|-- manager.bat                   # Runs manager/main.py
+`-- uninstall.bat                 # Runs setup/uninstall.py (Registry cleanup)
 ```
+
 
 ## Entry Points
 
@@ -81,22 +83,17 @@ The following features are defined in `config/categories/*.json` and implemented
 
 | Category | Key Features | Implementation |
 | :--- | :--- | :--- |
-| **AI** | RIFE(Interp), Whisper(Sub), ESRGAN(Upscale), RMBG(BG Remove), Marigold(PBR), OCR, Ollama/Gemini Refine | `ai/` |
+| **AI** | RIFE, Whisper, ESRGAN, RMBG, Marigold, RapidOCR, Gemini Image Tool, Demucs, Prompt Master | `ai/`, `prompt_master/` |
 | **3D / Mesh** | Auto LOD, CAD to OBJ, Mesh Convert, Remesh & Bake | `mesh/` |
-| **Image** | Format Convert, Merge/Split EXR, Texture Packer ORM, PBR Utils, Image Compare | `image/` |
-| **Video** | Format Convert, Extract Audio, Interpolate 30fps, Proxy, Remove Audio | `video/` |
-| **Audio** | Format Convert, Extract BGM/Voice, Normalize | `audio/` |
-| **Document** | PDF Merge/Split, Convert Docs (OCR/Docx/LLM) | `document/` |
-| **Sequence** | Arrange Folder, Missing Frames, To Video, Analyze, Renumber | `sequence/` |
-| **System** | Batch Rename, Unwrap Folder, Symlink, Reopen Recent, Move to Folder | `system/` |
-| **Clipboard** | Paste to New Folder, Copy UNC Path, Save Clipboard Image | `system/`, `scripts/` |
-| **Tools** | YouTube Downloader, AI Text Lab, Leave Manager | `tools/`, `leave_manager/` |
-| **ComfyUI** | SeedVR2 Video Upscaler, Z Image Turbo, AI Audio Editor, Icon Gen | `comfyui/` |
-| **Special** | Duplicate Finder, Gemini Prompt Master | `finder/`, `prompt_master/` |
-| 🎨 AI | AI Text Lab(Gemini/Ollama), ESRGAN, PaddleOCR, ComfyUI Tools | `src/features/tools/ai_text_lab.py`, `src/features/ai/*`, `src/features/comfyui/*` |
-| 🎞️ Sequence | Sequence Analyze, Missing Frames, Video Convert | `src/features/sequence/analyze.py`, `src/features/system/tools.py`, `src/features/video/convert.py` |
-| 🛠️ Tools | YouTube Downloader, AI Text Lab, Leave Manager | `src/features/tools/downloader_gui.py`, `src/features/tools/ai_text_lab.py`, `src/features/leave_manager/gui.py` |
-| 🎛️ Special | Manager, Global Finder | `src/manager/main.py`, `src/features/finder/*` |
+| **Image** | Format Convert, Merge/Split EXR, Texture Packer ORM, Normal Tools, Image Compare | `image/` |
+| **Video** | Convert, Extract Audio, Interpolate 30fps, Proxy, Remove Audio | `video/` |
+| **Audio** | Convert, Extract BGM/Voice, Normalize | `audio/` |
+| **Document** | PDF Merge/Split, Convert Docs | `document/` |
+| **Sequence** | Arrange, Missing Frames, To Video, Analyze, Renumber | `sequence/` |
+| **System** | Batch Rename, Unwrap Folder, Symlink, Reopen Recent, Move to New Folder, Dup Finder | `system/` |
+| **Clipboard** | Open from Clipboard, Paste to New Folder, Save Clipboard Image, Copy UNC Path | `system/` |
+| **Tools** | Video Downloader, AI Text Lab, Leave Manager, Copy My Info | `tools/`, `leave_manager/` |
+| **ComfyUI** | SeedVR2, Creative Studio (Z/Advanced), Creative Audio Studio (ACE), Open Web UI | `comfyui/` |
 
 ### Data Management
 All code MUST use `src/core/paths.py` constants for file access.

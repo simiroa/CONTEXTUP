@@ -13,6 +13,7 @@ if str(src_dir) not in sys.path:
 
 from utils.gui_lib import BaseWindow
 from manager.helpers.comfyui_client import ComfyUIManager
+from manager.helpers.comfyui_service import ComfyUIService
 
 class ComfyUIFeatureBase(BaseWindow):
     """
@@ -48,9 +49,10 @@ class ComfyUIFeatureBase(BaseWindow):
 
     def _setup_status_bar(self):
         """Create a default status bar at the bottom."""
-        # Use a frame for status bar to ensure it sticks to bottom
+        # Use grid on root (BaseWindow uses grid) to avoid pack/grid mixing
+        self.grid_rowconfigure(1, weight=0)
         self.status_frame = ctk.CTkFrame(self, height=30, corner_radius=0, fg_color="transparent")
-        self.status_frame.pack(side="bottom", fill="x", padx=5, pady=5)
+        self.status_frame.grid(row=1, column=0, sticky="ew", padx=5, pady=(0, 5))
         
         self.status_label_widget = ctk.CTkLabel(
             self.status_frame, 
@@ -65,32 +67,46 @@ class ComfyUIFeatureBase(BaseWindow):
         """Start server connection in background - GUI shows immediately."""
         def connect():
             try:
-                if self.client.is_running():
+                service = ComfyUIService()
+                ok, port, started = service.ensure_running(start_if_missing=True)
+                if ok:
+                    self.client.set_active_port(port)
                     self.server_ready = True
-                    self.server_status = f"✅ Connected (:{self.client.port})"
-                    self._status_var.set(self.server_status)
-                    if hasattr(self, 'status_label_widget'): 
-                        self.status_label_widget.configure(text_color="#69F0AE") # Green
-                    self._on_server_ready()
-                elif self.client.start():
-                    self.server_ready = True
-                    self.server_status = f"✅ Server Started (:{self.client.port})"
-                    self._status_var.set(self.server_status)
-                    if hasattr(self, 'status_label_widget'): 
-                        self.status_label_widget.configure(text_color="#69F0AE") # Green
-                    self._on_server_ready()
+                    if started:
+                        self.server_status = f"✅ Server Started (:{port})"
+                    else:
+                        self.server_status = f"✅ Connected (:{port})"
+                    
+                    def update_ui_success():
+                        self._status_var.set(self.server_status)
+                        lbl = getattr(self, 'status_label_widget', None)
+                        if lbl and lbl.winfo_exists():
+                            lbl.configure(text_color="#69F0AE") # Green
+                        self._on_server_ready()
+                    
+                    self.after(0, update_ui_success)
                 else:
                     self.server_status = "❌ Server Not Available (Check Logs)"
-                    self._status_var.set(self.server_status)
-                    if hasattr(self, 'status_label_widget'): 
-                        self.status_label_widget.configure(text_color="#FF5252") # Red
-                    self._on_server_failed()
+                    
+                    def update_ui_fail():
+                        self._status_var.set(self.server_status)
+                        lbl = getattr(self, 'status_label_widget', None)
+                        if lbl and lbl.winfo_exists():
+                            lbl.configure(text_color="#FF5252") # Red
+                        self._on_server_failed()
+                        
+                    self.after(0, update_ui_fail)
             except Exception as e:
                 self.server_status = f"❌ Connection Error: {e}"
-                self._status_var.set(self.server_status)
-                if hasattr(self, 'status_label_widget'): 
-                    self.status_label_widget.configure(text_color="#FF5252") # Red
-                self._on_server_failed()
+                
+                def update_ui_err():
+                    self._status_var.set(self.server_status)
+                    lbl = getattr(self, 'status_label_widget', None)
+                    if lbl and lbl.winfo_exists():
+                        lbl.configure(text_color="#FF5252") # Red
+                    self._on_server_failed()
+                
+                self.after(0, update_ui_err)
         
         thread = threading.Thread(target=connect, daemon=True)
         thread.start()
@@ -110,10 +126,23 @@ class ComfyUIFeatureBase(BaseWindow):
         # The server is shared across multiple features and should remain running.
         pass
 
+    
     def on_closing(self):
         """Standard cleanup on window close."""
         # Do NOT stop ComfyUI server - it's shared across features
         self.destroy()
+
+    def get_server_url(self):
+        """
+        Returns the correct URL for the active ComfyUI session.
+        Prevents hardcoded port issues.
+        """
+        if self.client and self.client.server_address:
+            return self.client.server_address
+        
+        # Fallback using port if address string not set
+        port = getattr(self.client, 'port', None) or 8188
+        return f"http://127.0.0.1:{port}"
 
     def check_requirements(self, dependencies=None):
         """

@@ -112,26 +112,6 @@
     },
     {
         "category": "AI",
-        "id": "gemini_prompt_master",
-        "name": "Gemini Prompt Master",
-        "icon": "assets/icons/icon_ai_prompt_master.ico",
-        "types": "*",
-        "scope": "background",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "dependencies": [
-            "google-genai",
-            "customtkinter"
-        ],
-        "external_tools": [],
-        "is_extension": true,
-        "order": 606,
-        "gui": true
-    },
-    {
-        "category": "AI",
         "id": "gemini_image_tool",
         "name": "Gemini Image Tool",
         "icon": "assets/icons/icon_ai_gemini_vision.ico",
@@ -176,7 +156,7 @@
     {
         "category": "AI",
         "id": "paddle_ocr",
-        "name": "PaddleOCR Text Recognition",
+        "name": "RapidOCR Text Recognition",
         "icon": "assets/icons/icon_doc_analyze_ollama.ico",
         "types": ".pdf;.png;.jpg;.jpeg;.bmp;.tiff;.webp",
         "scope": "file",
@@ -188,13 +168,32 @@
             "Pillow",
             "customtkinter",
             "numpy",
-            "paddleocr",
-            "paddlepaddle-gpu",
-            "torch"
+            "opencv-python",
+            "onnxruntime-gpu",
+            "rapidocr-onnxruntime"
         ],
         "external_tools": [],
         "is_extension": true,
         "order": 609,
+        "gui": true
+    },
+    {
+        "category": "AI",
+        "id": "prompt_master",
+        "name": "Prompt Master",
+        "icon": "assets/icons/icon_ai_prompt_master.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "system",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 606,
         "gui": true
     }
 ]

@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [4.0.1] - 2025-12-23
+
+### Tools
+- AI Text Lab is the current text tool name (formerly AI Text Refiner) and is listed under the Tools category.
+
+### ComfyUI
+- Creative Studio (Z/Advanced), SeedVR2, and ACE audio editor entries are available with tray access.
+- The Web UI launcher is labeled "Open Web UI".
+
+### Data & Privacy
+- Download history is stored in `userdata/download_history.json` and migrated from legacy `config/` and `config/runtime/`.
+
+### Installer
+- Migration now includes legacy runtime files (`config/runtime/gui_states.json`, `config/runtime/download_history.json`).
+
+### Maintenance
+- Test reports and local history artifacts are ignored to keep repositories clean.
+
+---
+
 ## [4.0.0] - 2025-12-22
 
 ### 🏗️ Major Structural Reorganization
@@ -55,7 +75,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### 🛠️ Fixes
 - **Tray Agent**: `features/{id}/gui.py` 패턴의 패키지형 기능(Vacance 등) 실행 경로 인식 수정.
-- **Config**: `paddlepaddle` → `paddlepaddle-gpu` 의존성 통일 (GPU 전용).
+- **Config**: OCR 엔진을 RapidOCR(ONNX Runtime) 기반으로 전환.
 
 ---
 
@@ -128,7 +148,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     - **Dynamic Controls**: 이미지 포맷 선택 시 OCR 비활성화, 텍스트 포맷 선택 시 DPI 비활성화 등 스마트한 UI 상태 제어 구현.
 - **Enhanced Conversion**:
     - **Advanced Formats**: Markdown (LLM-optimized), Tables to CSV, Metadata Extraction 등 고급 변환 기능 추가.
-    - **Robust OCR**: PaddleOCR 기반의 강력한 한글 OCR 지원 (스캔된 PDF 대응).
+    - **Robust OCR**: RapidOCR 기반의 강력한 한글 OCR 지원 (스캔된 PDF 대응).
 - **UX Improvements**:
     - **No Console Window**: GUI 실행 시 CMD 창이 뜨지 않도록 `pythonw.exe` 및 `CREATE_NO_WINDOW` 플래그 적용.
     - **Separate Pages**: 이미지 변환 시 페이지 분할 여부 선택 가능.
@@ -144,9 +164,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ---
 
 ### 🚀 Full GPU Optimization
-- **Unified GPU Support**: OCR (Paddle), Upscale (Torch), Background Removal (ONNX) 모든 AI 엔진이 GPU를 최우선으로 사용하도록 최적화.
+- **Unified GPU Support**: OCR (RapidOCR), Upscale (Torch), Background Removal (ONNX) 모든 AI 엔진이 GPU를 최우선으로 사용하도록 최적화.
 - **Improved Installer**: `install.bat` 실행 시 `check_gpu_status.py`가 자동으로 실행되어 GPU 인식 상태를 즉시 점검.
-- **Requirements Updated**: `requirements.txt`에 `platform-specific` GPU 라이브러리(`paddlepaddle-gpu`, `onnxruntime-gpu`) 명시.
+- **Requirements Updated**: `requirements.txt`에 `platform-specific` GPU 라이브러리(`rapidocr-onnxruntime`, `onnxruntime-gpu`) 명시.
 - **Standalone Model Manager**: `download_all_models.py`를 통해 모든 AI 모델(Marigold, Upscale, OCR 등)을 한 번에 다운로드 가능.
 
 ### 🛠️ Improvements

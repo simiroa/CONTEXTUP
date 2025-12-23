@@ -485,12 +485,12 @@ class DocConverterGUI(BaseWindow):
         
         if use_ocr:
             try:
-                from paddleocr import PaddleOCR
                 import numpy as np
+                from rapidocr_onnxruntime import RapidOCR
             except ImportError:
-                raise ImportError("PaddleOCR not installed for OCR.")
-                
-            ocr = PaddleOCR(use_angle_cls=True, lang='korean')
+                raise ImportError("RapidOCR not installed for OCR.")
+
+            ocr = RapidOCR()
             
             for page in doc:
                 pix = page.get_pixmap(matrix=pymupdf.Matrix(2.0, 2.0))
@@ -499,11 +499,25 @@ class DocConverterGUI(BaseWindow):
                 
                 if pix.n == 4:
                     img_array = img_array[:, :, :3]
-                
-                res = ocr.ocr(img_array, cls=True)
-                if res and res[0]:
-                    for line in res[0]:
-                        text += line[1][0] + "\n"
+
+                if img_array.ndim == 3:
+                    img_array = img_array[:, :, ::-1]
+
+                res = ocr(img_array)
+                if isinstance(res, tuple):
+                    res = res[0]
+                if res:
+                    for item in res:
+                        if not item:
+                            continue
+                        text_content = None
+                        if isinstance(item, (list, tuple)):
+                            if len(item) >= 2 and isinstance(item[1], str):
+                                text_content = item[1]
+                            elif len(item) >= 2 and isinstance(item[1], (list, tuple)) and item[1]:
+                                text_content = item[1][0]
+                        if text_content:
+                            text += text_content + "\n"
                 text += "\n---\n\n"
         else:
             for page in doc:

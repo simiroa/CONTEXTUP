@@ -68,15 +68,21 @@
             "rmbg_background": "RMBG Background Removal",
             "marigold_pbr": "Marigold PBR Generator",
             "gemini_prompt_master": "Gemini Prompt Master",
-            "gemini_image_tool": "Gemini Image Tool",
+            "prompt_master": "Prompt Master",
             "demucs_stems": "Demucs Stem Separation",
-            "paddle_ocr": "PaddleOCR Text Recognition"
+            "paddle_ocr": "RapidOCR Text Recognition"
         },
         "comfyui": {
             "start_server": "🚀 Start Server",
             "stop_server": "🛑 Stop Server",
+            "comfyui_dashboard": "Open Web UI",
+            "open_console": "Open Console",
+            "close_console": "Close Console",
             "unload_vram": "🧹 Unload VRAM",
-            "force_kill": "☠️ Force Kill All"
+            "force_kill": "☠️ Force Kill All",
+            "creative_studio_z": "Creative Studio (Z)",
+            "creative_studio_advanced": "Creative Studio (Advanced)",
+            "ace_audio_editor": "Creative Audio Studio (ACE)"
         },
         "document": {
             "pdf_merge": "PDF Merge",
@@ -128,8 +134,10 @@
         "tools": {
             "copy_my_info": "Copy My Info",
             "manage_info": "Manage Info...",
-            "youtube_downloader": "YouTube Downloader",
-            "translator": "Translator"
+            "youtube_downloader": "Video Downloader",
+            "translator": "Translator",
+            "ai_text_lab": "AI Text Lab",
+            "leave_manager": "Leave Manager"
         }
     },
     "rename_gui": {
@@ -393,7 +401,7 @@
             "categories": "Categories",
             "dashboard": "Dashboard",
             "settings": "Settings",
-            "updates": "Updates",
+            "dependencies": "Dependencies",
             "logs": "Logs",
             "apply_changes": "Apply Changes",
             "tray_agent": "Tray Agent:"
@@ -438,9 +446,17 @@
             },
             "danger": {
                 "title": "Danger Zone",
+                "data_management": "Data Management",
                 "backup_settings": "Backup Settings",
+                "export_userdata": "Export User Data",
+                "import_userdata": "Import User Data",
+                "reset_userdata": "Reset User Data",
                 "factory_reset": "Factory Reset",
                 "confirm_reset": "This will wipe all settings and user data.\nAre you sure?",
+                "confirm_reset_userdata": "Reset only user data (icons, assignments)?\nSettings will remain.",
+                "confirm_import": "Importing will overwrite existing user data.\nContinue?",
+                "export_success": "Exported to:\n{path}",
+                "import_success": "Imported successfully.\nRestart recommended.",
                 "reset_complete": "Reset complete. Please restart."
             },
             "footer_tip": "Changes are applied via the 'Apply Changes' button in the sidebar."
@@ -476,14 +492,10 @@
                 "restore": "Restore",
                 "reset": "Reset"
             },
-            "updates": {
-                "current_version": "Current Version",
-                "latest_version": "Latest Version",
-                "up_to_date": "You're up to date",
-                "update_available": "Update Available",
-                "check_now": "Check Now",
-                "download_update": "Download Update",
-                "changelog": "Changelog"
+            "dependencies": {
+                "title": "Dependencies",
+                "check_sys": "Check System Libs",
+                "install_ai": "Install AI Engine"
             },
             "logs": {
                 "clear_logs": "Clear Logs",

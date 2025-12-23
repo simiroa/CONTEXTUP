@@ -27,11 +27,27 @@ except ImportError:
 
 from core.registry import RegistryManager
 from core.config import MenuConfig
+from core.paths import LOGS_DIR
+
+def _get_tray_port():
+    info_path = LOGS_DIR / "tray_info.json"
+    try:
+        if info_path.exists():
+            with open(info_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            port = int(data.get("port", 54321))
+            if 1 <= port <= 65535:
+                return port
+    except Exception:
+        pass
+    return 54321
+
 
 def send_reload_signal():
     try:
+        port = _get_tray_port()
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.sendto(b"reload", ("127.0.0.1", 54321))
+        sock.sendto(b"reload", ("127.0.0.1", port))
         sock.close()
     except Exception as e:
         print(f"Failed to send reload signal: {e}")

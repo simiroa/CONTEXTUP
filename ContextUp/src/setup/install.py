@@ -11,6 +11,9 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent.parent  # src/scripts/install_contextup.py -> ROOT
 TOOLS_DIR = ROOT_DIR / "tools"
 PYTHON_DIR = TOOLS_DIR / "python"
+SRC_DIR = ROOT_DIR / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.append(str(SRC_DIR))
 
 # User data paths (in userdata/ directory)
 USERDATA_DIR = ROOT_DIR / "userdata"
@@ -23,6 +26,7 @@ TIERS_FILE = ROOT_DIR / "config" / "install_tiers.json"
 # IndyGreg Python Build Standalone 3.11.9 (Shared Install Only) with tkinter support
 PYTHON_URL = "https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
 PYTHON_ARCHIVE_NAME = "python-standalone.tar.gz"
+SAFE_TEST_ENV = "CONTEXTUP_SAFE_TEST"
 
 # ============================================================
 # 카테고리 분류
@@ -63,7 +67,7 @@ BASE_CORE = [
     "Pillow",
     "numpy<2",
     "tqdm",
-],
+]
 
 # 미디어 편집용 패키지 (Image/Video/Audio 선택 시)
 PKG_MEDIA = [
@@ -74,17 +78,17 @@ PKG_MEDIA = [
     "rawpy",
     "pillow-heif",
     "opencv-python",
-    "yt-dlp",
 ]
 
 # 문서 처리 패키지
 PKG_DOC = ["pypdf", "PyPDF2", "pdf2image", "pdf2docx", "pymupdf4llm", "svglib", "reportlab"]
 
 # 유틸리티 패키지
-PKG_TOOLS = ["deep-translator"]
+PKG_TOOLS = ["deep-translator", "yt-dlp"]
 
 # 3D 패키지
 PKG_3D = ["pymeshlab"]
+
 
 # AI Light: API 기반 (가벼움, ~100MB)
 PKG_AI_LIGHT = [
@@ -103,8 +107,6 @@ PKG_AI_HEAVY = [
     "torch --index-url https://download.pytorch.org/whl/cu121",
     "torchvision --index-url https://download.pytorch.org/whl/cu121",
     "torchaudio --index-url https://download.pytorch.org/whl/cu121",
-    "paddlepaddle-gpu",
-    "paddleocr",
     "open_clip_torch",
     "faster-whisper",
     "demucs",
@@ -112,6 +114,7 @@ PKG_AI_HEAVY = [
     "basicsr",
     "realesrgan",
     "onnxruntime-gpu",
+    "rapidocr-onnxruntime",
     "kornia",
 ]
 
@@ -129,6 +132,8 @@ def migrate_userdata():
         (config_dir / "copy_my_info.json", USERDATA_DIR / "copy_my_info.json"),
         (config_dir / "install_profile.json", PROFILE_FILE),
         (config_dir / "download_history.json", USERDATA_DIR / "download_history.json"),
+        (config_dir / "runtime" / "gui_states.json", USERDATA_DIR / "gui_states.json"),
+        (config_dir / "runtime" / "download_history.json", USERDATA_DIR / "download_history.json"),
     ]
     
     USERDATA_DIR.mkdir(exist_ok=True)
@@ -249,6 +254,8 @@ def install_packages(py_exe: Path, categories: dict[str, bool]) -> bool:
     Install packages per selected categories.
     """
     def run_pip(args):
+        if args and args[0] == "install" and "--no-warn-script-location" not in args:
+            args = list(args) + ["--no-warn-script-location"]
         return subprocess.call([str(py_exe), "-m", "pip", *args]) == 0
 
     def is_installed(pkg_name: str) -> bool:
@@ -553,16 +560,16 @@ def choose_install_tier() -> dict[str, bool]:
     standard = tiers.get("standard", {})
     full = tiers.get("full", {})
     
-    print(f"\n[1] 🟢 {minimal.get('name', '최소 설치')}")
+    print(f"\n[1] {minimal.get('name', '최소 설치')}")
     print(f"    - {minimal.get('description', '핵심 기능만')}")
     
-    print(f"\n[2] 🟡 {standard.get('name', '표준 설치')} (권장)")
+    print(f"\n[2] {standard.get('name', '표준 설치')} (권장)")
     print(f"    - {standard.get('description', '일반 기능 포함')}")
     
-    print(f"\n[3] 🔴 {full.get('name', '전체 설치')}")
+    print(f"\n[3] {full.get('name', '전체 설치')}")
     print(f"    - {full.get('description', '모든 기능 + AI')}")
     
-    print("\n[4] ⚙️ 커스텀 설치")
+    print("\n[4] 커스텀 설치")
     print("    - 기능별 세부 선택")
     
     choice = input("\n설치 유형을 선택하세요 [1-4] (기본=2): ").strip() or "2"
@@ -601,7 +608,7 @@ def choose_install_tier() -> dict[str, bool]:
         # 커스텀 설치
         print("\n>>> 커스텀 설치 모드")
         print("\n[기본 기능] (자동 포함)")
-        print(f"  ✓ {', '.join(core_cats)}")
+        print(f"  - {', '.join(core_cats)}")
         for cat in core_cats:
             categories[cat] = True
         
@@ -629,7 +636,7 @@ def choose_install_tier() -> dict[str, bool]:
         return categories
 
 
-def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bool):
+def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bool, models_attempted: bool):
     print("\n==========================================")
     print("           설치 결과 요약")
     print("==========================================")
@@ -651,7 +658,9 @@ def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bo
 
     if categories.get("AI"):
         print("\n[AI 모델]")
-        if models_ok:
+        if not models_attempted:
+            print("  - 상태: 미실행 (설치 시 다운로드 생략)")
+        elif models_ok:
             print(f"  - 상태: 준비됨 (All Models Ready)")
         else:
             print(f"  - 상태: [주의] 일부 모델 다운로드 실패")
@@ -662,6 +671,9 @@ def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bo
 
 def main():
     print("=== ContextUp 설치 관리자 (내장 파이썬 전용) ===\n")
+    safe_test = os.environ.get(SAFE_TEST_ENV) == "1"
+    if safe_test:
+        print("[INFO] SAFE TEST mode enabled. Registry and manager launch will be skipped.")
     
     # 2025-12-23: Migrate existing user data from config/ to userdata/
     try:
@@ -669,6 +681,10 @@ def main():
         migrate_legacy_userdata()
     except Exception as e:
         print(f"[경고] 사용자 데이터 마이그레이션 실패: {e}")
+        try:
+            migrate_userdata()
+        except Exception as inner_e:
+            print(f"[경고] 사용자 데이터 마이그레이션 재시도 실패: {inner_e}")
     
     profile = load_profile()
     
@@ -681,24 +697,31 @@ def main():
 
     categories = choose_install_tier()
 
-    # Setup external tools (FFmpeg, ExifTool, etc.)
-    setup_ext = prompt_yn("\n외부 도구(FFmpeg, ExifTool, RIFE 등)를 다운로드하시겠습니까?", True)
+    # Setup external tools (required by selected categories)
     tools_results = {}
-    
-    if setup_ext:
+    required_tools = []
+    if categories.get("Video") or categories.get("Audio") or categories.get("Sequence"):
+        required_tools.append("ffmpeg")
+    if categories.get("AI_Heavy"):
+        required_tools.extend(["realesrgan", "rife"])
+
+    if required_tools:
         try:
             print("\n--- 외부 도구 설정 중 ---")
             setup_tools_script = ROOT_DIR / "dev" / "scripts" / "setup_tools.py"
             if setup_tools_script.exists():
-                # We want to capture the output effectively, but setup_tools prints to stdout.
-                # Just running it is fine, but for summary we might want to assume success if ret code 0
-                # However, setup_tools.py prints its own summary. 
-                # Let's assume checked tools are good if script runs.
-                # To get detail, we'd need to modify setup_tools to return json or parse output.
-                # For now, we will trust the user sees the output above.
-                ret = subprocess.call([str(chosen_python), str(setup_tools_script)])
-                # Mock result for summary based on return code
-                tools_results = {"External Tools Script": (ret == 0)}
+                tool_args = []
+                tool_flag_map = {
+                    "ffmpeg": "--ffmpeg",
+                    "realesrgan": "--realesrgan",
+                    "rife": "--rife",
+                }
+                for tool in required_tools:
+                    flag = tool_flag_map.get(tool)
+                    if flag:
+                        tool_args.append(flag)
+                ret = subprocess.call([str(chosen_python), str(setup_tools_script), *tool_args])
+                tools_results = {tool: (ret == 0) for tool in required_tools}
             else:
                 print(f"[경고] setup_tools.py를 찾을 수 없습니다: {setup_tools_script}")
         except Exception as e:
@@ -743,7 +766,7 @@ def main():
     apply_category_defaults_to_overrides(categories)
 
     # Print Summary
-    print_summary(categories, tools_results, bool(download_models and models_ok), pkg_ok)
+    print_summary(categories, tools_results, models_ok, pkg_ok, bool(download_models))
 
     # Log upload on failure
     if not pkg_ok or not models_ok:
@@ -769,36 +792,36 @@ def main():
     print("\n" + "!"*50)
     print(" [중요 공지] 외부 도구 설치 필요")
     print("!"*50)
-    print(" 이 설치 프로그램은 ContextUp 기본 프레임워크만 설치합니다.")
+    print(" 이 설치 프로그램은 ContextUp 기본 프레임워크와 필수 도구를 설치합니다.")
     print(" 다음 도구들은 라이센스 및 용량 문제로 사용자가 직접 설치해야 합니다:")
     print("  - ComfyUI (Generative AI)")
     print("  - Ollama (Local LLM)")
     print("  - Rhino/Blender (3D Tools)")
-    print("  - FFmpeg (비디오/오디오 처리)")
     print("\n 설치 후 '설정 -> 외부 도구 경로'에서 각 실행 파일(.exe) 위치를 지정해 주세요.")
     print("!"*50 + "\n")
     
-    # 2025-12-21: Auto-register context menu
-    print("\n컨텍스트 메뉴를 등록합니다...")
-    try:
-        reg_script = ROOT_DIR / "re_register_menu.py"
-        subprocess.call([str(chosen_python), str(reg_script)])
-    except Exception as e:
-        print(f"[경고] 메뉴 등록 실패: {e}")
-
-    print("\nContextUp 매니저를 실행합니다...")
-    # GUI 매니저는 src/manager/main.py에 있음 (manage.py는 CLI 도구)
-    manager_script = ROOT_DIR / "src" / "manager" / "main.py"
-    if manager_script.exists():
+    if not safe_test:
+        # 2025-12-21: Auto-register context menu
+        print("\n컨텍스트 메뉴를 등록합니다...")
         try:
-            # Use the verified python executable to launch manager GUI
-            subprocess.Popen([str(chosen_python), str(manager_script)], cwd=str(ROOT_DIR))
+            reg_script = ROOT_DIR / "re_register_menu.py"
+            subprocess.call([str(chosen_python), str(reg_script)])
         except Exception as e:
-            print(f"매니저 실행 실패: {e}")
-    else:
-        print(f"매니저 스크립트를 찾을 수 없습니다: {manager_script}")
+            print(f"[경고] 메뉴 등록 실패: {e}")
 
-    input("\n종료하려면 엔터 키를 누르세요...")
+        print("\nContextUp 매니저를 실행합니다...")
+        # GUI 매니저는 src/manager/main.py에 있음 (manage.py는 CLI 도구)
+        manager_script = ROOT_DIR / "src" / "manager" / "main.py"
+        if manager_script.exists():
+            try:
+                # Use the verified python executable to launch manager GUI
+                subprocess.Popen([str(chosen_python), str(manager_script)], cwd=str(ROOT_DIR))
+            except Exception as e:
+                print(f"매니저 실행 실패: {e}")
+        else:
+            print(f"매니저 스크립트를 찾을 수 없습니다: {manager_script}")
+
+        input("\n종료하려면 엔터 키를 누르세요...")
 
 
 if __name__ == "__main__":

@@ -86,8 +86,8 @@ def main():
             # Re-register Quick Menu Hotkey
             def show_popup_menu():
                 try:
-                    from tray.quick_menu import show_quick_menu
-                    show_quick_menu()
+                    from tray.quick_menu import launch_quick_menu_one_shot
+                    launch_quick_menu_one_shot()
                 except Exception as e:
                     logger.error(f"Quick menu failed: {e}")
             register_quick_menu_hotkey(show_popup_menu, "ctrl+shift+c")
@@ -98,6 +98,17 @@ def main():
 
     def exit_tray(icon, item):
         icon.stop()
+
+    def close_quick_menu_daemon():
+        """Best-effort cleanup for legacy quick menu daemon."""
+        try:
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(0.1)
+            sock.sendto(b"quit", ("127.0.0.1", 54322))
+            sock.close()
+        except Exception:
+            pass
     
     # Build initial menu and create icon
     icon = pystray.Icon(
@@ -118,22 +129,20 @@ def main():
     
     # Load and register hotkeys
     try:
+        close_quick_menu_daemon()
         menu_config = MenuConfig()
         register_hotkeys(menu_config)
         
         # Register quick menu hotkey
         def show_popup_menu():
             try:
-                from tray.quick_menu import show_quick_menu
-                show_quick_menu()
+                from tray.quick_menu import launch_quick_menu_one_shot
+                launch_quick_menu_one_shot()
             except Exception as e:
                 logger.error(f"Quick menu failed: {e}")
         
         register_quick_menu_hotkey(show_popup_menu, "ctrl+shift+c")
-        
-        # Pre-launch Quick Menu daemon
-        show_popup_menu()
-        
+
     except Exception as e:
         logger.error(f"Failed to register hotkeys: {e}")
     
@@ -157,16 +166,21 @@ def main():
                     continue
                     
                 # Check if ComfyUI is running
-                from manager.helpers.comfyui_client import ComfyUIManager
-                client = ComfyUIManager()
+                from manager.helpers.comfyui_service import ComfyUIService
+                service = ComfyUIService()
+                running, port = service.is_running()
                 
-                if not client.is_running():
+                if not running:
                     time.sleep(60)
                     continue
                 
                 # Check system status endpoint for queue length
                 try:
-                    url = f"http://127.0.0.1:{client.port}/prompt"
+                    if not port:
+                        time.sleep(60)
+                        continue
+
+                    url = f"http://127.0.0.1:{port}/prompt"
                     # If queue is empty for auto_unload_minutes, unload VRAM
                     idle_seconds = auto_unload_minutes * 60
                     
@@ -174,7 +188,7 @@ def main():
                     time.sleep(idle_seconds)
                     
                     # After waiting, try to unload
-                    unload_url = f"http://127.0.0.1:{client.port}/free"
+                    unload_url = f"http://127.0.0.1:{port}/free"
                     urllib.request.urlopen(unload_url, timeout=5)
                     logger.info(f"VRAM auto-unloaded after {auto_unload_minutes} minutes idle")
                     

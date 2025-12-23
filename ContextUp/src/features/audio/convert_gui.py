@@ -16,6 +16,7 @@ from utils.files import get_safe_path
 from utils.explorer import get_selection_from_explorer
 from utils.gui_lib import BaseWindow, FileListFrame
 from utils.i18n import t
+from utils.audio_player import AudioPlayer
 
 class AudioConvertGUI(BaseWindow):
     def __init__(self, target_path, demo=False):
@@ -45,6 +46,8 @@ class AudioConvertGUI(BaseWindow):
         self.var_new_folder = ctk.BooleanVar(value=True) # Default ON
         self.cancel_flag = False  # Cancel pattern for FFmpeg encoding
         self.current_process = None  # Track running FFmpeg process
+        self.player = AudioPlayer()
+        self.last_converted = None
         
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -118,6 +121,11 @@ class AudioConvertGUI(BaseWindow):
         
         self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("common.ready"), text_color="gray", font=("", 11))
         self.lbl_status.pack(pady=(0, 5))
+        
+        self.btn_play = ctk.CTkButton(self.main_frame, text="▶ Play Last Result", font=ctk.CTkFont(size=12), 
+                                      fg_color="#1E8449", hover_color="#145A32", command=self.play_last)
+        self.btn_play.pack(pady=(0, 10))
+        self.btn_play.pack_forget()
 
     def cancel_or_close(self):
         """Cancel processing if running, otherwise close window."""
@@ -219,6 +227,7 @@ class AudioConvertGUI(BaseWindow):
                 
                 self.current_process = None
                 success += 1
+                self.last_converted = output_path
                 
                 # Handle Deletion
                 if self.var_delete_org.get() and path.exists():
@@ -246,10 +255,17 @@ class AudioConvertGUI(BaseWindow):
                 msg += "\n\n" + t("common.errors") + ":\n" + "\n".join(errors[:5])
                 messagebox.showwarning(t("dialogs.operation_complete"), msg)
             else:
+                if self.last_converted:
+                    self.btn_play.pack(pady=(0, 10))
                 messagebox.showinfo(t("common.success"), msg)
-                self.destroy()
+                # self.destroy() # Don't destroy immediately so user can play
+
+    def play_last(self):
+        if self.last_converted:
+            self.player.play(self.last_converted)
 
     def on_closing(self):
+        self.player.stop()
         self.destroy()
 
 def run_gui(target_path):

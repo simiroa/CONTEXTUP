@@ -102,20 +102,24 @@ def check_upscale():
 
 
 def check_ocr():
-    """Check PaddleOCR models."""
-    # PaddleOCR uses ~/.paddleocr by default
-    paddle_dir = Path.home() / ".paddleocr"
-    if paddle_dir.exists() and any(paddle_dir.rglob("*.onnx")):
-        print(f"✓ OCR: Models in {paddle_dir}")
+    """Check RapidOCR models."""
+    cache_dirs = [
+        Path.home() / ".rapidocr",
+        Path.home() / ".cache" / "rapidocr",
+        paths.OCR_DIR,
+    ]
+    for cache_dir in cache_dirs:
+        if cache_dir.exists() and any(cache_dir.rglob("*")):
+            print(f"? OCR: Models in {cache_dir}")
+            return True
+
+    try:
+        import rapidocr_onnxruntime  # noqa: F401
+        print("? OCR: RapidOCR installed (model cache not verified)")
         return True
-    
-    # Also check local path
-    if paths.OCR_DIR.exists() and any(paths.OCR_DIR.rglob("*")):
-        print(f"✓ OCR: Models in {paths.OCR_DIR}")
-        return True
-    
-    print(f"✗ OCR: No models found")
-    return False
+    except ImportError:
+        print("? OCR: RapidOCR not installed")
+        return False
 
 
 def main():

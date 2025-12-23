@@ -1,14 +1,11 @@
 import os
+import sys
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import customtkinter as ctk
 from pathlib import Path
+import customtkinter as ctk
 from PIL import Image
-import sys
-import torch # Fix for [WinError 127] shm.dll load order conflict with Paddle/OpenCV
-import os
-import threading
 
 # Add src to path
 current_dir = Path(__file__).parent
@@ -18,8 +15,7 @@ if str(src_dir) not in sys.path:
 
 from utils.config_persistence import load_gui_state, save_gui_state
 
-# Third-party libraries (lazy imported in run function where possible, but top level for GUI if needed)
-# We'll lazy load PaddleOCR to keep startup fast
+# Third-party libraries are lazy imported in run function where possible.
 
 class PdfOcrToolGUI(ctk.CTk):
     def __init__(self):
@@ -34,7 +30,7 @@ class PdfOcrToolGUI(ctk.CTk):
             "page_range": ""
         })
 
-        self.title("PDF/Image OCR (PaddleOCR)")
+        self.title("PDF/Image OCR (RapidOCR)")
         self.geometry("700x600") # Increased size
         
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -71,7 +67,7 @@ class PdfOcrToolGUI(ctk.CTk):
         self.lbl_lang = ctk.CTkLabel(self.frame_basic, text="Language:")
         self.lbl_lang.pack(side="left", padx=(0,10))
         
-        self.combo_lang = ctk.CTkOptionMenu(self.frame_basic, values=["korean", "en", "japan", "chinese_cht", "french", "german"], width=120)
+        self.combo_lang = ctk.CTkOptionMenu(self.frame_basic, values=["korean", "en"], width=120)
         self.combo_lang.set(self.gui_state.get("lang", "korean"))
         self.combo_lang.pack(side="left", padx=10)
 
@@ -154,12 +150,11 @@ class PdfOcrToolGUI(ctk.CTk):
         self.textbox_log.grid(row=5, column=0, padx=20, pady=(10, 20), sticky="nsew")
 
     def _check_cuda_available(self):
-        """Check if CUDA is available for PaddlePaddle."""
+        """Check if CUDA is available for ONNX Runtime."""
         try:
-            import paddle
-            return paddle.device.is_compiled_with_cuda() and paddle.device.cuda.device_count() > 0
+            import onnxruntime as ort
+            return "CUDAExecutionProvider" in ort.get_available_providers()
         except ImportError:
-            # Paddle not installed yet, assume CPU
             return False
         except Exception:
             return False
@@ -259,15 +254,35 @@ class PdfOcrToolGUI(ctk.CTk):
         use_angle_cls = bool(self.check_angle.get())
         drop_score = self.slider_thresh.get()
         
-        self.log(f"Initializing PaddleOCR ({lang})...")
+        self.log(f"Initializing RapidOCR ({lang})...")
         self.log(f"Options: GPU={use_gpu}, Angle={use_angle_cls}, Score={drop_score:.2f}")
 
         try:
-            from paddleocr import PaddleOCR
-            
-            # Initialize OCR engine
-            device_val = "gpu" if use_gpu else "cpu"
-            ocr = PaddleOCR(use_textline_orientation=use_angle_cls, lang=lang, device=device_val)
+            from rapidocr_onnxruntime import RapidOCR
+            import numpy as np
+            import inspect
+
+            def build_engine():
+                kwargs = {}
+                params = inspect.signature(RapidOCR).parameters
+                if "lang" in params:
+                    kwargs["lang"] = lang
+                if "use_gpu" in params:
+                    kwargs["use_gpu"] = use_gpu
+                elif "use_cuda" in params:
+                    kwargs["use_cuda"] = use_gpu
+                elif "providers" in params and not use_gpu:
+                    kwargs["providers"] = ["CPUExecutionProvider"]
+                if "use_angle_cls" in params:
+                    kwargs["use_angle_cls"] = use_angle_cls
+                elif "cls" in params:
+                    kwargs["cls"] = use_angle_cls
+                try:
+                    return RapidOCR(**kwargs)
+                except TypeError:
+                    return RapidOCR()
+
+            ocr = build_engine()
             
             self.log("Loading file...")
             ext = Path(pdf_path).suffix.lower()
@@ -306,20 +321,33 @@ class PdfOcrToolGUI(ctk.CTk):
                 
                 import numpy as np
                 img_np = np.array(img)
-                
-                result = ocr.ocr(img_np, use_textline_orientation=use_angle_cls)
-                
+                if img_np.ndim == 3:
+                    img_np = img_np[:, :, :3]
+                    img_np = img_np[:, :, ::-1]
+
+                result = ocr(img_np)
+                if isinstance(result, tuple):
+                    result = result[0]
+
                 page_text_block = f"\n--- Page {page_num_user} ---\n"
-                
-                if result and result[0]:
-                    for line in result:
-                        if not line: continue
-                        for box in line:
-                            text_content = box[1][0]
-                            confidence = box[1][1]
-                            
-                            if confidence >= drop_score:
-                                page_text_block += text_content + "\n"
+
+                if result:
+                    for item in result:
+                        if not item:
+                            continue
+                        text_content = None
+                        confidence = None
+                        if isinstance(item, (list, tuple)):
+                            if len(item) >= 2 and isinstance(item[1], str):
+                                text_content = item[1]
+                            elif len(item) >= 2 and isinstance(item[1], (list, tuple)) and item[1]:
+                                text_content = item[1][0]
+                            if len(item) >= 3 and isinstance(item[2], (int, float)):
+                                confidence = float(item[2])
+                            elif isinstance(item[-1], (int, float)):
+                                confidence = float(item[-1])
+                        if text_content and (confidence is None or confidence >= drop_score):
+                            page_text_block += text_content + "\n"
                 
                 full_text += page_text_block
                 

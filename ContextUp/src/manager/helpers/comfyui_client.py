@@ -26,20 +26,38 @@ class ComfyUIManager:
         self.active_port = None  # Will be set when connection is established
         self.client_id = str(uuid.uuid4())
         self._we_started_server = False  # Track if we started the server
+        self.launcher_path = None
+        self.main_py_override = None
         
         # Load Settings for custom path
         from core.settings import load_settings
         settings = load_settings()
         custom_path = settings.get("COMFYUI_PATH", "").strip()
+        self.use_launcher = bool(settings.get("COMFYUI_USE_LAUNCHER", False))
         
         if custom_path and Path(custom_path).exists():
-             self.comfy_dir = Path(custom_path)
-             # Assume standard structure inside custom path, or check typical spots
-             # If user points to 'ComfyUI' folder
-             if (self.comfy_dir / "main.py").exists():
-                 pass # Good
-             elif (self.comfy_dir / "ComfyUI" / "main.py").exists():
-                 self.comfy_dir = self.comfy_dir / "ComfyUI"
+             custom = Path(custom_path)
+             if custom.is_file():
+                 if custom.suffix.lower() in (".bat", ".cmd"):
+                     if self.use_launcher:
+                         self.launcher_path = custom
+                 elif custom.suffix.lower() == ".py":
+                     self.main_py_override = custom
+                 base = custom.parent
+                 if (base / "main.py").exists():
+                     self.comfy_dir = base
+                 elif (base / "ComfyUI" / "main.py").exists():
+                     self.comfy_dir = base / "ComfyUI"
+                 else:
+                     self.comfy_dir = base
+             else:
+                 self.comfy_dir = custom
+                 # Assume standard structure inside custom path, or check typical spots
+                 # If user points to 'ComfyUI' folder
+                 if (self.comfy_dir / "main.py").exists():
+                     pass # Good
+                 elif (self.comfy_dir / "ComfyUI" / "main.py").exists():
+                     self.comfy_dir = self.comfy_dir / "ComfyUI"
                  
              # Try to find python
              # 1. Embedded
@@ -59,21 +77,23 @@ class ComfyUIManager:
             self.python_exe = base / "tools" / "ComfyUI" / "python_embeded" / "python.exe"
 
         if not self.python_exe.exists():
-            print(f"⚠️ Embedded Python not found at {self.python_exe}, using system python.")
+            print(f"[WARN] Embedded Python not found at {self.python_exe}, using system python.")
             self.python_exe = sys.executable
             
         self.process = None
+        self._log_handle = None
         
         # Try to find existing server on startup
         self._detect_existing_server()
 
     def _detect_existing_server(self):
         """Check common ports for an already running ComfyUI server."""
-        for port in self.COMMON_PORTS:
+        ports = [self.preferred_port] + [p for p in self.COMMON_PORTS if p != self.preferred_port]
+        for port in ports:
             if self._check_port(port):
                 self.active_port = port
                 self._update_addresses()
-                print(f"✅ Found existing ComfyUI server on port {port}")
+                print(f"[OK] Found existing ComfyUI server on port {port}")
                 return True
         return False
 
@@ -82,7 +102,7 @@ class ComfyUIManager:
         try:
             url = f"http://{self.host}:{port}"
             # Localhost should be instant, reduce timeout to avoid blocking tray
-            with urllib.request.urlopen(url, timeout=0.2) as response:
+            with urllib.request.urlopen(url, timeout=1.0) as response:
                 return response.status == 200
         except:
             return False
@@ -101,6 +121,11 @@ class ComfyUIManager:
         """Return the currently active port."""
         return self.active_port or self.preferred_port
 
+    def set_active_port(self, port):
+        """Force active port and update internal addresses."""
+        self.active_port = port
+        self._update_addresses()
+
     def is_running(self):
         """Check if ComfyUI is responding on any known port."""
         # First check active port if set
@@ -109,18 +134,24 @@ class ComfyUIManager:
         # Otherwise scan all ports
         return self._detect_existing_server()
 
-    def start(self):
+    def start(self, log_file=None, creationflags=None):
         """Start ComfyUI server if not running."""
         if self.is_running():
-            print(f"✅ ComfyUI is already running on port {self.active_port}.")
+            print(f"[OK] ComfyUI is already running on port {self.active_port}.")
             return True
             
-        main_py = self.comfy_dir / "main.py"
+        main_py = self.main_py_override or (self.comfy_dir / "main.py")
         if not main_py.exists():
-            print(f"❌ ComfyUI not found at {main_py}")
+            print(f"[ERROR] ComfyUI not found at {main_py}")
+            if self._log_handle:
+                try:
+                    self._log_handle.write(f"[ERROR] ComfyUI not found at {main_py}\n")
+                    self._log_handle.flush()
+                except Exception:
+                    pass
             return False
             
-        print(f"🚀 Starting ComfyUI from {self.comfy_dir} on port {self.preferred_port}...")
+        print(f"[INFO] Starting ComfyUI from {self.comfy_dir} on port {self.preferred_port}...")
         
         # Build command with GPU options from settings
         from core.settings import load_settings
@@ -154,11 +185,66 @@ class ComfyUIManager:
             cmd.append("--cpu")
         
         print(f"Command: {' '.join(cmd)}")
-        
+
+        if creationflags is None:
+            creationflags = 0x08000000  # CREATE_NO_WINDOW
+
+        stdout_target = None
+        stderr_target = None
+        if log_file:
+            try:
+                log_path = Path(log_file)
+                log_path.parent.mkdir(exist_ok=True, parents=True)
+                self._log_handle = open(log_path, "a", encoding="utf-8")
+                stdout_target = self._log_handle
+                stderr_target = self._log_handle
+            except Exception as exc:
+                print(f"[WARN] Failed to open ComfyUI log file: {exc}")
+
+        if self.launcher_path:
+            try:
+                launcher_cmd = ["cmd", "/c", str(self.launcher_path)]
+                print(f"Command: {' '.join(launcher_cmd)}")
+                self.process = subprocess.Popen(
+                    launcher_cmd,
+                    cwd=str(self.launcher_path.parent),
+                    creationflags=creationflags,
+                    stdout=stdout_target,
+                    stderr=stderr_target,
+                )
+
+                for _ in range(60):
+                    time.sleep(1)
+                    if self._detect_existing_server():
+                        self._we_started_server = True
+                        self.process = None
+                        print("[OK] ComfyUI Started!")
+                        return True
+
+                print("[ERROR] Failed to start ComfyUI (timeout).")
+                if self._log_handle:
+                    try:
+                        self._log_handle.close()
+                    except Exception:
+                        pass
+                    self._log_handle = None
+                return False
+            except Exception as exc:
+                print(f"[ERROR] ComfyUI launcher failed: {exc}")
+                if self._log_handle:
+                    try:
+                        self._log_handle.write(f"[ERROR] Launcher failed: {exc}\n")
+                        self._log_handle.flush()
+                    except Exception:
+                        pass
+                return False
+
         self.process = subprocess.Popen(
-            cmd, 
+            cmd,
             cwd=str(self.comfy_dir),
-            creationflags=0x08000000  # CREATE_NO_WINDOW - run in background
+            creationflags=creationflags,
+            stdout=stdout_target,
+            stderr=stderr_target,
         )
         
         # Wait for valid response
@@ -168,10 +254,16 @@ class ComfyUIManager:
                 self.active_port = self.preferred_port
                 self._update_addresses()
                 self._we_started_server = True
-                print("✅ ComfyUI Started!")
+                print("[OK] ComfyUI Started!")
                 return True
         
-        print("❌ Failed to start ComfyUI (timeout).")
+        print("[ERROR] Failed to start ComfyUI (timeout).")
+        if self._log_handle:
+            try:
+                self._log_handle.close()
+            except Exception:
+                pass
+            self._log_handle = None
         return False
 
     def queue_prompt(self, prompt_workflow):
@@ -181,7 +273,7 @@ class ComfyUIManager:
         try:
             return json.loads(urllib.request.urlopen(req).read())
         except urllib.error.HTTPError as e:
-            print(f"❌ HTTP Error {e.code}: {e.read().decode('utf-8')}")
+            print(f"[ERROR] HTTP Error {e.code}: {e.read().decode('utf-8')}")
             raise e
 
     def get_image(self, filename, subfolder, folder_type):
@@ -226,7 +318,7 @@ class ComfyUIManager:
                     if data['node'] is None and data['prompt_id'] == prompt_id:
                         break # Execution done
                 elif message['type'] == 'execution_error':
-                    print(f"❌ ComfyUI Error: {message['data']}")
+                    print(f"[ERROR] ComfyUI Error: {message['data']}")
                     return []
             else:
                 continue # Binary data (previews)
@@ -264,20 +356,32 @@ class ComfyUIManager:
 
     def stop(self):
         """Stop ComfyUI server."""
-        if self.process:
-            print("🛑 Stopping ComfyUI...")
+        if self.process and not self.launcher_path:
+            print("[INFO] Stopping ComfyUI...")
             self.process.terminate()
             try:
                 self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 self.process.kill()
             self.process = None
-            print("✅ ComfyUI Stopped.")
+            print("[OK] ComfyUI Stopped.")
+            if self._log_handle:
+                try:
+                    self._log_handle.close()
+                except Exception:
+                    pass
+                self._log_handle = None
         elif self.active_port or self.preferred_port:
             # Try to kill by port if we don't have process handle
             port_to_kill = self.active_port or self.preferred_port
-            print(f"🛑 Killing ComfyUI on port {port_to_kill}...")
+            print(f"[INFO] Killing ComfyUI on port {port_to_kill}...")
             self.kill_by_port(port_to_kill)
+            if self._log_handle:
+                try:
+                    self._log_handle.close()
+                except Exception:
+                    pass
+                self._log_handle = None
 
     @staticmethod
     def kill_by_port(port):
@@ -300,17 +404,17 @@ class ComfyUIManager:
             # Kill PIDs
             for pid in pids:
                 subprocess.run(f"taskkill /F /PID {pid}", shell=True)
-                print(f"✅ Killed process {pid} on port {port}")
+                print(f"[OK] Killed process {pid} on port {port}")
                 
         except Exception as e:
-            print(f"⚠️ Failed to kill by port {port}: {e}")
+            print(f"[WARN] Failed to kill by port {port}: {e}")
 
     @classmethod
     def kill_all_instances(cls):
         """Force kill all ComfyUI python processes."""
         import logging
         logger = logging.getLogger("ComfyUIManager")
-        logger.info("🧹 Cleaning up all ComfyUI instances...")
+        logger.info("Cleaning up all ComfyUI instances...")
         
         # 1. Kill by common ports first
         killed_any = False
@@ -330,13 +434,44 @@ class ComfyUIManager:
                 logger.info(f"found {len(pids)} lingering ComfyUI processes via WMIC.")
                 for pid in pids:
                     subprocess.run(f"taskkill /F /PID {pid}", shell=True)
-                    logger.info(f"✅ Killed lingering process {pid}")
+                    logger.info(f"Killed lingering process {pid}")
                     killed_any = True
         except Exception as e:
-            logger.error(f"⚠️ WMIC cleanup failed: {e}")
+            logger.error(f"WMIC cleanup failed: {e}")
             
-        logger.info("✅ Cleanup complete.")
         return True
+
+    def get_input_options(self, node_name, input_name):
+        """
+        Fetch available options for a node's input (e.g., checkpoint names).
+        Returns list of strings or [].
+        """
+        try:
+            url = f"{self.server_address}/object_info/{node_name}"
+            with urllib.request.urlopen(url) as response:
+                data = json.loads(response.read())
+                
+            # object_info returns { "NodeName": { "input": { "required": { "params": [type, {config}] } } } }
+            # But specific structure varies.
+            # Usually: data[node_name]['input']['required'][input_name][0] is the list if it's a dropdown.
+            
+            node_info = data.get(node_name, {})
+            inputs = node_info.get("input", {}).get("required", {})
+            
+            # Check required inputs
+            target_input = inputs.get(input_name)
+            if not target_input:
+                # Check optional
+                inputs = node_info.get("input", {}).get("optional", {})
+                target_input = inputs.get(input_name)
+                
+            if target_input and isinstance(target_input[0], list):
+                return target_input[0]
+                
+            return []
+        except Exception as e:
+            print(f"[WARN] Failed to fetch options for {node_name}.{input_name}: {e}")
+            return []
 
 def get_z_image_workflow(prompt, seed, steps=8, width=512, height=512):
     # This is a dummy example. A real Z-Image workflow is needed.

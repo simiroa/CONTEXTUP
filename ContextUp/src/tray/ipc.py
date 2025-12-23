@@ -55,25 +55,42 @@ def create_udp_listener(icon, args, build_menu_func, reopen_handler=None):
     import pystray
     
     def udp_listener():
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        
-        # Try to bind to requested port, fallback to any available
+        reserved_ports = {54322}  # Quick menu daemon port
         current_port = args.port
-        bound = False
-        
-        for p in [current_port, 0]:
+        sock = None
+
+        def bind_to_port(port):
             try:
-                sock.bind(("127.0.0.1", p))
-                current_port = sock.getsockname()[1]
-                logger.info(f"UDP listener bound to port: {current_port}")
-                bound = True
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.bind(("127.0.0.1", port))
+                bound_port = s.getsockname()[1]
+                if bound_port in reserved_ports:
+                    s.close()
+                    return None, None
+                return s, bound_port
+            except Exception:
+                return None, None
+
+        # Try preferred port and a safe fallback if it conflicts
+        for p in [current_port, current_port + 2]:
+            if p in reserved_ports:
+                continue
+            sock, current_port = bind_to_port(p)
+            if sock:
                 break
-            except Exception as e:
-                logger.warning(f"Failed to bind UDP port {p}: {e}")
-        
-        if not bound:
+
+        # Fallback to any available port (avoid reserved)
+        if not sock:
+            for _ in range(10):
+                sock, current_port = bind_to_port(0)
+                if sock:
+                    break
+
+        if not sock:
             logger.error("Could not bind to any UDP port. IPC features disabled.")
             return
+
+        logger.info(f"UDP listener bound to port: {current_port}")
         
         # Write handshake with actual bound port
         write_handshake(current_port)

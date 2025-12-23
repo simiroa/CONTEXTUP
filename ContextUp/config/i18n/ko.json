@@ -68,15 +68,21 @@
             "rmbg_background": "RMBG 배경 제거",
             "marigold_pbr": "Marigold PBR 생성",
             "gemini_prompt_master": "Gemini 프롬프트 마스터",
-            "gemini_image_tool": "Gemini 이미지 도구",
+            "prompt_master": "프롬프트 마스터",
             "demucs_stems": "Demucs 음원 분리",
-            "paddle_ocr": "PaddleOCR 텍스트 인식"
+            "paddle_ocr": "RapidOCR 텍스트 인식"
         },
         "comfyui": {
             "start_server": "🚀 서버 시작",
             "stop_server": "🛑 서버 중지",
+            "comfyui_dashboard": "웹 UI 열기",
+            "open_console": "콘솔 열기",
+            "close_console": "콘솔 닫기",
             "unload_vram": "🧹 VRAM 언로드",
-            "force_kill": "☠️ 전체 강제 종료"
+            "force_kill": "☠️ 전체 강제 종료",
+            "creative_studio_z": "Creative Studio (Z)",
+            "creative_studio_advanced": "Creative Studio (Advanced)",
+            "ace_audio_editor": "Creative Audio Studio (ACE)"
         },
         "document": {
             "pdf_merge": "PDF 병합",
@@ -128,8 +134,10 @@
         "tools": {
             "copy_my_info": "내 정보 복사",
             "manage_info": "정보 관리...",
-            "youtube_downloader": "YouTube 다운로더",
-            "translator": "번역기"
+            "youtube_downloader": "비디오 다운로더",
+            "translator": "번역기",
+            "ai_text_lab": "AI 텍스트 연구소",
+            "leave_manager": "휴가 관리"
         }
     },
     "rename_gui": {
@@ -393,7 +401,7 @@
             "categories": "카테고리",
             "dashboard": "대시보드",
             "settings": "설정",
-            "updates": "업데이트",
+            "dependencies": "종속성",
             "logs": "로그",
             "apply_changes": "변경 사항 적용",
             "tray_agent": "트레이 상태:"
@@ -437,10 +445,18 @@
                 "ollama_url": "Ollama URL"
             },
             "danger": {
-                "title": "위험 구역",
-                "backup_settings": "설정 백업",
-                "factory_reset": "공장 초기화",
+                "title": "위험 구역 (Danger Zone)",
+                "data_management": "데이터 관리",
+                "backup_settings": "전체 백업",
+                "export_userdata": "사용자 데이터 내보내기",
+                "import_userdata": "사용자 데이터 가져오기",
+                "reset_userdata": "사용자 데이터 초기화",
+                "factory_reset": "공장 초기화 (전체)",
                 "confirm_reset": "모든 설정과 사용자 데이터가 삭제됩니다.\n계속하시겠습니까?",
+                "confirm_reset_userdata": "사용자 데이터(아이콘, 할당 등)만 초기화하시겠습니까?\n기본 설정은 유지됩니다.",
+                "confirm_import": "가져오기를 진행하면 기존 사용자 데이터를 덮어씁니다.\n계속하시겠습니까?",
+                "export_success": "내보내기 완료:\n{path}",
+                "import_success": "가져오기 완료.\n재시작을 권장합니다.",
                 "reset_complete": "초기화가 완료되었습니다. 프로그램을 재시작해주세요."
             },
             "footer_tip": "모든 변경 사항은 사이드바의 '변경 사항 적용' 버튼을 눌러야 반영됩니다."
@@ -476,14 +492,10 @@
                 "restore": "복원",
                 "reset": "초기화"
             },
-            "updates": {
-                "current_version": "현재 버전",
-                "latest_version": "최신 버전",
-                "up_to_date": "최신 버전입니다",
-                "update_available": "업데이트 가능",
-                "check_now": "지금 확인",
-                "download_update": "업데이트 다운로드",
-                "changelog": "변경 로그"
+            "dependencies": {
+                "title": "종속성 관리",
+                "check_sys": "시스템 라이브러리 확인",
+                "install_ai": "AI 엔진 설치"
             },
             "logs": {
                 "clear_logs": "로그 지우기",

@@ -113,6 +113,9 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
         
         valid_tools = []
         for tool in tray_tools:
+            if tool.get("category") == "Comfyui":
+                valid_tools.append(tool)
+                continue
             valid, _ = pm.check_dependencies(tool, installed_packages)
             if valid:
                 valid_tools.append(tool)
@@ -142,56 +145,95 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
             if cat_name == "Comfyui":
                 def start_server_action():
                     try:
-                        from manager.helpers.comfyui_client import ComfyUIManager
-                        client = ComfyUIManager()
-                        if client.start():
-                            # Show notification
-                            agent_wrapper.notify(f"ComfyUI Started on port {client.port}")
+                        from manager.helpers.comfyui_service import ComfyUIService
+                        service = ComfyUIService()
+                        ok, port, started = service.ensure_running(start_if_missing=True)
+                        if ok and started:
+                            agent_wrapper.notify("ComfyUI", f"Started on port {port}")
+                        elif ok:
+                            agent_wrapper.notify("ComfyUI", f"Already running on port {port}")
                         else:
-                            agent_wrapper.notify("Failed to start ComfyUI")
+                            agent_wrapper.notify("ComfyUI", "Failed to start server")
                     except Exception as e:
                         logger.error(f"Start server failed: {e}")
-                        agent_wrapper.notify(f"Error starting server: {e}")
+                        agent_wrapper.notify("ComfyUI", f"Start failed: {e}")
 
                 def stop_server_action():
                     try:
-                        from manager.helpers.comfyui_client import ComfyUIManager
-                        client = ComfyUIManager()
-                        if client.is_running():
-                            client.stop()
-                            agent_wrapper.notify("ComfyUI Server Stopped")
+                        from manager.helpers.comfyui_service import ComfyUIService
+                        service = ComfyUIService()
+                        ok, reason = service.stop(only_if_owned=True)
+                        if ok:
+                            agent_wrapper.notify("ComfyUI", "Server stopped")
+                        elif reason == "not_owned":
+                            agent_wrapper.notify("ComfyUI", "Not owned by ContextUp. Use Force Kill if needed.")
                         else:
-                            agent_wrapper.notify("Server is not running")
+                            agent_wrapper.notify("ComfyUI", "Failed to stop server")
                     except Exception as e:
                         logger.error(f"Stop server failed: {e}")
+                        agent_wrapper.notify("ComfyUI", f"Stop failed: {e}")
 
                 def unload_vram_action():
                     try:
-                        from manager.helpers.comfyui_client import ComfyUIManager
+                        from manager.helpers.comfyui_service import ComfyUIService
                         import urllib.request
-                        client = ComfyUIManager()
-                        if client.is_running():
-                            url = f"http://127.0.0.1:{client.port}/free"
+                        service = ComfyUIService()
+                        running, port = service.is_running()
+                        if running and port:
+                            url = f"http://127.0.0.1:{port}/free"
                             urllib.request.urlopen(url, timeout=2)
-                            agent_wrapper.notify("VRAM Unload Requested")
+                            agent_wrapper.notify("ComfyUI", "VRAM unload requested")
                         else:
-                            agent_wrapper.notify("Server is not running")
+                            agent_wrapper.notify("ComfyUI", "Server is not running")
                     except Exception as e:
                         logger.error(f"VRAM unload failed: {e}")
+                        agent_wrapper.notify("ComfyUI", f"VRAM unload failed: {e}")
 
                 def force_cleanup_action():
                     try:
-                        from manager.helpers.comfyui_client import ComfyUIManager
-                        ComfyUIManager.kill_all_instances()
-                        agent_wrapper.notify("Force Cleanup Configured")
-                        # Real cleanup logging happens in console/process
+                        from manager.helpers.comfyui_service import ComfyUIService
+                        service = ComfyUIService()
+                        service.force_kill_all()
+                        agent_wrapper.notify("ComfyUI", "Force cleanup requested")
                     except Exception as e:
                         logger.error(f"Cleanup failed: {e}")
-                        agent_wrapper.notify(f"Cleanup error: {e}")
+                        agent_wrapper.notify("ComfyUI", f"Cleanup error: {e}")
+
+                def open_console_action():
+                    try:
+                        from manager.helpers.comfyui_service import ComfyUIService
+                        service = ComfyUIService()
+                        ok, reason = service.open_console()
+                        if ok and reason == "already_open":
+                            agent_wrapper.notify("ComfyUI", "Console already open")
+                        elif ok:
+                            agent_wrapper.notify("ComfyUI", "Console opened")
+                        else:
+                            agent_wrapper.notify("ComfyUI", "Failed to open console")
+                    except Exception as e:
+                        logger.error(f"Open console failed: {e}")
+                        agent_wrapper.notify("ComfyUI", f"Open console failed: {e}")
+
+                def close_console_action():
+                    try:
+                        from manager.helpers.comfyui_service import ComfyUIService
+                        service = ComfyUIService()
+                        ok, reason = service.close_console()
+                        if ok:
+                            agent_wrapper.notify("ComfyUI", "Console closed")
+                        elif reason == "not_running":
+                            agent_wrapper.notify("ComfyUI", "Console is not running")
+                        else:
+                            agent_wrapper.notify("ComfyUI", "Failed to close console")
+                    except Exception as e:
+                        logger.error(f"Close console failed: {e}")
+                        agent_wrapper.notify("ComfyUI", f"Close console failed: {e}")
 
                 # Add static items
                 submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.start_server", "🚀 Start Server"), lambda: start_server_action()))
                 submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.stop_server", "🛑 Stop Server"), lambda: stop_server_action()))
+                submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.open_console", "Open Console"), lambda: open_console_action()))
+                submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.close_console", "Close Console"), lambda: close_console_action()))
                 submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.unload_vram", "🧹 Unload VRAM"), lambda: unload_vram_action()))
                 submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.force_kill", "☠️ Force Kill All"), lambda: force_cleanup_action()))
                 submenu_items.append(pystray.Menu.SEPARATOR)

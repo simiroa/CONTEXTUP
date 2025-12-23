@@ -46,9 +46,8 @@ torch --index-url https://download.pytorch.org/whl/cu121
 torchvision --index-url https://download.pytorch.org/whl/cu121
 torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-# --- PaddleOCR ---
-paddlepaddle-gpu
-paddleocr
+# --- OCR (RapidOCR) ---
+rapidocr-onnxruntime
 opencv-python
 
 # --- AI Models & APIs ---
@@ -65,6 +64,7 @@ rawpy  # RAW image processing (Canon CR2, Nikon NEF, Sony ARW, etc.)
 pillow-heif  # HEIC/AVIF support
 
 # --- Audio Processing ---
+pygame  # Required for ACE Audio Editor playback
 demucs  # Audio stem separation (vocals, drums, bass, other)
 
 # --- Text Processing ---

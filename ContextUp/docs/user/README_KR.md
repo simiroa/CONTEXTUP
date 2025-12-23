@@ -1,6 +1,6 @@
 # ContextUp (한국어)
 
-![Version](https://img.shields.io/badge/version-4.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-4.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
@@ -14,7 +14,7 @@
 
 | 카테고리 | 예시 기능 |
 |----------|-----------|
-| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), OCR |
+| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), OCR, **Creative Studio (Z/Advanced)** |
 | 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈 |
 | 시퀀스 | 렌더링 시퀀스 정렬, 누락 프레임 탐색, 영상 변환, 분석 및 리넘버링 |
 | 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(RIFE), 유튜브 다운로더 |
@@ -38,7 +38,7 @@
 
 ### 1. 설치 및 마이그레이션 (Setup)
 
-최상위 디렉토리에서 `install.bat`을 실행하거나 다음 명령어를 사용하여 설치를 진행하세요.
+최상위 디렉토리에서 `install.bat`을 실행하거나 다음 명령어를 사용하여 설치를 진행하세요. (embedded Python이 없을 때만 시스템 Python이 필요합니다.)
 기존 사용자의 경우 설정 파일이 `userdata/` 폴더로 자동 마이그레이션됩니다.
 
 ```bash
@@ -135,7 +135,10 @@ ContextUp/tools/
    │  └─ categories/    # 메뉴 카테고리 설정 (Flattened)
    ├─ userdata/         # 사용자 설정 및 민감 정보 (Git 제외)
    │  ├─ secrets.json   # API 키
-   │  └─ overrides.json # 사용자 메뉴 커스텀
+   │  ├─ user_overrides.json # 사용자 메뉴 커스텀
+   │  ├─ gui_states.json # GUI 상태 저장
+   │  ├─ download_history.json # 다운로드 기록
+   │  └─ copy_my_info.json # 개인 정보 템플릿
    ├─ tools/            # 내장 Python 및 외부 도구
    ├─ resources/        # AI 모델 및 리소스
    └─ manage.py         # 서버/레지스트리 관리 CLI

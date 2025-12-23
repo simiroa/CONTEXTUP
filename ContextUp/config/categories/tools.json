@@ -21,7 +21,7 @@
     {
         "category": "Tools",
         "id": "youtube_downloader",
-        "name": "YouTube Downloader",
+        "name": "Video Downloader",
         "icon": "assets/icons/icon_video_downloader.ico",
         "types": "*",
         "scope": "background",
@@ -41,7 +41,7 @@
     {
         "category": "Tools",
         "id": "ai_text_lab",
-        "name": "AI Text Lab (AI 텍스트 연구소)",
+        "name": "AI Text Lab",
         "icon": "assets/icons/icon_ai_text_lab.ico",
         "types": "*",
         "scope": "background",
@@ -62,7 +62,7 @@
     {
         "category": "Tools",
         "id": "leave_manager",
-        "name": "Leave Manager (휴가 관리)",
+        "name": "Leave Manager",
         "icon": "assets/icons/vacance.ico",
         "types": "*",
         "scope": "background",

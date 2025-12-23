@@ -1,5 +1,5 @@
+
 import customtkinter as ctk
-from tkinter import messagebox, filedialog
 import threading
 import sys
 import os
@@ -7,15 +7,8 @@ import json
 import time
 import shutil
 import random
+import webbrowser
 from pathlib import Path
-import warnings
-
-# Suppress Pygame welcome message
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-try:
-    import pygame
-except ImportError:
-    pygame = None
 
 # Add src to path
 current_dir = Path(__file__).resolve().parent
@@ -23,462 +16,408 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
-from features.comfyui.base_gui import ComfyUIFeatureBase
+from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from features.comfyui.core.wrappers import registry
+from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget, TagSelectorWidget
 from manager.helpers.comfyui_client import ComfyUIManager
-from features.comfyui import workflow_utils
+from utils.ai_helper import refine_text_ai
 
-class AceAudioEditorGUI(ComfyUIFeatureBase):
+try:
+    from utils.audio_player import AudioPlayer
+except ImportError:
+    AudioPlayer = None
+
+class ControlKnob(ctk.CTkFrame):
+    """A vertical slider that looks a bit more like a mixing console fader."""
+    def __init__(self, parent, label, from_=0, to=100, default=50, res=1, **kwargs):
+        super().__init__(parent, fg_color="transparent", **kwargs)
+        self.pack(fill="x", pady=8)
+        
+        # Header (Label + Value)
+        head = ctk.CTkFrame(self, fg_color="transparent")
+        head.pack(fill="x", pady=(0, 2))
+        
+        ctk.CTkLabel(head, text=label, font=Fonts.SMALL, text_color=Colors.TEXT_SECONDARY).pack(side="left")
+        self.val_lbl = ctk.CTkLabel(head, text=str(default), font=("Segoe UI", 11, "bold"), text_color=Colors.ACCENT_PRIMARY)
+        self.val_lbl.pack(side="right")
+        
+        self.res = res
+        self.slider = ctk.CTkSlider(self, from_=from_, to=to, number_of_steps=(to-from_)/res, 
+                                   progress_color=Colors.ACCENT_PRIMARY, button_color=Colors.ACCENT_PRIMARY,
+                                   button_hover_color=Colors.ACCENT_SECONDARY, height=18, command=self.update_val)
+        self.slider.set(default)
+        self.slider.pack(fill="x")
+
+    def update_val(self, val):
+        v = round(val / self.res) * self.res
+        txt = f"{v:.0f}" if self.res >= 1 else f"{v:.2f}"
+        self.val_lbl.configure(text=txt)
+
+    def get_value(self):
+        return self.slider.get()
+
+class ACEAudioEditorGUI(PremiumComfyWindow):
+    """
+    Creative Audio Studio (ACE) - 'Mixing Console' Edition
+    Focused on parameter control and composition, not visualization.
+    """
     def __init__(self, target_path=None):
-        super().__init__(title="ACE Audio Editor", width=900, height=750)
+        super().__init__(title="Creative Audio Studio (ACE)", width=1200, height=800)
         
         self.target_path = target_path
-        # self.client is initialized by Base Class
-        self.is_processing = False
+        self.client = ComfyUIManager()
+        default_key = "ace_edit" if target_path else "ace_song"
+        self.wrapper = registry.get_by_key(default_key)
         
-        # Audio Player State
+        # State
+        self.is_processing = False
         self.is_playing = False
-        self.audio_thread = None
+        self.player = AudioPlayer() if AudioPlayer else None
+        self.last_output_path = None
+        self.widgets = {}
 
         self._check_model()
-        self._setup_ui()
-        
-        if self.target_path and Path(self.target_path).exists():
-             self.lbl_file.configure(text=Path(self.target_path).name)
+        self._setup_console_layout()
 
     def _check_model(self):
-        # Check for ACE model
         model_path = self.client.comfy_dir / "models" / "checkpoints" / "ace_step_v1_3.5b.safetensors"
         if not model_path.exists():
-            msg = "⚠️ Model Missing: 'ace_step_v1_3.5b.safetensors'\n\nPlease download it to:\nContextUp/tools/ComfyUI/ComfyUI/models/checkpoints/"
-            self.after(500, lambda: messagebox.showwarning("Model Check", msg))
+            self.after(1000, lambda: self.status_badge.set_status("CORE MISSING", "error"))
 
-    def _setup_ui(self):
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+    def _setup_console_layout(self):
+        # Reset grid from Premium Window
+        self.content_area.grid_columnconfigure(0, weight=3) # Composition (Left)
+        self.content_area.grid_columnconfigure(1, weight=2) # Rack (Right)
         
-        main_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        main_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        # --- LEFT: COMPOSITION AREA ---
+        self.frame_comp = GlassFrame(self.content_area)
+        self.frame_comp.grid(row=0, column=0, sticky="nsew", padx=(20, 10), pady=(0, 20))
         
-        # --- 1. Audio Input ---
-        grp_input = ctk.CTkFrame(main_frame)
-        grp_input.pack(fill="x", pady=(0, 15), padx=5)
+        # 1. FIXED HEADER (Control Deck)
+        self.comp_header = ctk.CTkFrame(self.frame_comp, fg_color="transparent", height=80)
+        self.comp_header.pack(fill="x", padx=15, pady=15)
         
-        ctk.CTkLabel(grp_input, text="Input Audio", font=("Segoe UI", 16, "bold")).pack(anchor="w", padx=15, pady=(10, 5))
+        # Row 1: Title + Mode
+        h_row1 = ctk.CTkFrame(self.comp_header, fg_color="transparent")
+        h_row1.pack(fill="x", pady=(0, 10))
+        PremiumLabel(h_row1, text="COMPOSITION", style="header").pack(side="left")
         
-        f_file = ctk.CTkFrame(grp_input, fg_color="transparent")
-        f_file.pack(fill="x", padx=15, pady=(0, 15))
+        self.combo_preset = ctk.CTkComboBox(h_row1, width=220, height=28,
+                                           values=["ACE Vocal Song (Gen)", "ACE Instrumental (Gen)", "ACE Audio Repaint (Edit)"],
+                                           command=self._on_preset_change)
+        self.combo_preset.set(self.wrapper.name)
+        self.combo_preset.pack(side="right")
         
-        self.lbl_file = ctk.CTkLabel(f_file, text="No file selected", font=("Segoe UI", 12))
-        self.lbl_file.pack(side="left", fill="x", expand=True)
-        
-        ctk.CTkButton(f_file, text="Select File", width=100, command=self.select_file).pack(side="right", padx=5)
+        # WebUI Link
+        self.btn_webui = ctk.CTkButton(h_row1, text="🌐 WebNode", width=80, height=28, fg_color="#333", 
+                                      hover_color="#444", font=Fonts.SMALL, command=self.open_webui)
+        self.btn_webui.pack(side="right", padx=(0, 10))
 
-        # --- 2. Parameters ---
-        grp_params = ctk.CTkFrame(main_frame)
-        grp_params.pack(fill="x", pady=(0, 15), padx=5)
+        # Row 2: Global Helpers (Genre Preset)
+        self.genre_row = ctk.CTkFrame(self.comp_header, fg_color="transparent")
+        # Only packed if relevant (in _build_interface)
         
-        ctk.CTkLabel(grp_params, text="Parameters", font=("Segoe UI", 16, "bold")).pack(anchor="w", padx=15, pady=(10, 5))
-        
-        # Denoise (Similarity)
-        f_denoise = ctk.CTkFrame(grp_params, fg_color="transparent")
-        f_denoise.pack(fill="x", padx=10)
-        ctk.CTkLabel(f_denoise, text="Denoise (Modification Strength)").pack(anchor="w")
-        self.lbl_denoise = ctk.CTkLabel(f_denoise, text="0.5")
-        self.lbl_denoise.pack(anchor="e")
-        self.slider_denoise = ctk.CTkSlider(f_denoise, from_=0.1, to=1.0, number_of_steps=90, command=lambda v: self.lbl_denoise.configure(text=f"{v:.2f}"))
-        self.slider_denoise.set(0.5)
-        self.slider_denoise.pack(fill="x", pady=5)
-        
-        # Steps & CFG
-        f_adv = ctk.CTkFrame(grp_params, fg_color="transparent")
-        f_adv.pack(fill="x", padx=10, pady=10)
-        
-        ctk.CTkLabel(f_adv, text="Steps").grid(row=0, column=0, padx=5, sticky="w")
-        self.slider_steps = ctk.CTkSlider(f_adv, from_=10, to=50, number_of_steps=40)
-        self.slider_steps.set(50)
-        self.slider_steps.grid(row=0, column=1, padx=5, sticky="ew")
-        
-        ctk.CTkLabel(f_adv, text="CFG").grid(row=0, column=2, padx=5, sticky="w")
-        self.slider_cfg = ctk.CTkSlider(f_adv, from_=1.0, to=10.0, number_of_steps=90)
-        self.slider_cfg.set(5.0)
-        self.slider_cfg.grid(row=0, column=3, padx=5, sticky="ew")
-        
-        # Seed
-        f_seed = ctk.CTkFrame(grp_params, fg_color="transparent")
-        f_seed.pack(fill="x", padx=10, pady=(0, 10))
-        ctk.CTkLabel(f_seed, text="Seed (-1 for Random)").pack(side="left", padx=5)
-        self.entry_seed = ctk.CTkEntry(f_seed, placeholder_text="-1")
-        self.entry_seed.pack(side="right", fill="x", expand=True, padx=5)
-        self.entry_seed.insert(0, "-1")
+        # Divider
+        ctk.CTkFrame(self.frame_comp, height=1, fg_color="#333").pack(fill="x", padx=15)
 
-        # --- 3. Style & Lyrics ---
-        grp_text = ctk.CTkFrame(main_frame)
-        grp_text.pack(fill="x", pady=(0, 15), padx=5)
-        
-        ctk.CTkLabel(grp_text, text="Content Control", font=("Segoe UI", 16, "bold")).pack(anchor="w", padx=15, pady=(10, 5))
-        
-        # Style
-        ctk.CTkLabel(grp_text, text="Style Prompt (e.g. 'female vocals, piano, happy')").pack(anchor="w", padx=15)
-        self.txt_style = ctk.CTkEntry(grp_text)
-        self.txt_style.pack(fill="x", padx=15, pady=(0, 10))
-        self.txt_style.insert(0, "female vocals, clear voice, pop style")
+        # 2. SCROLLING CONTENT
+        self.scroll_comp = ctk.CTkScrollableFrame(self.frame_comp, fg_color="transparent")
+        self.scroll_comp.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Lyrics
-        ctk.CTkLabel(grp_text, text="Lyrics / Content (Start with [ko], [en] etc.)").pack(anchor="w", padx=15)
-        self.txt_lyrics = ctk.CTkTextbox(grp_text, height=150)
-        self.txt_lyrics.pack(fill="x", padx=15, pady=(0, 15))
-        self.txt_lyrics.insert("1.0", "[ko] \n새로운 노래를 불러보아요.\n오디오 편집의 세계로 초대합니다.")
+        # --- RIGHT: RACK & TRANSPORT ---
+        self.frame_rack = ctk.CTkFrame(self.content_area, fg_color="transparent")
+        self.frame_rack.grid(row=0, column=1, sticky="nsew", padx=(0, 20), pady=(0, 20))
         
-        # --- 4. Actions ---
-        self.btn_run = ctk.CTkButton(main_frame, text="Generate Audio", height=50, font=("Segoe UI", 16, "bold"),
-                                   command=self.start_generation, fg_color="#107C10", hover_color="#0e600e")
-        self.btn_run.pack(fill="x", padx=5, pady=20)
+        # 1. Parameter Rack
+        self.rack_box = GlassFrame(self.frame_rack)
+        self.rack_box.pack(fill="both", expand=True, pady=(0, 10))
         
-        self.lbl_status = ctk.CTkLabel(main_frame, text="Ready", text_color="gray")
-        self.lbl_status.pack(pady=5)
+        PremiumLabel(self.rack_box, text="MIXING RACK", style="header").pack(anchor="w", padx=15, pady=15)
+        self.rack_params = ctk.CTkFrame(self.rack_box, fg_color="transparent")
+        self.rack_params.pack(fill="both", expand=True, padx=15, pady=5)
         
-        # --- 5. Output Preview ---
-        self.grp_output = ctk.CTkFrame(main_frame)
-        self.grp_output.pack(fill="x", pady=(10, 0), padx=5)
-        self.grp_output.pack_forget() # Hide initially
+        # 2. Transport (Bottom Right)
+        self.transport_box = GlassFrame(self.frame_rack)
+        self.transport_box.pack(fill="x")
         
-        ctk.CTkLabel(self.grp_output, text="Output Result", font=("Segoe UI", 16, "bold")).pack(anchor="w", padx=15, pady=10)
+        self.btn_run = ActionButton(self.transport_box, text="SYNTHESIZE AUDIO", variant="magic", height=60, command=self.start_generation)
+        self.btn_run.pack(fill="x", padx=15, pady=(15, 10))
         
-        self.btn_play = ctk.CTkButton(self.grp_output, text="▶ Play Result", command=self.toggle_play)
-        self.btn_play.pack(pady=10)
+        self.status_lbl = ctk.CTkLabel(self.transport_box, text="Ready to record.", font=Fonts.SMALL, text_color="gray")
+        self.status_lbl.pack(pady=(0, 15))
+
+        # Player Controls (Initially Hidden)
+        self.player_controls = ctk.CTkFrame(self.transport_box, fg_color="transparent")
         
-        ctk.CTkButton(self.grp_output, text="Open Folder", command=self.open_output_folder, fg_color="#555").pack(pady=(0, 10))
+        self.btn_play = ctk.CTkButton(self.player_controls, text="▶ PLAY", width=100, fg_color=Colors.ACCENT_PRIMARY, text_color="#000", hover_color="#69F0AE", command=self.toggle_play)
+        self.btn_play.pack(side="left", padx=5)
         
-        self.last_output_path = None
+        self.lbl_time = ctk.CTkLabel(self.player_controls, text="--:--", font=Fonts.SMALL)
+        self.lbl_time.pack(side="right", padx=5)
+        
+        # Initial Build
+        self._build_interface()
+
+    def _on_preset_change(self, name):
+        self.wrapper = registry.get_by_name(name)
+        self._build_interface()
+
+    def _build_interface(self):
+        # Clear previous
+        for w in self.scroll_comp.winfo_children(): w.destroy()
+        for w in self.rack_params.winfo_children(): w.destroy()
+        for w in self.genre_row.winfo_children(): w.destroy() # Clear genre row
+        self.genre_row.pack_forget() # Hide by default
+        
+        self.widgets = {}
+
+        ui_defs = self.wrapper.get_ui_definition()
+        
+        # Separate sliders and text areas
+        sliders = [d for d in ui_defs if d.type == "slider"]
+        files = [d for d in ui_defs if d.key == "audio_input"]
+        
+        # --- BUILD COMPOSTION (Text + Dropdowns + Tags) ---
+        
+        # 1. Style Config Helper (If song or instrumental) -> Now in Header!
+        if "Song" in self.wrapper.name or "Instrumental" in self.wrapper.name:
+            self.genre_row.pack(fill="x", pady=(5, 0)) # Show header row
+            self._build_style_helper_in_header()
+
+        # 2. Build Text Inputs with Special Logic
+        for d in ui_defs:
+            if d.type != "text": continue
+            
+            is_lyrics = "lyrics" in d.key.lower() or "tags" in d.key.lower()
+            refine_type = "lyrics" if is_lyrics else "prompt"
+            d_label = d.label.upper()
+            
+            # LYRICS: Use Section-Aware Stack
+            if is_lyrics:
+                # Sections options
+                opts = ["Verse", "Chorus", "Intro", "Outro", "Bridge", "Drop", "Build-up"]
+                w = PromptStackWidget(self.scroll_comp, d_label, 
+                                     on_refine_handler=lambda x, t=refine_type: self._ai_refine_logic(x, t),
+                                     layer_options=opts)
+                w.layers[0].set_text(d.default)
+                w.pack(fill="x", pady=(10, 15))
+                self.widgets[d.key] = w
+            
+            # INSTRUMENTS/STYLE: Use Tags + Stack
+            else:
+                # Add a Tag Selector for ease of use
+                if "Instrumental" in self.wrapper.name:
+                    tags = ["Piano", "Guitar", "Synth", "Bass", "Drums", "Strings", "Brass", "Lo-fi", "Orchestral"]
+                    t = TagSelectorWidget(self.scroll_comp, tags, label="INSTRUMENT SELECTOR")
+                    self.widgets["_tags_" + d.key] = t # Internal key
+                
+                # Standard Text (Style)
+                w = PromptStackWidget(self.scroll_comp, d_label, 
+                                     on_refine_handler=lambda x, t=refine_type: self._ai_refine_logic(x, t),
+                                     layer_options=["Style", "Mood", "Genre", "Instrument"])
+                w.layers[0].set_text(d.default)
+                w.pack(fill="x", pady=(10, 15))
+                self.widgets[d.key] = w
+
+
+        # --- BUILD RACK (Sliders & Files) ---
+        for d in files:
+            f = ctk.CTkFrame(self.rack_params, fg_color=Colors.BG_CARD, corner_radius=6, border_width=1, border_color="#333")
+            f.pack(fill="x", pady=10)
+            PremiumLabel(f, text="INPUT SOURCE", style="small").pack(anchor="w", padx=10, pady=5)
+            self.lbl_file = ctk.CTkLabel(f, text=Path(self.target_path).name if self.target_path else "No Audio File", font=Fonts.BODY)
+            self.lbl_file.pack(padx=10)
+            ctk.CTkButton(f, text="Load File", height=24, fg_color="#333", command=self.select_file).pack(pady=10)
+
+        for d in sliders:
+            w = ControlKnob(self.rack_params, d.label.upper(), from_=d.options["from"], to=d.options["to"], 
+                           default=d.default, res=d.options["res"])
+            self.widgets[d.key] = w
+
+    def _build_style_helper_in_header(self):
+        genres = ["Pop: K-Pop, Energetic", "Rock: Electric Guitar, Heavy Drums", 
+                  "Jazz: Smooth, Piano, Saxophone", "Lo-Fi: Chill, Hip Hop, Study",
+                  "EDM: Synthesizer, Bass Drop", "Orchestral: Cinematic, Epic"]
+        
+        combo = ctk.CTkComboBox(self.genre_row, values=genres, width=280, height=28, 
+                               font=Fonts.BODY, command=self._apply_genre_preset)
+        combo.set("⚡ Quick Style Preset...")
+        combo.pack(side="left", fill="x", expand=True)
+
+    def _apply_genre_preset(self, val):
+        # Find the style widget and inject text
+        style_key = "style_prompt" if "style_prompt" in self.widgets else None
+        if not style_key and "input_text" in self.widgets: style_key = "input_text" # Fallback
+        
+        if style_key and ":" in val:
+            genre, desc = val.split(":", 1)
+            # Add as a new layer or replace first? Let's add new layer for "Genre"
+            widget = self.widgets[style_key]
+            widget.add_layer(f"{genre.strip()} - {desc.strip()}")
+
+    def _ai_refine_logic(self, widget, type):
+        original = widget.get_text()
+        if not original: return
+        widget.btn_refine.configure(text="⏳", state="disabled")
+        self.status_badge.set_status("AI Analyzing...", "active")
+        
+        def _cb(res, err=None):
+            self.after(0, lambda: widget.btn_refine.configure(text="✨", state="normal"))
+            if res:
+                self.after(0, lambda: widget.set_text(res))
+                self.after(0, lambda: self.status_badge.set_status("Refined", "success"))
+            else:
+                self.after(0, lambda: self.status_badge.set_status("AI Failed", "error"))
+
+        refine_text_ai(original, type=type, callback=_cb)
+
+    def open_webui(self):
+        # 1. Generate Current Workflow
+        try:
+            val = {}
+            for k, w in self.widgets.items():
+                if k.startswith("_tags_"): continue 
+                if isinstance(w, PromptStackWidget): 
+                    text_part = w.get_combined_text()
+                    tag_key = "_tags_" + k
+                    if tag_key in self.widgets:
+                        tags = self.widgets[tag_key].get_value()
+                        if tags: text_part = f"{tags}, {text_part}" if text_part else tags
+                    val[k] = text_part
+                elif isinstance(w, ControlKnob): val[k] = w.get_value()
+                else: val[k] = w.get_value()
+
+            if self.wrapper.name == "ACE Audio Repaint (Edit)" and self.target_path:
+                val["audio_input"] = Path(self.target_path).name
+
+            if val.get("seed") == 0 or "seed" not in val: val["seed"] = random.randint(1, 2**32-1)
+            
+            with open(src_dir / self.wrapper.workflow_path, 'r', encoding='utf-8') as f: 
+                base_workflow = json.load(f)
+            
+            final_workflow = self.wrapper.apply_values(base_workflow, val)
+            json_str = json.dumps(final_workflow, indent=2)
+
+            # 2. Copy
+            self.clipboard_clear()
+            self.clipboard_append(json_str)
+            self.update()
+            
+            # 3. Notify
+            self.status_badge.set_status("Copied to Clipboard!", "success")
+        except Exception as e:
+            print(f"[WARN] Failed to copy workflow: {e}")
+
+        # 4. Open
+        url = self.get_server_url()
+        webbrowser.open(url)
+        # self.status_badge.set_status("WebUI Opened", "success") -> Overwritten by copy status
 
     def select_file(self):
-        f = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3;*.wav;*.flac;*.ogg;*.m4a")])
+        from tkinter import filedialog
+        f = filedialog.askopenfilename(filetypes=[("Audio", "*.mp3;*.wav")])
         if f:
             self.target_path = f
             self.lbl_file.configure(text=Path(f).name)
 
     def start_generation(self):
         if self.is_processing: return
-        if not self.target_path or not Path(self.target_path).exists():
-            messagebox.showwarning("Error", "Please select a valid input audio file.")
-            return
-
-        # Prepare Params
-        style = self.txt_style.get().strip()
-        lyrics = self.txt_lyrics.get("1.0", "end").strip()
-        denoise = self.slider_denoise.get()
-        steps = int(self.slider_steps.get())
-        cfg = self.slider_cfg.get()
-        seed_str = self.entry_seed.get().strip()
-        
-        try:
-            seed = int(seed_str)
-            if seed == -1: seed = random.randint(1, 2**32)
-        except:
-            seed = random.randint(1, 2**32)
+        val = {}
+        # Gather inputs
+        for k, w in self.widgets.items():
+            if k.startswith("_tags_"): continue # Handled inside style
             
+            if isinstance(w, PromptStackWidget): 
+                # Combine Text Stack + Tag Cloud (if exists for this key)
+                text_part = w.get_combined_text()
+                tag_key = "_tags_" + k
+                if tag_key in self.widgets:
+                    tags = self.widgets[tag_key].get_value()
+                    if tags: text_part = f"{tags}, {text_part}" if text_part else tags
+                val[k] = text_part
+            
+            elif isinstance(w, ControlKnob): val[k] = w.get_value()
+            else: val[k] = w.get_value() # fallback
+
+        if self.wrapper.name == "ACE Audio Repaint (Edit)":
+            if not self.target_path: return
+            val["audio_input"] = Path(self.target_path).name
+            shutil.copy(self.target_path, self.client.comfy_dir / "input" / val["audio_input"])
+
+        if val.get("seed") == 0: val["seed"] = random.randint(1, 2**32-1)
+
         self.is_processing = True
-        self.btn_run.configure(state="disabled", text="Generating...")
-        self.lbl_status.configure(text="Initializing Workflow...")
-        self.grp_output.pack_forget()
+        self.btn_run.configure(state="disabled", text="PROCESSING...")
+        self.status_badge.set_status("Synthesizing", "active")
+        self.status_lbl.configure(text="Engine running...", text_color=Colors.ACCENT_PRIMARY)
         
-        threading.Thread(target=self._run_thread, args=(self.target_path, style, lyrics, denoise, steps, cfg, seed), daemon=True).start()
+        threading.Thread(target=self._run_thread, args=(val,), daemon=True).start()
 
-    def _run_thread(self, audio_path, style, lyrics, denoise, steps, cfg, seed):
+    def _run_thread(self, val):
         try:
-            wf_path = workflow_utils.get_workflow_path("ace_audio_edit")
-            workflow = workflow_utils.load_workflow(wf_path)
-            if not workflow: raise Exception("Workflow file not found.")
-
-            # Convert to API Format if needed
-            if "nodes" in workflow:
-                workflow = self._convert_workflow(workflow, audio_path, style, lyrics, denoise, steps, cfg, seed)
-            else:
-                 raise Exception("Workflow is already in API format, but logic expects Saved format to map widgets.")
+            with open(src_dir / self.wrapper.workflow_path, 'r', encoding='utf-8') as f: workflow = json.load(f)
+            api_workflow = self.wrapper.apply_values(workflow, val)
+            self.client.generate_image(api_workflow) 
+            time.sleep(2)
             
-            # Execute
-            self.after(0, lambda: self.lbl_status.configure(text="Sending to ComfyUI..."))
-            outputs = self.client.generate_image(workflow) # generate_image works for audio nodes too (returns output dict)
-            
-            # Find audio output
-            # Our workflow uses SaveAudioMP3 (Node 59)
-            # Output dict keys are node_ids.
-            
-            target_node_id = "59" 
-            if outputs and target_node_id in outputs:
-                 # ComfyUI client usually returns list of Image objects/bytes for 'images'.
-                 # For audio, it might differ. Let's look at client logic.
-                 # client.get_image fetches /view?filename=...
-                 # It handles 'type' and 'subfolder'.
-                 # Audio nodes usually populate 'audio' or similar in history, not 'images'.
-                 pass
-            
-            # Since client logic is image-centric, we might need to rely on file system check or update client.
-            # However, standard Save node writes to output folder.
-            # Let's check history manually via client.get_history if needed, 
-            # OR just wait and verify file in `tools/ComfyUI/ComfyUI/output`.
-            
-            # Better approach: The client returns mapped data if 'images' exists.
-            # If 'audio' exists in output, client.py might miss it.
-            # Let's inspect client.py later if it fails to return bytes.
-            # For now, we assume it saves to disk, and we can find the latest file in output.
-            
-            # Simplest fallback: scanning output dir.
-            time.sleep(1) # Wait for write
-            
-            # Finding the file
-            out_dir = self.client.comfy_dir / "output" / "audio" / "ComfyUI"
-            # Workflow sets prefix "audio/ComfyUI" which goes to output/audio/ComfyUI
-            
-            if not out_dir.exists():
-                 # Maybe just output/ ?
-                 out_dir = self.client.comfy_dir / "output"
-            
-            # To be safe, we check 'output' root recursively for recent mp3
+            # Polling (Same as before)
             output_root = self.client.comfy_dir / "output"
-            files = sorted(output_root.glob("**/*.mp3"), key=os.path.getmtime, reverse=True)
+            # Simple polling loop (max 60s)
+            start_t = time.time()
+            target_file = None
             
-            if not files:
-                 raise Exception("Output file not found in ComfyUI output folder.")
+            while time.time() - start_t < 60:
+                recent_files = sorted(output_root.glob("**/*.mp3"), key=os.path.getmtime, reverse=True)
+                if recent_files:
+                    latest = recent_files[0]
+                    if time.time() - os.path.getmtime(latest) < 20: 
+                        target_file = latest
+                        break
+                time.sleep(1)
+                
+            if not target_file: raise Exception("Timeout: No audio generated.")
             
-            latest_file = files[0]
-            
-            # Move to local project output
-            local_out = Path("outputs/ace_audio")
-            local_out.mkdir(parents=True, exist_ok=True)
-            
-            dest = local_out / f"ace_edit_{int(time.time())}.mp3"
-            shutil.copy(latest_file, dest)
-            
+            dest = Path("outputs/ace_studio") / f"ace_mix_{int(time.time())}.mp3"
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(target_file, dest)
             self.after(0, lambda: self._on_success(str(dest)))
+        except Exception as e: self.after(0, lambda: self._on_error(str(e)))
 
-        except Exception as e:
-            self.after(0, lambda: self._on_error(str(e)))
-
-    def _convert_workflow(self, workflow, audio_path, style, lyrics, denoise, steps, cfg, seed):
-        """
-        Manually construct API JSON from the Saved Format JSON structure.
-        Mapping based on ace_step_1_m2m_editing.json IDs.
-        """
-        api = {}
-        
-        # Link map: ID -> (SourceNodeID, SourceSlotIndex)
-        # In Saved format: [link_id, src_node, src_slot, dst_node, dst_slot, type]
-        links = {}
-        for l in workflow.get("links", []):
-            links[l[0]] = (str(l[1]), l[2])
-
-        def get_input_link(node, input_name):
-            for inp in node.get("inputs", []):
-                if inp["name"] == input_name and inp.get("link"):
-                    return links.get(inp["link"])
-            return None
-
-        # 1. LoadAudio (Node 64)
-        # Important: ComfyUI LoadAudio requires file in 'input' folder usually.
-        # We must copy target file to ComfyUI/input/
-        inp_dir = self.client.comfy_dir / "input"
-        inp_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy(audio_path, inp_dir / Path(audio_path).name)
-        
-        api["64"] = {
-            "class_type": "LoadAudio",
-            "inputs": {
-                "audio": Path(audio_path).name
-            }
-        }
-        
-        # 2. CheckpointLoaderSimple (Node 40)
-        api["40"] = {
-            "class_type": "CheckpointLoaderSimple",
-            "inputs": {
-                "ckpt_name": "ace_step_v1_3.5b.safetensors"
-            }
-        }
-        
-        # 3. ModelSamplingSD3 (Node 51)
-        api["51"] = {
-            "class_type": "ModelSamplingSD3",
-            "inputs": {
-                "shift": 3.0, # Default from workflow widgets_values[0] is 5.0? Let's check logic.
-                              # Workflow JSON: widgets_values: [5.0]
-                "model": ["40", 0]
-            }
-        }
-        # Wait, manual mapping is error prone if I assume defaults wrong.
-        # Let's trust the IDs and links from the file analysis.
-        # Node 51 widget value is 5.0. 
-        api["51"]["inputs"]["shift"] = 5.0
-
-        # ... (Remaining nodes logic construction)
-        # This is tedious and fragile to do manually for all nodes.
-        # Better approach: Parse the JSON dynamically like z_image_turbo.
-        # But for ACE specific nodes, we must inject our values.
-        
-        # Dynamic Parse Reuse
-        converted = self._dynamic_convert(workflow)
-        
-        # Inject our values
-        # Node 64 (LoadAudio) -> widget[0] is filename
-        if "64" in converted:
-             converted["64"]["inputs"]["audio"] = Path(audio_path).name # API expects "audio"
-        
-        # Node 14 (TextEncodeAceStepAudio)
-        # inputs: clip (link), text (widget[1]), style (widget[0]), seed?
-        # Actually in API format, widgets become inputs with specific names.
-        # We need to know the specific input names for "TextEncodeAceStepAudio".
-        # Usually: "text", "prompt" etc.
-        # Let's assume standard mapping: widgets_values order maps to specific input keys OR class implementation.
-        # Based on workflow dump:
-        # Node 14 widgets: [style, lyrics, 1.0 (some float)]
-        # API inputs guess: "style", "text", "dropout?"
-        # To be safe, let's use the node's 'widgets_values' to populate, but override specific indices?
-        # No, API format doesn't use widgets_values, it uses "inputs": { "key": val }.
-        # I need to know the exact key names for custom nodes.
-        # Without introspecting the python code of the custom node, it's hard.
-        # However, usually ComfyUI saves these keys in valid API JSON.
-        
-        # Let's rely on `widgets_values` to "inputs" mapping logic if standard.
-        # Note: z_image_turbo used manual mapping for specific nodes.
-        
-        # Critical strategy:
-        # Since I cannot guarantee the key names for "TextEncodeAceStepAudio",
-        # I will use a simple heuristic: 
-        # Most ComfyUI nodes export standard widget names.
-        # Let's try to map the widgets by order if keys are missing?
-        # No, that fails.
-        
-        # Fallback: I'll use the specific input names found in common ACE workflows or guess reasonable defaults.
-        # Common ACE Node inputs: "text", "style", "mask_stength"
-        
-        # Updating "14"
-        converted["14"]["inputs"]["text"] = str(lyrics)
-        converted["14"]["inputs"]["style"] = str(style)
-        # The 3rd widget is likely strength/dropout. Let's keep heuristic or hardcode if known.
-        
-        # Updating "52" (KSampler)
-        converted["52"]["inputs"]["seed"] = seed
-        converted["52"]["inputs"]["steps"] = steps
-        converted["52"]["inputs"]["cfg"] = cfg
-        converted["52"]["inputs"]["denoise"] = denoise
-        
-        # Updating "59" (SaveAudioMP3) - ensure filename_prefix
-        converted["59"]["inputs"]["filename_prefix"] = "ace_result"
-        
-        return converted
-
-    def _dynamic_convert(self, data):
-        # Initial generic conversion
-        api = {}
-        links = {}
-        for l in data.get("links", []):
-             links[l[0]] = (str(l[1]), l[2])
-             
-        for node in data.get("nodes", []):
-            node_id = str(node["id"])
-            inputs = {}
-            
-            # Map linked inputs
-            if "inputs" in node:
-                for inp in node["inputs"]:
-                    if inp.get("link") and inp["link"] in links:
-                        inputs[inp["name"]] = list(links[inp["link"]])
-                        
-            # Map widgets
-            vals = node.get("widgets_values", [])
-            ct = node["type"]
-            
-            # Specific mappings for known nodes
-            if ct == "LoadAudio": 
-                if vals: inputs["audio"] = vals[0]
-            elif ct == "CheckpointLoaderSimple":
-                if vals: inputs["ckpt_name"] = vals[0]
-            elif ct == "ModelSamplingSD3":
-                if vals: inputs["shift"] = vals[0]
-            elif ct == "LatentOperationTonemapReinhard":
-                if vals: inputs["multiplier"] = vals[0]
-            elif ct == "EmptyAceStepLatentAudio":
-                if vals: 
-                    inputs["seconds"] = vals[0] # Guessing parameter names
-                    inputs["batch_size"] = vals[1]
-            elif ct == "TextEncodeAceStepAudio":
-                if len(vals) >= 2:
-                    inputs["style"] = vals[0]
-                    inputs["text"] = vals[1]
-                    if len(vals) > 2: inputs["dropout"] = vals[2] # Guess
-            elif ct == "KSampler":
-                if len(vals) >= 4:
-                    inputs["seed"] = vals[0]
-                    inputs["steps"] = vals[2]
-                    inputs["cfg"] = vals[3]
-                    inputs["sampler_name"] = vals[4]
-                    inputs["scheduler"] = vals[5]
-                    inputs["denoise"] = vals[6]
-            elif ct == "SaveAudioMP3":
-                if vals:
-                    inputs["filename_prefix"] = vals[0]
-                    
-            api[node_id] = {"class_type": ct, "inputs": inputs}
-            
-        return api
-
-    def _on_success(self, out_path):
+    def _on_success(self, path):
         self.is_processing = False
-        self.last_output_path = out_path
-        self.lbl_status.configure(text=f"Done! Saved to {Path(out_path).name}")
-        self.btn_run.configure(state="normal", text="Generate Audio")
+        self.last_output_path = path
+        self.btn_run.configure(state="normal", text="SYNTHESIZE AUDIO")
+        self.status_badge.set_status("Mix Ready", "success")
+        self.status_lbl.configure(text=f"Saved: {Path(path).name}", text_color=Colors.ACCENT_GREEN)
         
-        self.grp_output.pack(fill="x", pady=(10, 0), padx=5)
-        self.btn_play.configure(text="▶ Play Result")
+        self.player_controls.pack(fill="x", padx=15, pady=10)
+        self.btn_play.configure(text="▶ PLAY MIX")
 
     def _on_error(self, msg):
         self.is_processing = False
-        self.lbl_status.configure(text=f"Error: {msg}")
-        self.btn_run.configure(state="normal", text="Generate Audio")
-        messagebox.showerror("Execution Error", msg)
+        self.btn_run.configure(state="normal", text="RETRY SYNTHESIS")
+        self.status_badge.set_status("Engine Error", "error")
+        self.status_lbl.configure(text=f"Error: {msg[:40]}...", text_color=Colors.ACCENT_ERROR)
 
     def toggle_play(self):
         if not self.last_output_path: return
-        
         if self.is_playing:
-            if pygame:
-                pygame.mixer.music.stop()
+            if self.player: self.player.stop()
             self.is_playing = False
-            self.btn_play.configure(text="▶ Play Result")
+            self.btn_play.configure(text="▶ PLAY MIX", fg_color=Colors.ACCENT_PRIMARY)
         else:
-            if not pygame:
-                messagebox.showwarning("No Player", "pygame not installed. Opening file instead.")
+            if not self.player:
                 os.startfile(self.last_output_path)
                 return
-                
-            try:
-                pygame.mixer.init()
-                pygame.mixer.music.load(self.last_output_path)
-                pygame.mixer.music.play()
+            success = self.player.play(self.last_output_path, on_stop_callback=self._on_playback_end)
+            if success:
                 self.is_playing = True
-                self.btn_play.configure(text="⏹ Stop Playing")
-                
-                # Auto reset thread
-                threading.Thread(target=self._monitor_play, daemon=True).start()
-            except Exception as e:
-                messagebox.showerror("Play Error", str(e))
+                self.btn_play.configure(text="⏹ STOP", fg_color=Colors.ACCENT_ERROR)
 
-    def _monitor_play(self):
-        while pygame.mixer.music.get_busy():
-            time.sleep(0.1)
-        self.after(0, lambda: self.btn_play.configure(text="▶ Play Result"))
+    def _on_playback_end(self):
+        self.after(0, lambda: self.btn_play.configure(text="▶ PLAY MIX", fg_color=Colors.ACCENT_PRIMARY))
         self.is_playing = False
 
-    def open_output_folder(self):
-        if self.last_output_path:
-            os.startfile(Path(self.last_output_path).parent)
-        else:
-            os.startfile(Path("outputs/ace_audio").resolve())
-
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        app = AceAudioEditorGUI(target_path=sys.argv[1])
-    else:
-        app = AceAudioEditorGUI()
+    app = ACEAudioEditorGUI()
     app.mainloop()

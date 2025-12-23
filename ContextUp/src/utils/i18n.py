@@ -208,8 +208,9 @@ def get_localized_name(name_str: str) -> str:
         The localized name.
     """
     import re
-    # Check for "Name (In Parentheses)" pattern
-    match = re.match(r"^(.*?)\s*\((.*?)\)$", name_str.strip())
+    # Check for "Name (Bilingual Name)" pattern
+    # Only split if the text in parentheses contains non-ASCII characters (e.g., Korean)
+    match = re.match(r"^(.*?)\s*\((.*[^\x00-\x7F].*)\)$", name_str.strip())
     
     if match:
         eng_name = match.group(1).strip()

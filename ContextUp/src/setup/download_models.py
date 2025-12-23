@@ -117,16 +117,18 @@ def download_birefnet():
         return False
 
 def download_ocr():
-    print("\n=== Checking PaddleOCR Models ===")
+    print("\n=== Checking RapidOCR Models ===")
     try:
-        from paddleocr import PaddleOCR
-        print("Downloading OCR models (Korean)...")
-        # PaddleOCR default path
-        PaddleOCR(lang='korean', use_angle_cls=True) 
-        print("OCR Models Verified.")
+        from rapidocr_onnxruntime import RapidOCR
+        import numpy as np
+        print("Initializing RapidOCR...")
+        ocr = RapidOCR()
+        dummy = np.zeros((32, 32, 3), dtype=np.uint8)
+        _ = ocr(dummy)
+        print("RapidOCR Verified.")
         return True
     except Exception as e:
-        print(f"OCR Download Failed: {e}")
+        print(f"RapidOCR Download Failed: {e}")
         return False
 
 def download_demucs():

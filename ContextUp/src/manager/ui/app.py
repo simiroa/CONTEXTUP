@@ -3,6 +3,7 @@ import sys
 import logging
 from pathlib import Path
 from tkinter import messagebox
+import webbrowser
 
 # Core
 from manager.mgr_core.config import ConfigManager
@@ -18,8 +19,8 @@ from manager.resources.translations import Translator
 
 # UI Handles
 from .frames.editor import MenuEditorFrame
-from .frames.settings import SettingsFrame
-from .frames.updates import UpdatesFrame
+from .frames.dashboard import DashboardFrame
+from .frames.dependencies import DependenciesFrame
 from .frames.categories import CategoriesFrame
 from .frames.logs import LogsFrame
 
@@ -84,20 +85,21 @@ class ContextUpManager(ctk.CTk):
                 on_save_registry=self.apply_registry_changes
             ),
             "categories": lambda: CategoriesFrame(self.main_frame, self.settings, self.config_manager),
-            # Pass config_manager to SettingsFrame to reuse cached config
-            "settings": lambda: SettingsFrame(self.main_frame, self.settings, self.package_manager, self.config_manager, translator=self.tr, update_checker=self.update_checker),
-            "updates": lambda: UpdatesFrame(
+            # Pass config_manager to DashboardFrame to reuse cached config
+            "dashboard": lambda: DashboardFrame(self.main_frame, self.settings, self.package_manager, self.config_manager, translator=self.tr, update_checker=self.update_checker),
+            "dependencies": lambda: DependenciesFrame(
                 self.main_frame, 
-                self.settings, # Passed Settings
+                self.settings, 
                 self.package_manager,
-                root_dir=self.root_dir,
-                on_update_available=self._on_update_available
+                self.config_manager,
+                translator=self.tr,
+                root_dir=self.root_dir
             ),
             "logs": lambda: LogsFrame(self.main_frame, self.root_dir),
         }
         
-        # Default View (Settings Dashboard)
-        self.show_frame("settings")
+        # Default View (Dashboard)
+        self.show_frame("dashboard")
         
         # Post-Startup Tasks
         self.after(100, self._sync_categories) # Run sync after UI is shown
@@ -107,9 +109,7 @@ class ContextUpManager(ctk.CTk):
         if self.settings.get("TRAY_ENABLED", False):
             self.after(2000, self._auto_start_tray)
         
-        # Auto-check for updates if enabled (default: True)
-        if self.settings.get("CHECK_UPDATES_ON_STARTUP", True):
-            self.after(3000, self._auto_check_updates)
+
 
     def _set_app_icon(self):
         """Set window icon and Windows taskbar icon."""
@@ -164,14 +164,14 @@ class ContextUpManager(ctk.CTk):
         # Nav Buttons
         self.nav_buttons = {}
         self.nav_badges = {}  # For update badge
-        self._add_nav_btn(self.tr("manager.sidebar.dashboard"), "settings", 1) 
+        self._add_nav_btn(self.tr("manager.sidebar.dashboard"), "dashboard", 1) 
         self._add_nav_btn(self.tr("manager.sidebar.menu_editor"), "editor", 2)
         self._add_nav_btn(self.tr("manager.sidebar.categories"), "categories", 3)
-        self._add_nav_btn(self.tr("manager.sidebar.updates"), "updates", 4, show_badge=True)
+        self._add_nav_btn(self.tr("manager.sidebar.dependencies"), "dependencies", 4)
         self._add_nav_btn(self.tr("manager.sidebar.logs"), "logs", 5)
         
-        # Spacer
-        # ctk.CTkLabel(self.sidebar, text="").grid(row=8, column=0) 
+        # Info Links (Sidebar Bottom)
+        self._create_sidebar_info_links()
         
         # Sidebar Footer Area
         self.sidebar_footer = ctk.CTkFrame(self.sidebar, fg_color="transparent")
@@ -195,6 +195,27 @@ class ContextUpManager(ctk.CTk):
                                       font=ctk.CTkFont(size=14, weight="bold"),
                                       command=self.save_all_and_apply)
         self.btn_apply.pack(fill="x")
+
+    def _create_sidebar_info_links(self):
+        # Container in row 10 (which expands), aligned to bottom
+        info_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        info_frame.grid(row=10, column=0, sticky="sew", padx=20, pady=(0, 5))
+        
+        ctk.CTkLabel(info_frame, text=self.tr("manager.dashboard.info.title"), 
+                    font=ctk.CTkFont(size=12, weight="bold"), text_color="gray").pack(anchor="w", pady=(0, 5))
+        
+        links = [
+            (self.tr("manager.dashboard.info.documentation"), "https://github.com/simiroa/CONTEXTUP/blob/main/README_KR.md"),
+            (self.tr("manager.dashboard.info.report_issue"), "https://github.com/simiroa/CONTEXTUP/issues"),
+            (self.tr("manager.dashboard.info.community"), "#")
+        ]
+        
+        for text, url in links:
+            link = ctk.CTkButton(info_frame, text=text, fg_color="transparent", 
+                               text_color=("blue", "#4DA8DA"), hover=False, anchor="w", height=20,
+                               font=ctk.CTkFont(size=11),
+                               command=lambda u=url: webbrowser.open(u))
+            link.pack(anchor="w", pady=0)
 
     def _add_nav_btn(self, text, name, row, show_badge=False):
         btn_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
@@ -243,17 +264,17 @@ class ContextUpManager(ctk.CTk):
     def apply_registry_changes(self):
         """Cleanly re-apply all registry changes."""
         try:
-            # 1. Initialize Registry Manager if needed
-            if self.registry_manager is None:
-                try:
-                    menu_config = MenuConfig()
-                    self.registry_manager = RegistryManager(menu_config)
-                except Exception as e:
-                    logging.error(f"Failed to init RegistryManager: {e}")
-                    messagebox.showerror("Error", f"Failed to initialize Registry Manager: {e}")
-                    return
+            # 1. Initialize Registry Manager (Always recreate to ensure fresh settings/paths)
+            try:
+                # Reload MenuConfig and RegistryManager
+                menu_config = MenuConfig()
+                self.registry_manager = RegistryManager(menu_config)
+            except Exception as e:
+                logging.error(f"Failed to init RegistryManager: {e}")
+                messagebox.showerror("Error", f"Failed to initialize Registry Manager: {e}")
+                return
 
-            # 2. Re-load Config (Ensure we have latest from disk)
+            # 2. Config is already loaded by MenuConfig() constructor usually, but ensure load.
             self.registry_manager.config.load() 
 
             # 3. Clean Cleanup
@@ -326,24 +347,7 @@ class ContextUpManager(ctk.CTk):
         self._update_tray_ui()
         self.after(5000, self._check_tray_status) # Back to 5s for responsiveness
 
-    def _auto_check_updates(self):
-        """Check for updates in the background on startup."""
-        def on_result(info):
-            if info and info.is_newer:
-                self.after(0, lambda: self._on_update_available(True))
-        
-        self.update_checker.check_for_updates(callback=on_result)
-    
-    def _on_update_available(self, available: bool):
-        """Callback when update status changes - update sidebar badge."""
-        self._update_available = available
-        
-        if "updates" in self.nav_badges:
-            badge = self.nav_badges["updates"]
-            if available:
-                badge.configure(text="🔴", text_color="#E74C3C")
-            else:
-                badge.configure(text="")
+
 
     def _update_tray_ui(self):
         running = self.process_manager.is_running()

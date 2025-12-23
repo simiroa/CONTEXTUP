@@ -44,7 +44,7 @@ def setup_ffmpeg():
     # Install to tools/ffmpeg (external_tools.py looks for tools/ffmpeg/bin/ffmpeg.exe)
     target_dir = TOOLS_DIR / "ffmpeg"
     if (target_dir / "bin" / "ffmpeg.exe").exists():
-        print("✓ FFmpeg가 이미 존재합니다.")
+        print("[OK] FFmpeg가 이미 존재합니다.")
         return True
 
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -59,7 +59,7 @@ def setup_ffmpeg():
                 if target_dir.exists(): 
                     shutil.rmtree(target_dir)
                 shutil.move(str(src_dir), str(target_dir))
-                print(f"✓ FFmpeg 설치 완료: {target_dir}")
+                print(f"[OK] FFmpeg 설치 완료: {target_dir}")
                 
     if zip_path.exists(): 
         os.remove(zip_path)
@@ -71,7 +71,7 @@ def setup_realesrgan():
     # Install to resources/bin/realesrgan (AI binary)
     target_dir = AI_BIN_DIR / "realesrgan"
     if (target_dir / "realesrgan-ncnn-vulkan.exe").exists():
-        print("✓ Real-ESRGAN이 이미 존재합니다.")
+        print("[OK] Real-ESRGAN이 이미 존재합니다.")
         return True
 
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -100,9 +100,9 @@ def setup_realesrgan():
                 # Move the *content* of the folder or the folder itself? 
                 # The goal is AI_BIN_DIR / "realesrgan" / "realesrgan-ncnn-vulkan.exe"
                 shutil.move(str(found_exe), str(target_dir))
-                print(f"✓ Real-ESRGAN 설치 완료: {target_dir}")
+                print(f"[OK] Real-ESRGAN 설치 완료: {target_dir}")
             else:
-                 print(f"✗ 추출된 파일에서 Real-ESRGAN 실행 파일을 찾을 수 없습니다.")
+                 print("[FAIL] 추출된 파일에서 Real-ESRGAN 실행 파일을 찾을 수 없습니다.")
 
     if zip_path.exists(): 
         os.remove(zip_path)
@@ -112,7 +112,7 @@ def setup_rife():
     # Install to resources/bin/rife
     target_dir = AI_BIN_DIR / "rife"
     if (target_dir / "rife-ncnn-vulkan.exe").exists():
-        print("✓ RIFE가 이미 존재합니다.")
+        print("[OK] RIFE가 이미 존재합니다.")
         return True
 
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -136,9 +136,9 @@ def setup_rife():
                 # Ensure we copy the whole folder content or just the executable and models?
                 # RIFE usually needs the model folders alongside the exe.
                 shutil.move(str(found_dir), str(target_dir))
-                print(f"✓ RIFE 설치 완료: {target_dir}")
+                print(f"[OK] RIFE 설치 완료: {target_dir}")
             else:
-                 print(f"✗ 추출된 파일에서 RIFE 실행 파일을 찾을 수 없습니다.")
+                 print("[FAIL] 추출된 파일에서 RIFE 실행 파일을 찾을 수 없습니다.")
 
     if zip_path.exists(): 
         os.remove(zip_path)
@@ -151,20 +151,39 @@ def cleanup_temp():
         except: 
             pass
 
+def parse_requested_tools(argv):
+    requested = set()
+    for arg in argv:
+        if arg == "--ffmpeg":
+            requested.add("ffmpeg")
+        elif arg == "--realesrgan":
+            requested.add("realesrgan")
+        elif arg == "--rife":
+            requested.add("rife")
+        elif arg in ("--all", "-a"):
+            requested = {"ffmpeg", "realesrgan", "rife"}
+            break
+    if not requested:
+        requested = {"ffmpeg", "realesrgan", "rife"}
+    return requested
+
 def main():
     print("=== 외부 도구 설정 ===\n")
-    
-    results = {
-        "FFmpeg": setup_ffmpeg(),
-        "Real-ESRGAN": setup_realesrgan(),
-        "RIFE": setup_rife(),
-    }
+
+    requested = parse_requested_tools(sys.argv[1:])
+    results = {}
+    if "ffmpeg" in requested:
+        results["FFmpeg"] = setup_ffmpeg()
+    if "realesrgan" in requested:
+        results["Real-ESRGAN"] = setup_realesrgan()
+    if "rife" in requested:
+        results["RIFE"] = setup_rife()
     
     cleanup_temp()
     
     print("\n=== 외부 도구 설치 요약 ===")
     for tool, success in results.items():
-        status = "✓ 설치됨" if success else "✗ 실패"
+        status = "OK" if success else "FAIL"
         print(f"  {tool}: {status}")
     
     all_ok = all(results.values())
