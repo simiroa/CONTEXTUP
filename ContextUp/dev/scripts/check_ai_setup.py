@@ -13,21 +13,21 @@ def check_import(package_name, display_name=None):
         display_name = package_name
     try:
         importlib.import_module(package_name)
-        print(f"✅ {display_name:<25} : Installed")
+        print(f"[OK]  {display_name:<25} : Installed")
         return True
     except ImportError:
-        print(f"❌ {display_name:<25} : NOT FOUND")
+        print(f"[MISS] {display_name:<25} : NOT FOUND")
         return False
     except Exception as e:
-        print(f"⚠️ {display_name:<25} : Error - {e}")
+        print(f"[ERR] {display_name:<25} : Error - {e}")
         return False
 
 def check_binary(path, name):
     if path.exists():
-        print(f"✅ {name:<25} : Found at {path}")
+        print(f"[OK]  {name:<25} : Found at {path}")
         return True
     else:
-        print(f"❌ {name:<25} : MISSING at {path}")
+        print(f"[MISS] {name:<25} : MISSING at {path}")
         return False
 
 print("=== ContextUp AI & Dependency Verification ===\n")
@@ -71,8 +71,8 @@ total_checks = len(checks) + len(bin_checks)
 print(f"\nSummary: {success_count}/{total_checks} Checks Passed.")
 
 if success_count == total_checks:
-    print("\n🎉 ALL SYSTEMS GO! AI features are correctly connected.")
+    print("\n[OK] ALL SYSTEMS GO! AI features are correctly connected.")
     sys.exit(0)
 else:
-    print("\n⚠️ SOME FEATURES MAY FAIL. Check logs above.")
+    print("\n[WARN] SOME FEATURES MAY FAIL. Check logs above.")
     sys.exit(1)

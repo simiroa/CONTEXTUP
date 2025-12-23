@@ -42,9 +42,8 @@ FEATURES = [
     
     # Manager
     ("manager.ui.app", "manager.ui.app", "Manager GUI", "import"),
-    ("manager.core.settings", "manager.core.settings", "Settings Manager", "import"),
-    ("manager.core.config", "manager.core.config", "Config Manager", "import"),
-    ("manager.core.process", "manager.core.process", "Tray Process Manager", "import"),
+    ("manager.mgr_core.config", "manager.mgr_core.config", "Config Manager", "import"),
+    ("manager.mgr_core.process", "manager.mgr_core.process", "Tray Process Manager", "import"),
     
     # Features - Audio
     ("features.audio.tools", "features.audio.tools", "Audio Tools", "import"),
