@@ -75,7 +75,8 @@ def flip_normal_green(target_path, selection=None):
 
 class NormalStrengthGUI(BaseWindow):
     def __init__(self, target_path, selection=None):
-        super().__init__(title="ContextUp Normal & Roughness Gen", width=450, height=700, icon_name="simple_pbr")
+        super().__init__(title="ContextUp Normal & Roughness Gen", width=500, height=750, icon_name="simple_pbr")
+        self.main_frame.grid_configure(padx=10, pady=10)
         
         # Handle selection
         if selection:
@@ -89,12 +90,13 @@ class NormalStrengthGUI(BaseWindow):
         self.create_widgets()
         
     def create_widgets(self):
-        # 0. Header (Standardized)
-        self.add_header("Normal & Roughness Generator")
+        # 0. Header
+        header = self.add_header("Normal & Roughness Generator", font_size=18)
+        header.pack_configure(pady=(5, 15))
         
-        # 1. Preview Area (New)
-        self.preview_frame = ctk.CTkFrame(self.main_frame, height=250, fg_color="#2b2b2b")
-        self.preview_frame.pack(fill="x", padx=10, pady=10)
+        # 1. Preview Area (Enlarged)
+        self.preview_frame = ctk.CTkFrame(self.main_frame, height=380, fg_color="#1a1a1a")
+        self.preview_frame.pack(fill="both", expand=True, padx=5, pady=5)
         self.preview_frame.pack_propagate(False)
         
         self.lbl_preview = ctk.CTkLabel(self.preview_frame, text="Loading Preview...")
@@ -105,54 +107,61 @@ class NormalStrengthGUI(BaseWindow):
         if self.files:
             try:
                 img = Image.open(self.files[0]).convert('RGB')
-                # Resize for performance/display
                 aspect = img.height / img.width
-                w = 300
+                w = 420
                 h = int(w * aspect)
-                if h > 220: # Cap height
-                    h = 220
+                if h > 350:
+                    h = 350
                     w = int(h / aspect)
                 self.preview_img_orig = img.resize((w, h), Image.Resampling.LANCZOS)
             except Exception as e:
                 self.lbl_preview.configure(text=f"Preview Fail: {e}")
 
-        # 2. Controls
-        ctrl_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        ctrl_frame.pack(fill="x", padx=15, pady=5)
-        
-        # Normal Strength
-        ctk.CTkLabel(ctrl_frame, text="Normal Strength:", font=("", 12, "bold")).pack(anchor="w")
-        
-        n_row = ctk.CTkFrame(ctrl_frame, fg_color="transparent")
-        n_row.pack(fill="x")
-        self.lbl_norm_val = ctk.CTkLabel(n_row, text="1.0", width=30)
-        self.lbl_norm_val.pack(side="right")
-        self.slider_normal = ctk.CTkSlider(n_row, from_=0.1, to=5.0, number_of_steps=49, command=self.update_preview)
-        self.slider_normal.pack(fill="x", padx=(0, 5))
+        # 2. Preview Mode Selector
+        self.tabview = ctk.CTkTabview(self.main_frame, height=50)
+        self.tabview.pack(fill="x", padx=5, pady=(5, 0))
+        self.tabview.add("Original")
+        self.tabview.add("Normal")
+        self.tabview.add("Roughness")
+        self.tabview.set("Normal")
+        self.tabview.configure(command=self.update_preview)
+
+        # 3. Dynamic Control Panel
+        self.ctrl_panel = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.ctrl_panel.pack(fill="x", padx=10, pady=10)
+
+        # Normal Controls
+        self.frame_n_ctrl = ctk.CTkFrame(self.ctrl_panel, fg_color=("gray90", "gray20"))
+        ctk.CTkLabel(self.frame_n_ctrl, text="Strength:", font=("", 11, "bold")).pack(side="left", padx=(10, 5))
+        self.slider_normal = ctk.CTkSlider(self.frame_n_ctrl, from_=0.1, to=5.0, height=16, command=self.update_preview)
+        self.slider_normal.pack(side="left", fill="x", expand=True, padx=5)
         self.slider_normal.set(1.0)
-        
-        # Roughness Contrast
-        ctk.CTkLabel(ctrl_frame, text="Roughness Contrast:", font=("", 12, "bold")).pack(anchor="w", pady=(10, 0))
-        
-        r_row = ctk.CTkFrame(ctrl_frame, fg_color="transparent")
-        r_row.pack(fill="x")
-        self.lbl_rough_val = ctk.CTkLabel(r_row, text="1.0", width=30)
-        self.lbl_rough_val.pack(side="right")
-        self.slider_rough = ctk.CTkSlider(r_row, from_=0.5, to=2.0, number_of_steps=30, command=self.update_preview)
-        self.slider_rough.pack(fill="x", padx=(0, 5))
+        self.lbl_norm_val = ctk.CTkLabel(self.frame_n_ctrl, text="1.0", width=30, font=("", 10))
+        self.lbl_norm_val.pack(side="left")
+        self.check_n_flip = ctk.CTkCheckBox(self.frame_n_ctrl, text="Flip G", font=("", 10), width=60, command=self.update_preview)
+        self.check_n_flip.pack(side="left", padx=5)
+
+        # Roughness Controls
+        self.frame_r_ctrl = ctk.CTkFrame(self.ctrl_panel, fg_color=("gray90", "gray20"))
+        ctk.CTkLabel(self.frame_r_ctrl, text="Contrast:", font=("", 11, "bold")).pack(side="left", padx=(10, 5))
+        self.slider_rough = ctk.CTkSlider(self.frame_r_ctrl, from_=0.1, to=3.0, height=16, command=self.update_preview)
+        self.slider_rough.pack(side="left", fill="x", expand=True, padx=5)
         self.slider_rough.set(1.0)
+        self.lbl_rough_val = ctk.CTkLabel(self.frame_r_ctrl, text="1.0", width=30, font=("", 10))
+        self.lbl_rough_val.pack(side="left")
+        self.check_r_invert = ctk.CTkCheckBox(self.frame_r_ctrl, text="Invert", font=("", 10), width=60, command=self.update_preview)
+        self.check_r_invert.pack(side="left", padx=5)
+
+        # 4. Info & Action
+        self.lbl_info = ctk.CTkLabel(self.main_frame, text="Preview showing Normal", 
+                                     text_color="gray", font=("", 10))
+        self.lbl_info.pack(pady=(0, 5))
         
-        # Info
-        ctk.CTkLabel(self.main_frame, text="Preview shows Normal map only.", 
-                     text_color="gray", font=("", 10)).pack(pady=(5, 10))
-        
-        # Buttons
-        self.btn_run = ctk.CTkButton(self.main_frame, text=f"Save {len(self.files)} Maps", height=40, 
+        self.btn_run = ctk.CTkButton(self.main_frame, text="Save Normal Map(s)", height=35, 
                                      fg_color="#00b894", hover_color="#00cec9",
                                      font=("", 13, "bold"), command=self.start_gen)
-        self.btn_run.pack(fill="x", padx=20, pady=10)
+        self.btn_run.pack(fill="x", padx=20, pady=(5, 15))
         
-        # Initial trigger
         if self.preview_img_orig:
             self.update_preview()
 
@@ -165,19 +174,45 @@ class NormalStrengthGUI(BaseWindow):
         
         # Generate Preview
         if self.preview_img_orig:
-            # We only show Normal map in preview for now? Or side-by-side?
-            # Let's show Normal map as it's the main visual change
-            norm, _ = self.generate_maps(self.preview_img_orig, n_str, r_con)
+            current_tab = self.tabview.get()
+            self.lbl_info.configure(text=f"Preview showing {current_tab}")
             
-            # Convert to CTkImage
-            ctk_img = ctk.CTkImage(light_image=norm, dark_image=norm, size=norm.size)
+            # Contextual UI Focus
+            if current_tab == "Original":
+                self.frame_n_ctrl.pack_forget()
+                self.frame_r_ctrl.pack_forget()
+                self.btn_run.configure(text="Select Normal/Roughness to Save", state="disabled")
+                display_img = self.preview_img_orig
+            elif current_tab == "Normal":
+                self.frame_r_ctrl.pack_forget()
+                self.frame_n_ctrl.pack(fill="x", pady=5)
+                self.btn_run.configure(text="Save Normal Map(s)", state="normal")
+                
+                params = {'n_str': n_str, 'n_flip': self.check_n_flip.get(), 'r_con': r_con, 'r_invert': self.check_r_invert.get()}
+                norm, _ = self.generate_maps(self.preview_img_orig, params)
+                display_img = norm
+            else: # Roughness
+                self.frame_n_ctrl.pack_forget()
+                self.frame_r_ctrl.pack(fill="x", pady=5)
+                self.btn_run.configure(text="Save Roughness Map(s)", state="normal")
+                
+                params = {'n_str': n_str, 'n_flip': self.check_n_flip.get(), 'r_con': r_con, 'r_invert': self.check_r_invert.get()}
+                _, rough = self.generate_maps(self.preview_img_orig, params)
+                display_img = rough
+            
+            ctk_img = ctk.CTkImage(light_image=display_img, dark_image=display_img, size=display_img.size)
             self.lbl_preview.configure(image=ctk_img, text="")
 
-    def generate_maps(self, img_pil, strength, contrast):
+    def generate_maps(self, img_pil, params):
         """Core logic: Returns (normal_pil, roughness_pil)"""
         import numpy as np
         from PIL import ImageEnhance
         
+        n_str = params.get('n_str', 1.0)
+        n_flip = params.get('n_flip', False)
+        r_con = params.get('r_con', 1.0)
+        r_invert = params.get('r_invert', False)
+
         # Convert to arrays
         if img_pil.mode != 'L':
             gray = img_pil.convert('L')
@@ -185,18 +220,20 @@ class NormalStrengthGUI(BaseWindow):
             gray = img_pil
             
         # === Roughness ===
-        if contrast != 1.0:
+        if r_con != 1.0:
             enhancer = ImageEnhance.Contrast(gray)
-            img_con = enhancer.enhance(contrast)
+            img_con = enhancer.enhance(r_con)
         else:
             img_con = gray
             
-        arr = np.array(img_con, dtype=np.float32) / 255.0
-        rough_arr = (1.0 - arr) * 255
+        arr_r = np.array(img_con, dtype=np.float32) / 255.0
+        
+        # Invert logic: default depth (1.0 - Gray) or inverted (Gray)
+        rough_arr_norm = arr_r if r_invert else (1.0 - arr_r)
+        rough_arr = rough_arr_norm * 255
         rough_img = Image.fromarray(rough_arr.astype(np.uint8))
         
         # === Normal ===
-        # Use SCIPY if available, else numpy gradient
         arr_n = np.array(gray, dtype=np.float32) / 255.0
         
         try:
@@ -207,10 +244,13 @@ class NormalStrengthGUI(BaseWindow):
             dx = np.gradient(arr_n, axis=1)
             dy = np.gradient(arr_n, axis=0)
             
-        dx *= strength
-        dy *= strength
-        dz = np.ones_like(arr_n)
+        dx *= n_str
+        dy *= n_str
         
+        if n_flip:
+            dy = -dy # Flip Green (Y-axis)
+            
+        dz = np.ones_like(arr_n)
         length = np.sqrt(dx*dx + dy*dy + dz*dz)
         np.place(length, length==0, 1)
         
@@ -238,30 +278,38 @@ class NormalStrengthGUI(BaseWindow):
     def run_process(self):
         count = 0
         errors = []
+        current_tab = self.tabview.get()
         
-        n_str = self.slider_normal.get()
-        r_con = self.slider_rough.get()
+        params = {
+            'n_str': self.slider_normal.get(),
+            'n_flip': self.check_n_flip.get(),
+            'r_con': self.slider_rough.get(),
+            'r_invert': self.check_r_invert.get()
+        }
         
         for path in self.files:
             try:
                 img = Image.open(path)
-                norm, rough = self.generate_maps(img, n_str, r_con)
+                norm, rough = self.generate_maps(img, params)
                 
-                norm.save(path.parent / f"{path.stem}_normal.png")
-                rough.save(path.parent / f"{path.stem}_roughness.png")
+                if current_tab == "Normal":
+                    norm.save(path.parent / f"{path.stem}_normal.png")
+                elif current_tab == "Roughness":
+                    rough.save(path.parent / f"{path.stem}_roughness.png")
+                
                 count += 1
             except Exception as e:
                 errors.append(f"{path.name}: {e}")
                 
-        self.main_frame.after(0, lambda: self._finish(count, errors))
-        
-    def _finish(self, count, errors):
-        self.btn_run.configure(state="normal", text=f"Save {len(self.files)} Maps")
+        self.main_frame.after(0, lambda: self._finish(count, errors, current_tab))
+
+    def _finish(self, count, errors, tab_name):
+        self.btn_run.configure(state="normal", text=f"Save {tab_name} Map(s)")
         if errors:
             messagebox.showwarning("Finished with Errors", "\n".join(errors))
         else:
-            messagebox.showinfo("Success", f"Saved maps for {count} files.")
-            self.destroy()
+            messagebox.showinfo("Success", f"Saved {tab_name} maps for {count} files.")
+            # Window stays open for continuous work
 
 def generate_simple_normal_roughness(target_path, selection=None):
     """Launch GUI for generation."""
