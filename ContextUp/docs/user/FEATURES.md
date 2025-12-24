@@ -36,6 +36,7 @@
 | **Document** | <img src="../../assets/icons/icon_sys_pdf_split.png" width="24"> | **PDF Split** | PDF 분할 | 다페이지 PDF를 개별 페이지 또는 지정 범위로 정밀 분할 | pypdf |
 | **Tools** | <img src="../../assets/icons/icon_video_downloader.png" width="24"> | **Video Downloader** | 영상 다운로드 | 스트리밍 영상 및 음원을 로컬 환경으로 저장 | yt-dlp |
 
+
 ---
 
 ## 🟡 2단계: 표준 설치 (Standard) - 약 +25개 기능
@@ -44,10 +45,10 @@
 | 카테고리 | 아이콘 | 영문 이름 | 한글 이름 | 기능 소개 | 비고 |
 | :--- | :---: | :--- | :--- | :--- | :--- |
 | **Image** | <img src="../../assets/icons/icon_image_format_convert.png" width="24"> | **Img Convert** | 이미지 변환 | 수십 종의 특수 포맷 및 최신 포맷을 고화질 무손실 상호 변환 | OpenCV |
-| **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Vid Convert** | 영상 변환 | 비트레이트 제어 및 코덱 변환을 통한 용량/호환성 최적화 | FFmpeg |
-| **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Interp 30fps** | 30fps 보간 | 저프레임 영상을 30fps로 부드럽게 변환 (Minterpolate) | FFmpeg |
+| **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Vid Convert** | 영상 변환 | 비트레이트 제어 및 코덱 변환을 통한 용량/호환성 최적화 | FFmpeg (자동 설치) |
+| **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Interp 30fps** | 30fps 보간 | 저프레임 영상을 30fps로 부드럽게 변환 (Minterpolate) | FFmpeg (자동 설치) |
 | **Tools** | <img src="../../assets/icons/icon_ai_text_lab.ico" width="24"> | **AI Text Lab** | 텍스트 연구소 | Gemini/Ollama 기반 텍스트 번역, 정제 및 스타일 변환 | API Key |
-| **Document** | <img src="../../assets/icons/icon_doc_convert.png" width="24"> | **Doc Convert** | 문서 변환 | PDF를 워드로 변환하거나 이미지/PDF에서 텍스트 추출 (OCR은 AI Heavy) | RapidOCR (AI Heavy), pdf2docx |
+| **Document** | <img src="../../assets/icons/icon_doc_convert.png" width="24"> | **Doc Convert** | 문서 변환 | PDF를 워드로 변환하거나 이미지/PDF에서 텍스트 추출 | pdf2docx |
 | **AI Light** | <img src="../../assets/icons/icon_ai_gemini_vision.png" width="24"> | **Gemini Tool** | Gemini AI 분석 | 클라우드 기반 비전 AI를 활용한 이미지 맥락 분석 및 데이터 추출 | Gemini API |
 
 ---
@@ -58,17 +59,19 @@
 | 카테고리 | 아이콘 | 영문 이름 | 한글 이름 | 기술적 소개 | 비고 (Repository) |
 | :--- | :---: | :--- | :--- | :--- | :--- |
 | **AI Heavy** | <img src="../../assets/icons/icon_image_remove_bg_ai.png" width="24"> | **BG Removal** | 배경 제거 | Deep Learning 기반 Salient Object Detection을 통한 정교한 마스킹 | [Rembg](https://github.com/danielgatis/rembg) / [BiRefNet](https://github.com/ZhengPeng7/BiRefNet) |
-| **AI Heavy** | <img src="../../assets/icons/icon_image_upscale_ai.png" width="24"> | **AI Upscale** | AI 업스케일 | SRGAN 모델을 사용하여 이미지의 고주파 디테일 재구성 및 해상도 복원 | [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) |
+| **AI Heavy** | <img src="../../assets/icons/icon_image_upscale_ai.png" width="24"> | **AI Upscale** | AI 업스케일 | SRGAN 모델을 사용하여 이미지의 고주파 디테일 재구성 및 해상도 복원 | Real-ESRGAN (자동 설치) |
 | **AI Heavy** | <img src="../../assets/icons/subtitle.png" width="24"> | **Whisper AI** | Whisper 자막 | Robust Speech-to-Text 엔진을 활용한 고정밀 오디오 전사 및 동기화 | [Faster-Whisper](https://github.com/SYSTRAN/faster-whisper) |
 | **AI Heavy** | <img src="../../assets/icons/icon_ai_pbr.png" width="24"> | **Marigold PBR** | PBR 맵 생성 | Diffusion 모델 기반 Monocular Depth Estimation을 통한 3D 텍스처 추출 | [Marigold](https://github.com/prs-eth/Marigold) |
 | **AI Heavy** | <img src="../../assets/icons/icon_audio_separate_stems.png" width="24"> | **Demucs Stems** | 음원 분리 | Source Separation 기법을 응용하여 오디오 요소를 트랙별로 완전 분리 | [Meta Demucs](https://github.com/facebookresearch/demucs) |
-| **AI Heavy** | <img src="../../assets/icons/icon_doc_analyze_ollama.png" width="24"> | **RapidOCR** | RapidOCR 인식 | 이미지나 PDF 내의 글자를 고성능 로컬 엔진으로 읽어 텍스트화 | [RapidOCR](https://github.com/RapidAI/RapidOCR) |
 | **AI Heavy** | <img src="../../assets/icons/icon_video_frame_interp.png" width="24"> | **RIFE Interp.** | 프레임 보간 | Real-time Intermediate Flow Estimation을 통한 시간적 해상도 확장 | [RIFE-ncnn](https://github.com/nihui/rife-ncnn-vulkan) |
 
 ---
 
 ## 🏗️ DCC & Professional Link - 외부 도구 연동 기능 (약 +10개)
-**자동 설치되지 않으며, 사용자의 PC에 설치된 전문 소프트웨어나 포터블 버전을 연결해야 활성화되는 고사양 기능입니다.**
+**자동 설치되지 않으며**, 사용자의 PC에 설치된 전문 소프트웨어나 포터블 버전을 연결해야 활성화되는 고사양 기능입니다.
+
+> [!NOTE]
+> FFmpeg, Real-ESRGAN, Whisper, RIFE 등의 핵심 도구와 라이브러리는 **1~3단계 설치 과정에서 자동으로 구성**되므로 별도의 수동 연동이 필요하지 않습니다.
 
 | 카테고리 | 아이콘 | 기능 이름 | 한글 이름 | 연동 필수 도구 | 기능 설명 |
 | :--- | :---: | :--- | :--- | :--- | :--- |

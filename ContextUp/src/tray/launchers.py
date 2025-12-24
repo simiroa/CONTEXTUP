@@ -20,6 +20,9 @@ FEATURE_CATEGORIES = [
     "image",
     "audio",
     "document",
+    "sequence",
+    "leave_manager",
+    "prompt_master",
 ]
 
 
@@ -75,10 +78,10 @@ def find_script_path(tool_id: str, tool_script: str = None) -> Path:
     
     # Special mappings
     special_mappings = {
-        "leave_manager": src_dir / "features" / "vacance" / "gui.py",
-        "vacance": src_dir / "features" / "vacance" / "gui.py",
+        "leave_manager": src_dir / "features" / "leave_manager" / "gui.py",
+        "vacance": src_dir / "features" / "leave_manager" / "gui.py",
         "finder": src_dir / "features" / "finder" / "__init__.py",
-        "translator": src_dir / "features" / "system" / "translator.py",
+        "prompt_master": src_dir / "features" / "prompt_master" / "main.py",
     }
     
     if tool_id in special_mappings:
@@ -157,16 +160,3 @@ def open_manager():
         )
     except Exception as e:
         logger.error(f"Failed to open manager: {e}")
-
-
-def open_translator():
-    """Launch the Translator."""
-    try:
-        translator_script = SRC_DIR / "features" / "system" / "translator.py"
-        logger.info(f"Opening Translator: {translator_script}")
-        subprocess.Popen(
-            [sys.executable, str(translator_script)],
-            creationflags=0x08000000
-        )
-    except Exception as e:
-        logger.error(f"Failed to open translator: {e}")

@@ -147,7 +147,6 @@ class DocConverterGUI(BaseWindow):
         row += 1
         
         # === Options Container ===
-        self.var_ocr = ctk.BooleanVar(value=False)
         self.var_extract_tables = ctk.BooleanVar(value=False)
         self.var_extract_images = ctk.BooleanVar(value=False)
         self.var_include_metadata = ctk.BooleanVar(value=False)
@@ -162,9 +161,6 @@ class DocConverterGUI(BaseWindow):
         conv_frame.grid(row=row, column=0, sticky="ew", padx=10, pady=2)
         conv_frame.grid_columnconfigure((0,1,2), weight=1)
         ctk.CTkLabel(conv_frame, text="Conversion Options", font=ctk.CTkFont(size=10, weight="bold")).grid(row=0, column=0, columnspan=3, sticky="w", padx=5, pady=2)
-        
-        self.cb_ocr = ctk.CTkCheckBox(conv_frame, text="OCR (KOR)", variable=self.var_ocr, font=cb_font, checkbox_width=16, checkbox_height=16)
-        self.cb_ocr.grid(row=1, column=0, sticky="w", padx=5, pady=2)
         
         self.cb_markdown = ctk.CTkCheckBox(conv_frame, text="+ Markdown", variable=self.var_markdown, font=cb_font, checkbox_width=16, checkbox_height=16)
         self.cb_markdown.grid(row=1, column=1, sticky="w", padx=5, pady=2)
@@ -224,19 +220,11 @@ class DocConverterGUI(BaseWindow):
         fmt_config = OUTPUT_FORMATS.get(choice, {})
         
         supports_dpi = fmt_config.get("supports_dpi", False)
-        supports_ocr = fmt_config.get("supports_ocr", False)
         fmt_type = fmt_config.get("type", "")
 
         # DPI
         self.dpi_menu.configure(state="normal" if supports_dpi else "disabled")
         
-        # OCR
-        if supports_ocr:
-            self.cb_ocr.configure(state="normal", text_color=("black", "white"))
-        else:
-            self.cb_ocr.configure(state="disabled", text_color="gray")
-            self.var_ocr.set(False) # Auto-uncheck
-
         # Separate Pages (Only for Image)
         if fmt_type == "image":
             self.cb_separate_pages.configure(state="normal", text_color=("black", "white"))
@@ -289,7 +277,6 @@ class DocConverterGUI(BaseWindow):
         except:
             dpi = 300
             
-        use_ocr = self.var_ocr.get()
         extract_tables = self.var_extract_tables.get()
         extract_images = self.var_extract_images.get()
         include_metadata = self.var_include_metadata.get()
@@ -321,7 +308,7 @@ class DocConverterGUI(BaseWindow):
                 elif fmt_type == "html":
                     self._do_html(fpath, out_dir / f"{base}.html")
                 elif fmt_type == "text":
-                    self._do_txt(fpath, out_dir / f"{base}.txt", use_ocr)
+                    self._do_txt(fpath, out_dir / f"{base}.txt")
                 elif fmt_type == "markdown":
                     self._do_md(fpath, out_dir / f"{base}.md")
                 elif fmt_type == "tables":
@@ -473,7 +460,7 @@ class DocConverterGUI(BaseWindow):
         
         doc.close()
 
-    def _do_txt(self, pdf, out_path, use_ocr):
+    def _do_txt(self, pdf, out_path):
         """Extract text from PDF"""
         try:
             import pymupdf
@@ -482,46 +469,8 @@ class DocConverterGUI(BaseWindow):
         
         text = ""
         doc = pymupdf.open(str(pdf))
-        
-        if use_ocr:
-            try:
-                import numpy as np
-                from rapidocr_onnxruntime import RapidOCR
-            except ImportError:
-                raise ImportError("RapidOCR not installed for OCR.")
-
-            ocr = RapidOCR()
-            
-            for page in doc:
-                pix = page.get_pixmap(matrix=pymupdf.Matrix(2.0, 2.0))
-                img_data = pix.samples
-                img_array = np.frombuffer(img_data, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
-                
-                if pix.n == 4:
-                    img_array = img_array[:, :, :3]
-
-                if img_array.ndim == 3:
-                    img_array = img_array[:, :, ::-1]
-
-                res = ocr(img_array)
-                if isinstance(res, tuple):
-                    res = res[0]
-                if res:
-                    for item in res:
-                        if not item:
-                            continue
-                        text_content = None
-                        if isinstance(item, (list, tuple)):
-                            if len(item) >= 2 and isinstance(item[1], str):
-                                text_content = item[1]
-                            elif len(item) >= 2 and isinstance(item[1], (list, tuple)) and item[1]:
-                                text_content = item[1][0]
-                        if text_content:
-                            text += text_content + "\n"
-                text += "\n---\n\n"
-        else:
-            for page in doc:
-                text += page.get_text() + "\n"
+        for page in doc:
+            text += page.get_text() + "\n"
         
         doc.close()
         

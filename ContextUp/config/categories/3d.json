@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "pymeshlab",
             "customtkinter"
@@ -30,7 +30,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
@@ -50,7 +50,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
@@ -70,7 +70,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
@@ -90,7 +90,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
@@ -110,7 +110,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "pymeshlab",
             "customtkinter"

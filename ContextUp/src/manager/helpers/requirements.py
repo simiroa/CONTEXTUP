@@ -20,8 +20,6 @@ class RequirementHelper:
         "diffusers": "Marigold",
         "faster-whisper": "Whisper",
         "demucs": "Demucs",
-        "rapidocr-onnxruntime": "OCR",
-        "onnxruntime-gpu": "OCR",
         "gfpgan": "Upscale",
         "realesrgan": "Upscale",
         "basicsr": "Upscale",
@@ -32,7 +30,6 @@ class RequirementHelper:
         "marigold_pbr": ["Marigold"],
         "whisper_subtitle": ["Whisper"],
         "demucs_stems": ["Demucs"],
-        "paddle_ocr": ["OCR"],
     }
 
     ALL_MODEL_KEYS = (
@@ -41,7 +38,6 @@ class RequirementHelper:
         "Marigold",
         "Whisper",
         "Demucs",
-        "OCR",
         "Upscale",
     )
 
@@ -209,7 +205,6 @@ class RequirementHelper:
             "Marigold": self._check_marigold,
             "Whisper": self._check_whisper,
             "Demucs": self._check_demucs,
-            "OCR": self._check_ocr,
             "Upscale": self._check_upscale,
         }
 
@@ -220,7 +215,6 @@ class RequirementHelper:
             "Marigold": self._remove_marigold,
             "Whisper": self._remove_whisper,
             "Demucs": self._remove_demucs,
-            "OCR": self._remove_ocr,
             "Upscale": self._remove_upscale,
         }
         remover = removers.get(model_key)
@@ -278,12 +272,6 @@ class RequirementHelper:
     def _remove_demucs(self) -> bool:
         return self._remove_path(paths.DEMUCS_DIR)
 
-    def _remove_ocr(self) -> bool:
-        ok = self._remove_path(paths.OCR_DIR)
-        ok = self._remove_path(Path.home() / ".rapidocr") and ok
-        ok = self._remove_path(Path.home() / ".cache" / "rapidocr") and ok
-        return ok
-
     def _remove_upscale(self) -> bool:
         return self._remove_path(Path.home() / ".cache" / "realesrgan")
 
@@ -327,17 +315,6 @@ class RequirementHelper:
         if not paths.DEMUCS_DIR.exists():
             return False
         return any(paths.DEMUCS_DIR.rglob("*.th")) or any(paths.DEMUCS_DIR.rglob("*.pt"))
-
-    def _check_ocr(self) -> bool:
-        cache_dirs = [
-            Path.home() / ".rapidocr",
-            Path.home() / ".cache" / "rapidocr",
-            paths.OCR_DIR,
-        ]
-        for cache_dir in cache_dirs:
-            if cache_dir.exists() and any(cache_dir.rglob("*")):
-                return True
-        return False
 
     def _check_upscale(self) -> bool:
         cache_dir = Path.home() / ".cache" / "realesrgan"

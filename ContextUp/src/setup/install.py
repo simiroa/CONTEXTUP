@@ -113,8 +113,6 @@ PKG_AI_HEAVY = [
     "gfpgan",
     "basicsr",
     "realesrgan",
-    "onnxruntime-gpu",
-    "rapidocr-onnxruntime",
     "kornia",
 ]
 
@@ -475,7 +473,6 @@ MODEL_TO_FEATURE = {
     "Rembg": "rmbg_background",
     "Marigold": "marigold_pbr",
     "Demucs": "demucs_stems",
-    "OCR": "paddle_ocr",
 }
 
 def apply_granular_overrides(model_status: dict):
@@ -544,7 +541,6 @@ def choose_install_tier() -> dict[str, bool]:
     tiers_config = load_tiers()
     tiers = tiers_config.get("tiers", {})
     core_cats = tiers_config.get("core_categories", CORE_CATEGORIES)
-    cat_descs = tiers_config.get("category_descriptions", OPTIONAL_CATEGORIES)
     
     # 모든 카테고리 수집
     all_cats = set(core_cats)
@@ -569,10 +565,10 @@ def choose_install_tier() -> dict[str, bool]:
     print(f"\n[3] {full.get('name', '전체 설치')}")
     print(f"    - {full.get('description', '모든 기능 + AI')}")
     
-    print("\n[4] 커스텀 설치")
-    print("    - 기능별 세부 선택")
     
-    choice = input("\n설치 유형을 선택하세요 [1-4] (기본=2): ").strip() or "2"
+    choice = input("\n설치 유형을 선택하세요 [1-3] (기본=2): ").strip() or "2"
+    if choice not in ("1", "2", "3"):
+        choice = "2"
     
     # 카테고리 초기화 (모든 카테고리 False)
     categories = {cat: False for cat in all_cats}
@@ -604,36 +600,6 @@ def choose_install_tier() -> dict[str, bool]:
         apply_tier("full")
         return categories
     
-    else:
-        # 커스텀 설치
-        print("\n>>> 커스텀 설치 모드")
-        print("\n[기본 기능] (자동 포함)")
-        print(f"  - {', '.join(core_cats)}")
-        for cat in core_cats:
-            categories[cat] = True
-        
-        print("\n[옵션 기능 선택]")
-        for cat, desc in cat_descs.items():
-            if cat not in core_cats:
-                categories[cat] = prompt_yn(f"  {cat} - {desc}", True)
-        
-        # AI 선택
-        print("\n[AI 기능 선택]")
-        print("\n  [AI 라이트] ~100MB")
-        print("    - Gemini 이미지 도구 (API 키 필요)")
-        print("    - Ollama 텍스트 리파인 (로컬 Ollama 필요)")
-        categories["AI"] = prompt_yn("\n  AI 라이트를 설치하시겠습니까?", True)
-        
-        if categories["AI"]:
-            print("\n  [AI 헤비] ~8-10GB (PyTorch + 모델)")
-            print("    - 배경 제거 (rembg)")
-            print("    - 이미지 업스케일 (RealESRGAN)")
-            print("    - 음성→자막 (Whisper)")
-            print("    - PBR 맵 생성 (Marigold)")
-            print("    - 오디오 분리 (Demucs)")
-            categories["AI_Heavy"] = prompt_yn("\n  AI 헤비도 설치하시겠습니까?", False)
-        
-        return categories
 
 
 def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bool, models_attempted: bool):
@@ -656,7 +622,7 @@ def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bo
     else:
         print("  (설치 건너뜀)")
 
-    if categories.get("AI"):
+    if categories.get("AI_Heavy"):
         print("\n[AI 모델]")
         if not models_attempted:
             print("  - 상태: 미실행 (설치 시 다운로드 생략)")
@@ -727,14 +693,9 @@ def main():
         except Exception as e:
             print(f"[경고] 외부 도구 설정 실패: {e}")
 
-    install_pkgs = prompt_yn("\n선택된 카테고리의 패키지를 설치하시겠습니까?", True)
-    pkg_ok = True
-    if install_pkgs:
-        pkg_ok = install_packages(chosen_python, categories)
-    else:
-        print("패키지 설치를 건너뜁니다. 나중에 설치할 수 있습니다.")
+    pkg_ok = install_packages(chosen_python, categories)
 
-    download_models = categories.get("AI") and prompt_yn("\nAI 모델을 지금 다운로드하시겠습니까? (예상 8-10GB)", False)
+    download_models = categories.get("AI_Heavy") and pkg_ok
     models_ok = True
     model_status = {}
     if download_models:
@@ -751,7 +712,7 @@ def main():
             # Apply granular disablement instead of entire category
             apply_granular_overrides(model_status)
 
-    if categories.get("AI") and pkg_ok:
+    if categories.get("AI_Heavy") and pkg_ok:
         run_gpu_check(chosen_python)
 
     # Persist profile

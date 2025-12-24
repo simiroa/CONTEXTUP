@@ -21,6 +21,7 @@ from core.config import MenuConfig
 from core.logger import setup_logger
 from core.paths import ROOT_DIR, LOGS_DIR, SRC_DIR
 from utils.comfy_server import start_comfy, stop_comfy, is_comfy_running
+from utils import i18n
 
 QUICK_MENU_PORT = 54322  # Dedicated port for quick menu daemon
 
@@ -312,13 +313,12 @@ class QuickMenu(ctk.CTkToplevel):
             # 1. Copy My Info pinned to top
             self._add_copy_my_info_section(scrollable)
 
-            # 2. Quick Actions (config-based special items)
-            quick_actions = [
-                ("🔄  Reopen Last Closed Folder", self._reopen_recent, "reopen_recent"),
-                ("📂  Open from Clipboard", self._open_clipboard, "open_from_clipboard"),
-            ]
-            for text, handler, _ in quick_actions:
-                self._add_menu_button(scrollable, text, handler)
+            # 2. Recent Folders (Collapsible Section)
+            self._add_recent_folders_section(scrollable)
+
+            # 3. Quick Actions
+            clipboard_text = i18n.t("features.clipboard.open_from_clipboard", "📂  Open from Clipboard")
+            self._add_menu_button(scrollable, clipboard_text, self._open_clipboard)
 
             self._add_separator(scrollable)
             
@@ -523,6 +523,100 @@ class QuickMenu(ctk.CTkToplevel):
                 
         except Exception as e:
             logger.debug(f"Copy My Info not available: {e}")
+
+    def _add_recent_folders_section(self, parent):
+        """Add Recent Folders as collapsible submenu"""
+        try:
+            log_file = LOGS_DIR / "recent_folders.log"
+            recent_paths = []
+            if log_file.exists():
+                with open(log_file, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                seen = set()
+                for line in reversed(lines):
+                    if "\t" in line:
+                        p = line.split("\t", 1)[1].strip()
+                        if p and os.path.exists(p) and p not in seen:
+                            seen.add(p)
+                            recent_paths.append(p)
+                        if len(recent_paths) >= 5:
+                            break
+
+            # Create a frame for the submenu
+            submenu_frame = ctk.CTkFrame(parent, fg_color="transparent")
+            submenu_frame.pack(fill="x", pady=1, padx=5)
+            
+            # Toggle state
+            self.recent_expanded = False
+            self.recent_items_frame = None
+            
+            def toggle_recent():
+                self.recent_expanded = not self.recent_expanded
+                if self.recent_expanded:
+                    toggle_btn.configure(text=i18n.t("features.system.recent_folders", "📂  Recent Folders") + "  ▼")
+                    # Show items
+                    self.recent_items_frame = ctk.CTkFrame(submenu_frame, fg_color=("gray85", "#181818"), corner_radius=6)
+                    self.recent_items_frame.pack(fill="x", padx=(10, 0), pady=(2, 0))
+                    
+                    # Add "Reopen Last" as first item in list
+                    reopen_text = i18n.t("features.system.reopen_last_folder", "🔄  Reopen Last Closed")
+                    reopen_btn = ctk.CTkButton(
+                        self.recent_items_frame,
+                        text=reopen_text,
+                        command=lambda: self._on_click(self._reopen_recent),
+                        anchor="w",
+                        fg_color="transparent",
+                        hover_color=("#C0C0C0", "#2A2A2A"),
+                        text_color=("gray10", "gray90"),
+                        height=30,
+                        corner_radius=4,
+                        font=("Segoe UI", 11)
+                    )
+                    reopen_btn.pack(fill="x", pady=1, padx=2)
+
+                    if recent_paths:
+                        for path in recent_paths:
+                            name = Path(path).name
+                            if not name: name = path
+                            btn = ctk.CTkButton(
+                                self.recent_items_frame,
+                                text=f"  {name}",
+                                command=lambda p=path: self._on_click(lambda: subprocess.Popen(f'explorer "{p}"')),
+                                anchor="w",
+                                fg_color="transparent",
+                                hover_color=("#C0C0C0", "#2A2A2A"),
+                                text_color=("gray10", "gray90"),
+                                height=30,
+                                corner_radius=4,
+                                font=("Segoe UI", 11)
+                            )
+                            btn.pack(fill="x", pady=1, padx=2)
+                    else:
+                        label = ctk.CTkLabel(self.recent_items_frame, text="Empty", font=("Segoe UI", 10), text_color="gray")
+                        label.pack(pady=5)
+                else:
+                    toggle_btn.configure(text=i18n.t("features.system.recent_folders", "📂  Recent Folders") + "  ▶")
+                    if self.recent_items_frame:
+                        self.recent_items_frame.destroy()
+                        self.recent_items_frame = None
+            
+            recent_title = i18n.t("features.system.recent_folders", "📂  Recent Folders")
+            toggle_btn = ctk.CTkButton(
+                submenu_frame,
+                text=recent_title + "  ▶",
+                command=toggle_recent,
+                anchor="w",
+                fg_color="transparent",
+                hover_color=("#D0D0D0", "#1F1F1F"),
+                text_color=("gray10", "#E0E0E0"),
+                height=34,
+                corner_radius=6,
+                font=("Segoe UI", 12)
+            )
+            toggle_btn.pack(fill="x")
+                
+        except Exception as e:
+            logger.debug(f"Recent folders not available: {e}")
     
     def _reopen_recent(self):
         try:
@@ -534,27 +628,29 @@ class QuickMenu(ctk.CTkToplevel):
                     last_line = lines[-1].strip()
                     if "\t" in last_line:
                         folder_path = last_line.split("\t", 1)[1]
-                        if Path(folder_path).exists():
-                            subprocess.Popen(f'explorer "{folder_path}"', shell=True)
+                        if os.path.exists(folder_path):
+                            subprocess.Popen(f'explorer "{folder_path}"')
         except Exception as e:
-            logger.error(f"Reopen failed: {e}")
+            logger.error(f"Reopen recent failed: {e}")
     
     def _open_clipboard(self):
+        """Open path or URL from clipboard using unified logic."""
         try:
-            import pyperclip
-            content = pyperclip.paste().strip().strip('"')
-            path = Path(content)
-            if path.exists() and path.is_dir():
-                subprocess.Popen(f'explorer "{path}"', shell=True)
+            from features.system.open_from_clipboard import open_path_from_clipboard
+            result = open_path_from_clipboard()
+            logger.info(f"Open from clipboard: {result}")
         except Exception as e:
-            logger.error(f"Open clipboard failed: {e}")
-    
-    def _copy_to_clipboard(self, content):
+            logger.error(f"Open from clipboard failed: {e}")
+
+    def _copy_to_clipboard(self, text):
+        """Standard Tkinter clipboard copy helper."""
         try:
-            import pyperclip
-            pyperclip.copy(content)
-        except:
-            pass
+            self.clipboard_clear()
+            self.clipboard_append(text)
+            self.update() # Required for some windows versions to persist clipboard
+            logger.info(f"Copied to clipboard: {text[:20]}...")
+        except Exception as e:
+            logger.error(f"Copy to clipboard failed: {e}")
     
     def _launch_tool(self, item):
         """Launch a tool using shared launcher logic."""

@@ -50,10 +50,10 @@ class ApiRow(ctk.CTkFrame):
     def set_status(self, success: bool, msg: str = None):
         if success:
             text = msg if msg else "OK"
-            color = "#27AE60"
+            color = Theme.TEXT_DIM  # Gray instead of green
         else:
             text = msg if msg else "Error"
-            color = "#E74C3C"
+            color = Theme.TEXT_DANGER
         self.lbl_status.configure(text=text, text_color=color)
 
 class ToolRow(ctk.CTkFrame):
@@ -86,9 +86,9 @@ class ToolRow(ctk.CTkFrame):
 
     def set_status(self, is_found: bool):
         if is_found:
-            self.lbl_status.configure(text="Ready", text_color="#27AE60")
+            self.lbl_status.configure(text="Ready", text_color=Theme.TEXT_DIM)  # Gray instead of green
         else:
-            self.lbl_status.configure(text="Missing", text_color="#E74C3C")
+            self.lbl_status.configure(text="Missing", text_color=Theme.TEXT_DANGER)
 
 class DependenciesFrame(ctk.CTkFrame):
     def __init__(self, parent, settings_manager, package_manager, config_manager=None, translator=None, root_dir=None):
@@ -320,8 +320,6 @@ class DependenciesFrame(ctk.CTkFrame):
         
         self.pkg_ai_heavy = [
             ("torch", "PyTorch (AI Core)"),
-            ("rapidocr-onnxruntime", "RapidOCR (OCR)"),
-            ("onnxruntime-gpu", "ONNX Runtime GPU"),
             ("rembg", "Rembg (BG Removal)"),
             ("faster-whisper", "Faster Whisper"),
             ("transformers", "Transformers"),
@@ -347,7 +345,7 @@ class DependenciesFrame(ctk.CTkFrame):
         ctk.CTkLabel(row, text=label, width=150, anchor="w").pack(side="left", padx=10)
         
         status_text = f"v{version}" if version else "Missing"
-        status_color = "#27AE60" if version else "#C0392B"
+        status_color = Theme.TEXT_DIM if version else Theme.TEXT_DANGER  # Gray instead of green
         ctk.CTkLabel(row, text=status_text, text_color=status_color, width=100).pack(side="left")
         
         if not version:

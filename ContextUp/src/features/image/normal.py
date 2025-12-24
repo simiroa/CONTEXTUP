@@ -15,6 +15,7 @@ from core.logger import setup_logger
 from utils.explorer import get_selection_from_explorer
 from utils.gui_lib import BaseWindow
 import customtkinter as ctk
+from PIL import Image
 
 logger = setup_logger("normal_tools")
 

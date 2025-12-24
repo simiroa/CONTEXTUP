@@ -63,7 +63,6 @@ install.bat
 | **Rembg** | 배경 제거 |
 | **Faster-Whisper**| 고속 자막 생성 |
 | **Demucs** | 음원 분리 |
-| **RapidOCR (ONNX Runtime)** | 한글/영문 텍스트 인식 |
 
 ---
 

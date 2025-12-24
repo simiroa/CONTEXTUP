@@ -28,9 +28,15 @@ class RecentFolders(TrayModule):
         super().__init__(agent)
         self.name = "Recent Folders"
         self.running = False
+        self.log_file = LOGS_DIR / "recent_folders.log"
         self.open_folders = set()  # Set of currently open folder paths
-        self.closed_history = deque(maxlen=10)  # Store last 10 closed folders
+        self.closed_history = deque(maxlen=10)  # Store last 10 closed folders (as batches)
+        self._load_history_from_log()
+        
+    def start(self):
+        self.running = True
         threading.Thread(target=self._poll_loop, daemon=True).start()
+        logger.info("Recent Folders module started.")
         
     def stop(self):
         self.running = False
@@ -156,6 +162,76 @@ class RecentFolders(TrayModule):
         except Exception:
             pass
 
+    def _load_history_from_log(self):
+        """Load the last few closed folders from the log file at startup."""
+        try:
+            if self.log_file.exists():
+                with open(self.log_file, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                
+                # Take last 10 unique paths from the log
+                unique_paths = []
+                for line in reversed(lines):
+                    if "\t" in line:
+                        path = line.split("\t", 1)[1].strip()
+                        if path and os.path.exists(path) and path not in unique_paths:
+                            unique_paths.append(path)
+                            if len(unique_paths) >= 10:
+                                break
+                
+                # Add to history as individual "batches" (timestamp=0 since we don't care about grouping for old ones)
+                for path in reversed(unique_paths):
+                    self.closed_history.append((0, [path]))
+                
+                logger.info(f"Loaded {len(unique_paths)} recent folders from log.")
+        except Exception as e:
+            logger.error(f"Failed to load recent folders history: {e}")
+
     def get_menu_items(self):
-        """Return menu items for this module."""
-        return [item("Reopen Last Closed Folder", lambda: self.reopen_last())]
+        """Return dynamic menu items for this module."""
+        from utils import i18n
+        from pystray import Menu
+        
+        # 1. Reopen Last Closed Folder (Legacy simple behavior)
+        reopen_last_text = i18n.t("features.system.reopen_last_folder", "🔄 Reopen Last Closed Folder")
+        menu_items = [item(reopen_last_text, self.reopen_last)]
+        
+        # 2. Submenu for individual folders
+        if not self.closed_history:
+            return menu_items
+        
+        # Create a submenu of the last 10 folders
+        recent_items = []
+        
+        # Flatten and keep unique recent folders
+        flat_list = []
+        seen = set()
+        for _, paths in reversed(list(self.closed_history)):
+            for p in reversed(paths):
+                if p not in seen:
+                    seen.add(p)
+                    flat_list.append(p)
+        
+        for path in flat_list[:5]: # Show up to 5
+            name = Path(path).name
+            if not name: name = path # Handle drive roots
+            recent_items.append(item(f"  {name}", lambda i, p=path: subprocess.Popen(f'explorer "{p}"')))
+        
+        recent_items.append(Menu.SEPARATOR)
+        clear_text = i18n.t("common.clear_history", "Clear History")
+        recent_items.append(item(f"  {clear_text}", self.clear_history))
+        
+        submenu_text = i18n.t("features.system.recent_folders", "📂 Recent Folders")
+        menu_items.append(item(submenu_text, Menu(*recent_items)))
+        
+        return menu_items
+
+    def clear_history(self):
+        """Clear history and log file."""
+        self.closed_history.clear()
+        try:
+            if self.log_file.exists():
+                self.log_file.unlink()
+            self.agent.notify("Recent Folders", "History cleared.")
+        except Exception as e:
+            logger.error(f"Failed to clear history: {e}")

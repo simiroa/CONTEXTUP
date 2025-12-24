@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "pypdf"
@@ -28,7 +28,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "pypdf"
@@ -47,7 +47,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",

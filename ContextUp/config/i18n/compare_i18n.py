@@ -1,6 +1,6 @@
 
 import json
-import os
+from pathlib import Path
 
 def load_json(path):
     with open(path, 'r', encoding='utf-8') as f:
@@ -49,7 +49,7 @@ def compare_locale_files(en_path, ko_path):
         print("\nNo keys missing in EN.")
 
 if __name__ == "__main__":
-    base_dir = r"c:\Users\HG\Documents\HG_context_v2\ContextUp\config\i18n"
-    en_file = os.path.join(base_dir, "en.json")
-    ko_file = os.path.join(base_dir, "ko.json")
+    base_dir = Path(__file__).resolve().parent
+    en_file = base_dir / "en.json"
+    ko_file = base_dir / "ko.json"
     compare_locale_files(en_file, ko_file)

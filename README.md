@@ -34,7 +34,7 @@
 
 | 카테고리 | 예시 기능 |
 |----------|-----------|
-| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), OCR, **Creative Studio (Z/Advanced)** |
+| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), **Creative Studio (Z/Advanced)** |
 | 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈 |
 | 시퀀스 | 렌더링 시퀀스 정렬, 누락 프레임 탐색, 영상 변환, 분석 및 리넘버링 |
 | 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(RIFE), 유튜브 다운로더 |
@@ -133,13 +133,13 @@ ContextUp\tools\python\python.exe ContextUp\src\setup\uninstall.py
 
 > **💡 팁**: 용량이 큰 도구(Blender, ComfyUI)는 심볼릭 링크 사용을 권장합니다.
 
-| 도구 | 용도 | 다운로드 |
+| 도구 | 용도 | 권장 설정 방식 |
 |------|------|----------|
-| **FFmpeg** | 비디오/오디오 변환 | [ffmpeg.org](https://ffmpeg.org/download.html) |
-| **Blender** | 3D 메시 변환, LOD | [blender.org](https://www.blender.org/download/) |
-| **ComfyUI** | AI 이미지 업스케일 및 생성 | [github.com/comfyanonymous/ComfyUI](https://github.com/comfyanonymous/ComfyUI) |
-| **Mayo** | CAD 파일(STEP/IGES) 뷰어 | [github.com/fougue/mayo](https://github.com/fougue/mayo/releases) |
-| **Real-ESRGAN** | AI 이미지 업스케일 | [github.com/xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/releases) |
+| **FFmpeg** | 비디오/오디오 변환 | **설치 시 자동 포함** (또는 [직접 다운로드](https://ffmpeg.org/download.html)) |
+| **Real-ESRGAN** | AI 이미지 업스케일 | **설치 시 자동 포함** (또는 [직접 다운로드](https://github.com/xinntao/Real-ESRGAN/releases)) |
+| **Blender** | 3D 메시 변환, LOD | 사용 중인 경로 연결 (또는 [직접 다운로드](https://www.blender.org/download/)) |
+| **ComfyUI** | AI 이미지 업스케일 및 생성 | 사용 중인 경로 연결 (또는 [직접 다운로드](https://github.com/comfyanonymous/ComfyUI)) |
+| **Mayo** | CAD 파일(STEP/IGES) 뷰어 | [직접 다운로드](https://github.com/fougue/mayo/releases) 후 경로 연결 |
 
 ### 설치 경로
 

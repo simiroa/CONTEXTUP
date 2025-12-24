@@ -4,6 +4,7 @@ from tkinter import Menu
 from ..dialogs.item_editor import ItemEditorDialog
 from manager.helpers.icons import IconManager
 from manager.helpers.requirements import RequirementHelper
+from ..theme import Theme
 
 class MenuEditorFrame(ctk.CTkFrame):
     def __init__(self, parent, config_manager, settings, package_manager, on_save_registry=None, translator=None):
@@ -156,17 +157,17 @@ class MenuEditorFrame(ctk.CTkFrame):
         self.btn_bulk.pack(side="left", padx=5, pady=5)
         
         # Refresh Menu (next to Bulk Action)
-        ctk.CTkButton(toolbar, text="⟳ Refresh", width=80, fg_color=("gray70", "gray30"), 
-                     hover_color=("gray60", "gray40"),
+        ctk.CTkButton(toolbar, text="⟳ Refresh", width=80, fg_color=Theme.GRAY_BTN, 
+                     hover_color=Theme.GRAY_BTN_HOVER,
                      command=self._refresh_from_disk).pack(side="left", padx=5, pady=5)
         
         # Right: Core Actions
-        # Save Button Removed (Moved to Global Apply in Sidebar)
-        
-        ctk.CTkButton(toolbar, text="Auto Organize", width=100, fg_color="#F39C12", hover_color="#D68910", 
-                    command=self.auto_organize).pack(side="right", padx=5, pady=5)
-        ctk.CTkButton(toolbar, text="+ Add Item", fg_color="#2ECC71", hover_color="#27AE60", width=90,
-                    command=self.open_add_dialog).pack(side="right", padx=10, pady=5)
+        ctk.CTkButton(toolbar, text=self.tr("common.refresh"), width=80, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, 
+                    command=self.load_items).pack(side="right", padx=5, pady=5)
+        ctk.CTkButton(toolbar, text="Auto Organize", width=100, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, 
+                command=self.auto_organize).pack(side="right", padx=5, pady=5)
+        ctk.CTkButton(toolbar, text="+ Add Item", fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, width=90,
+                command=self.open_add_dialog).pack(side="right", padx=10, pady=5)
     
     def _refresh_from_disk(self):
         """Reload config from disk and refresh list."""
@@ -200,7 +201,7 @@ class MenuEditorFrame(ctk.CTkFrame):
         ctk.CTkButton(filter_frame, text="✖", width=30, fg_color="gray", command=self.reset_filters).pack(side="left", padx=5)
 
     def _setup_list(self):
-        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="Menu Items")
+        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="Menu Items", fg_color=Theme.BG_MAIN)
         self.scroll_frame.grid(row=3, column=0, sticky="nsew", padx=20, pady=5)
         self.scroll_frame.grid_columnconfigure(0, weight=1)
 
@@ -460,7 +461,7 @@ class MenuEditorFrame(ctk.CTkFrame):
                      command=lambda i=item: self.move_item(i, 1)).pack(side="left")
 
         # [Edit]
-        ctk.CTkButton(row, text="Edit", width=50, height=24, 
+        ctk.CTkButton(row, text="Edit", width=50, height=24, fg_color=Theme.GRAY_BTN, hover_color=Theme.GRAY_BTN_HOVER,
                      command=lambda i=item: self.open_edit_dialog(i)).pack(side="left", padx=5)
                     
         # [Location]

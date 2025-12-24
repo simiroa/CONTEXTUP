@@ -12,32 +12,6 @@ if torch.cuda.is_available():
 """
     return run_check("PyTorch", code)
 
-def check_rapidocr():
-    code = """
-import onnxruntime as ort
-from rapidocr_onnxruntime import RapidOCR
-providers = ort.get_available_providers()
-print(f"Providers: {providers}")
-if 'CUDAExecutionProvider' in providers:
-    print("CUDA Provider: YES")
-else:
-    print("CUDA Provider: NO")
-print("RapidOCR: import OK")
-"""
-    return run_check("RapidOCR (OCR)", code)
-
-def check_onnx():
-    code = """
-import onnxruntime as ort
-providers = ort.get_available_providers()
-print(f"Providers: {providers}")
-if 'CUDAExecutionProvider' in providers:
-    print("CUDA Provider: YES")
-else:
-    print("CUDA Provider: NO")
-"""
-    return run_check("ONNX Runtime (RemBG)", code)
-
 def run_check(name, code):
     print(f"[{name}] Checking...")
     try:
@@ -70,8 +44,6 @@ def run_check(name, code):
 def main():
     print("=== ContextUp GPU Health Check (Isolated) ===\n")
     check_torch()
-    check_rapidocr()
-    check_onnx()
     print("\n=== Check Complete ===")
     input("Press Enter to exit...")
 

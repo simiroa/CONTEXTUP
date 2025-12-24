@@ -1,7 +1,8 @@
 @echo off
 cd /d "%~dp0"
 
-set PYTHON_EXE=ContextUp\tools\python\python.exe
+set PYTHON_EXE=%~dp0ContextUp\tools\python\python.exe
+set MANAGER_SCRIPT=%~dp0ContextUp\src\manager\main.py
 
 if not exist "%PYTHON_EXE%" (
     echo ==========================================
@@ -14,7 +15,7 @@ if not exist "%PYTHON_EXE%" (
 )
 
 echo ContextUp Manager 실행 중...
-"%PYTHON_EXE%" "ContextUp\src\manager\main.py"
+"%PYTHON_EXE%" "%MANAGER_SCRIPT%"
 
 if %errorlevel% neq 0 (
     echo.

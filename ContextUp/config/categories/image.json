@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",
@@ -29,7 +29,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "OpenEXR",
             "Pillow",
@@ -51,7 +51,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter"
@@ -70,7 +70,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "OpenEXR",
             "Pillow",
@@ -92,7 +92,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",
@@ -112,7 +112,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",
@@ -132,7 +132,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",
@@ -153,7 +153,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "numpy",

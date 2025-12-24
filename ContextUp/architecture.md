@@ -83,7 +83,7 @@ The following features are defined in `config/categories/*.json` and implemented
 
 | Category | Key Features | Implementation |
 | :--- | :--- | :--- |
-| **AI** | RIFE, Whisper, ESRGAN, RMBG, Marigold, RapidOCR, Gemini Image Tool, Demucs, Prompt Master | `ai/`, `prompt_master/` |
+| **AI** | RIFE, Whisper, ESRGAN, RMBG, Marigold, Gemini Image Tool, Demucs, Prompt Master | `ai/`, `prompt_master/` |
 | **3D / Mesh** | Auto LOD, CAD to OBJ, Mesh Convert, Remesh & Bake | `mesh/` |
 | **Image** | Format Convert, Merge/Split EXR, Texture Packer ORM, Normal Tools, Image Compare | `image/` |
 | **Video** | Convert, Extract Audio, Interpolate 30fps, Proxy, Remove Audio | `video/` |

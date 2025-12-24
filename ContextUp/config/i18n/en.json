@@ -69,8 +69,7 @@
             "marigold_pbr": "Marigold PBR Generator",
             "gemini_prompt_master": "Gemini Prompt Master",
             "prompt_master": "Prompt Master",
-            "demucs_stems": "Demucs Stem Separation",
-            "paddle_ocr": "RapidOCR Text Recognition"
+            "demucs_stems": "Demucs Stem Separation"
         },
         "comfyui": {
             "start_server": "🚀 Start Server",

@@ -36,7 +36,8 @@
     "done": "완료",
     "convert": "변환",
     "reload": "새로고침",
-    "exit": "종료"
+    "exit": "종료",
+    "clear_history": "기록 삭제"
   },
   "categories": {
     "video": "비디오",
@@ -69,8 +70,7 @@
       "marigold_pbr": "Marigold PBR 생성",
       "gemini_prompt_master": "Gemini 프롬프트 마스터",
       "prompt_master": "프롬프트 마스터",
-      "demucs_stems": "Demucs 음원 분리",
-      "paddle_ocr": "RapidOCR 텍스트 인식"
+      "demucs_stems": "Demucs 음원 분리"
     },
     "comfyui": {
       "start_server": "🚀 서버 시작",
@@ -129,7 +129,9 @@
       "unwrap_folder": "폴더 언래핑",
       "finder": "파인더",
       "create_symlink": "심볼릭 링크 생성",
-      "manager": "매니저"
+      "manager": "매니저",
+      "recent_folders": "최근 폴더",
+      "reopen_last_folder": "최근 닫은 폴더 다시 열기"
     },
     "tools": {
       "copy_my_info": "내 정보 복사",

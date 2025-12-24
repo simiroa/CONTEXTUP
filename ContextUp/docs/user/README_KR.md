@@ -14,7 +14,7 @@
 
 | 카테고리 | 예시 기능 |
 |----------|-----------|
-| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), OCR, **Creative Studio (Z/Advanced)** |
+| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), **Creative Studio (Z/Advanced)** |
 | 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈 |
 | 시퀀스 | 렌더링 시퀀스 정렬, 누락 프레임 탐색, 영상 변환, 분석 및 리넘버링 |
 | 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(RIFE), 유튜브 다운로더 |

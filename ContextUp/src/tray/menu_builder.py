@@ -12,7 +12,7 @@ from core.config import MenuConfig
 from core.paths import SRC_DIR
 from core.logger import setup_logger
 from manager.mgr_core.packages import PackageManager
-from tray.launchers import create_launcher, open_manager, open_translator
+from tray.launchers import create_launcher, open_manager
 from utils import i18n
 
 logger = setup_logger("menu_builder")
@@ -45,7 +45,7 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
         exit_callback: Function to call for Exit
     """
     # Hot-reload launchers (Removed for stability - reliable restart required)
-    from tray.launchers import create_launcher, open_manager, open_translator
+    from tray.launchers import create_launcher, open_manager
 
     menu_entries = []
     
@@ -82,22 +82,6 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
                 menu_entries.append(pystray.Menu.SEPARATOR)
         except Exception as e:
             logger.error(f"Failed to load RecentFolders: {e}")
-
-
-        # --- Clipboard Opener ---
-        try:
-            from tray.modules.clipboard_opener import ClipboardOpener
-            clip_module = ClipboardOpener(agent_wrapper)
-            clip_module.start()
-            if icon_ref:
-                icon_ref._modules.append(clip_module)
-            
-            clip_items = clip_module.get_menu_items()
-            if clip_items:
-                menu_entries.extend(clip_items)
-                menu_entries.append(pystray.Menu.SEPARATOR)
-        except Exception as e:
-            logger.error(f"Failed to load ClipboardOpener: {e}")
 
     except Exception as e:
         logger.error(f"Failed to load Tray Modules: {e}")
@@ -240,7 +224,6 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
                 submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.unload_vram", "🧹 Unload VRAM"), lambda: unload_vram_action()))
                 submenu_items.append(pystray.MenuItem(i18n.t("features.comfyui.force_kill", "☠️ Force Kill All"), lambda: force_cleanup_action()))
                 submenu_items.append(pystray.Menu.SEPARATOR)
-            
             for tool in tools:
                 tool_id = tool.get("id", "")
                 tool_name = tool.get("name", "Tool")
@@ -251,25 +234,19 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
                     try:
                         from tray.modules.copy_my_info import CopyMyInfoModule
                         info_mod = CopyMyInfoModule(agent_wrapper)
-                        # This returns [pystray.MenuItem("Copy My Info", pystray.Menu(...))]
                         items = info_mod.get_menu_items()
                         if items:
                             submenu_items.extend(items)
                         continue
                     except Exception as e:
                         logger.error(f"Failed to load CopyMyInfo submenu: {e}")
-                        # Fallback to simple launcher if module fails
                 
-                # Translation for tool name
-                # Try specific feature key first, then fallback to tool_name
                 if tool.get("category"):
                     i18n_key = f"features.{tool['category'].lower()}.{tool_id}"
                 else:
                     i18n_key = f"features.other.{tool_id}"
                 
                 display_name = i18n.t(i18n_key, default=tool_name)
-                
-                # Localize name if it contains multiple languages
                 display_name = i18n.get_localized_name(display_name)
                 
                 submenu_items.append(
@@ -280,22 +257,16 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
         for cat_name in category_order:
             if cat_name in categories and categories[cat_name]:
                 submenu_items = build_category_submenu(cat_name, categories[cat_name])
-                # Translate category name
                 cat_display = i18n.t(f"categories.{cat_name.lower()}", default=cat_name)
-                
-                # Create submenu with category name as header
                 menu_entries.append(
                     pystray.MenuItem(cat_display, pystray.Menu(*submenu_items))
                 )
                 added_any = True
         
-        # Add remaining categories not in order
         for cat_name, tools in categories.items():
             if cat_name not in category_order and tools:
                 submenu_items = build_category_submenu(cat_name, tools)
-                
                 cat_display = i18n.t(f"categories.{cat_name.lower()}", default=cat_name)
-                
                 menu_entries.append(
                     pystray.MenuItem(cat_display, pystray.Menu(*submenu_items))
                 )
@@ -306,9 +277,6 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
             
     except Exception as e:
         logger.error(f"Failed to load tray tools from JSON: {e}")
-        # Fallback to hardcoded Translator
-        menu_entries.append(pystray.MenuItem("Translator", lambda: open_translator()))
-        menu_entries.append(pystray.Menu.SEPARATOR)
 
     # 3. ContextUp Manager
     menu_entries.append(pystray.MenuItem(i18n.t("features.system.manager", "ContextUp Manager"), lambda: open_manager()))

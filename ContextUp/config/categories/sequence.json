@@ -4,88 +4,91 @@
         "id": "sequence_arrange",
         "name": "Arrange Sequence Folder",
         "icon": "assets/icons/icon_sequence_arrange.ico",
-        "types": "directory;.jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp",
-        "scope": "items",
+        "types": "directory",
+        "scope": "directory",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [],
         "external_tools": [],
         "order": 101,
-        "gui": false
+        "gui": false,
+        "description": "Organize files in folder into sequence-based subfolders"
     },
     {
         "category": "Sequence",
         "id": "sequence_find_missing",
         "name": "Sequence Missing Frames",
         "icon": "assets/icons/icon_sequence_find_missing.ico",
-        "types": "directory;.jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp",
-        "scope": "items",
+        "types": "directory",
+        "scope": "directory",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [],
         "external_tools": [],
         "order": 102,
-        "gui": false
+        "gui": false,
+        "description": "Find missing frames in image sequences within folder"
     },
     {
         "category": "Sequence",
         "id": "sequence_to_video",
         "name": "Sequence to Video",
         "icon": "assets/icons/icon_sequence_to_video.ico",
-        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff",
-        "scope": "items",
+        "types": "directory",
+        "scope": "directory",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
-        "external_tools": [
-            "ffmpeg"
-        ],
+        "external_tools": [],
         "order": 103,
-        "gui": true
+        "gui": true,
+        "description": "Convert image sequences in folder to video"
     },
     {
         "category": "Sequence",
         "id": "sequence_analyze",
         "name": "Sequence Analyze",
         "icon": "assets/icons/icon_sequence_analyze.ico",
-        "types": "directory;.jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp",
-        "scope": "items",
+        "types": "directory",
+        "scope": "directory",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter"
         ],
         "external_tools": [],
         "order": 104,
-        "gui": true
+        "gui": true,
+        "description": "Analyze and preview image sequences in folder"
     },
     {
         "category": "Sequence",
         "id": "sequence_renumber",
         "name": "Sequence Renumber",
         "icon": "assets/icons/icon_sequence_renumber.ico",
-        "types": ".jpg;.jpeg;.png;.exr;.tga;.tif;.tiff;.bmp;.webp;.ico",
-        "scope": "items",
+        "types": "directory",
+        "scope": "directory",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
         "external_tools": [],
         "order": 105,
-        "gui": true
+        "gui": true,
+        "description": "Renumber image sequence files in folder"
     }
 ]

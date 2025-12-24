@@ -9,7 +9,7 @@ from pathlib import Path
 
 from core.paths import SRC_DIR
 from core.logger import setup_logger
-from tray.launchers import open_manager, open_translator
+from tray.launchers import open_manager
 
 logger = setup_logger("tray_hotkeys")
 
@@ -27,7 +27,6 @@ BUILTIN_HOTKEY_HANDLERS = {
         [sys.executable, str(src_dir / "features" / "finder" / "__init__.py")], 
         creationflags=0x08000000
     ),
-    "translator": lambda: open_translator(),
     "vacance": lambda: subprocess.Popen(
         [sys.executable, str(src_dir / "features" / "vacance" / "gui.py")], 
         creationflags=0x08000000

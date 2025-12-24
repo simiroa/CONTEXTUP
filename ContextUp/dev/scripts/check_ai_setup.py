@@ -41,8 +41,6 @@ checks = [
     ("diffusers", "Diffusers (Marigold)"),
     ("demucs", "Demucs (Audio Split)"),
     ("faster_whisper", "Faster Whisper"),
-    ("rapidocr_onnxruntime", "RapidOCR"),
-    ("onnxruntime", "ONNX Runtime"),
     ("yt_dlp", "YT-DLP"),
     ("deep_translator", "Deep Translator"),
     ("ctranslate2", "CTranslate2"),

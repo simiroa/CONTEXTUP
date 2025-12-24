@@ -24,6 +24,7 @@ pypdf
 pdf2image
 imageio  # EXR/image sequence handling
 OpenEXR  # EXR file format support
+opencv-python
 scipy  # Image/signal processing
 svglib  # SVG to Image conversion
 reportlab  # SVG rendering dependency
@@ -45,10 +46,6 @@ huggingface_hub
 torch --index-url https://download.pytorch.org/whl/cu121
 torchvision --index-url https://download.pytorch.org/whl/cu121
 torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# --- OCR (RapidOCR) ---
-rapidocr-onnxruntime
-opencv-python
 
 # --- AI Models & APIs ---
 open_clip_torch
@@ -77,5 +74,3 @@ gfpgan  # Face restoration for Upscale
 # --- Optional / Experimental ---
 basicsr
 realesrgan
-# --- GPU Acceleration Libraries ---
-onnxruntime-gpu  # For rembg/background removal acceleration

@@ -10,7 +10,7 @@
         "submenu": "",
         "dynamic_submenu": "copy_my_info",
         "show_in_tray": true,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "pyperclip"
         ],
@@ -25,10 +25,10 @@
         "icon": "assets/icons/icon_video_downloader.ico",
         "types": "*",
         "scope": "background",
-        "enabled": true,
+        "enabled": false,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",
@@ -44,11 +44,11 @@
         "name": "AI Text Lab",
         "icon": "assets/icons/icon_ai_text_lab.ico",
         "types": "*",
-        "scope": "background",
+        "scope": "tray_only",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter",
             "deep-translator",
@@ -65,16 +65,36 @@
         "name": "Leave Manager",
         "icon": "assets/icons/vacance.ico",
         "types": "*",
-        "scope": "background",
+        "scope": "tray_only",
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter"
         ],
         "external_tools": [],
         "gui": true,
         "description": "Manage your vacation days and countdown to freedom."
+    },
+    {
+        "category": "Tools",
+        "id": "prompt_master",
+        "name": "Prompt Master",
+        "icon": "assets/icons/icon_ai_prompt_master.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 606,
+        "gui": true,
+        "description": "AI-powered prompt management and refinement tool."
     }
 ]

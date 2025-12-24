@@ -9,7 +9,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "torch",
             "customtkinter"
@@ -31,7 +31,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "faster-whisper",
             "customtkinter"
@@ -51,7 +51,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter"
@@ -73,7 +73,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "customtkinter",
@@ -96,7 +96,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "accelerate",
@@ -120,7 +120,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "google-genai",
             "Pillow",
@@ -143,7 +143,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "customtkinter",
             "demucs"
@@ -151,49 +151,6 @@
         "external_tools": [],
         "is_extension": true,
         "order": 608,
-        "gui": true
-    },
-    {
-        "category": "AI",
-        "id": "paddle_ocr",
-        "name": "RapidOCR Text Recognition",
-        "icon": "assets/icons/icon_doc_analyze_ollama.ico",
-        "types": ".pdf;.png;.jpg;.jpeg;.bmp;.tiff;.webp",
-        "scope": "file",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
-        "dependencies": [
-            "Pillow",
-            "customtkinter",
-            "numpy",
-            "opencv-python",
-            "onnxruntime-gpu",
-            "rapidocr-onnxruntime"
-        ],
-        "external_tools": [],
-        "is_extension": true,
-        "order": 609,
-        "gui": true
-    },
-    {
-        "category": "AI",
-        "id": "prompt_master",
-        "name": "Prompt Master",
-        "icon": "assets/icons/icon_ai_prompt_master.ico",
-        "types": "*",
-        "scope": "background",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": true,
-        "environment": "system",
-        "dependencies": [
-            "customtkinter"
-        ],
-        "external_tools": [],
-        "is_extension": true,
-        "order": 606,
         "gui": true
     }
 ]

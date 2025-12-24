@@ -42,12 +42,40 @@ def migrate_legacy_caches():
         else:
             print(f"Target Rembg folder not empty, skipping migration.")
     
-    # 2. HF Models (Complex, risk of corruption, so verified download is preferred)
+    # 2. Legacy resources in src/resources -> resources
+    legacy_resources = paths.PROJECT_ROOT / "src" / "resources"
+    legacy_ai_models = legacy_resources / "ai_models"
+    if legacy_ai_models.exists():
+        try:
+            if not paths.AI_MODELS_DIR.exists() or not any(paths.AI_MODELS_DIR.iterdir()):
+                print(f"Migrating legacy AI models from {legacy_ai_models} to {paths.AI_MODELS_DIR}...")
+                paths.AI_MODELS_DIR.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(legacy_ai_models), str(paths.AI_MODELS_DIR))
+                print("Legacy AI models migration successful.")
+            else:
+                print("Target AI models folder not empty, skipping legacy migration.")
+        except Exception as e:
+            print(f"Legacy AI models migration failed: {e}")
+
+    legacy_bin = legacy_resources / "bin"
+    if legacy_bin.exists():
+        try:
+            if not paths.BIN_DIR.exists() or not any(paths.BIN_DIR.iterdir()):
+                print(f"Migrating legacy binaries from {legacy_bin} to {paths.BIN_DIR}...")
+                paths.BIN_DIR.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(legacy_bin), str(paths.BIN_DIR))
+                print("Legacy binaries migration successful.")
+            else:
+                print("Target bin folder not empty, skipping legacy migration.")
+        except Exception as e:
+            print(f"Legacy binaries migration failed: {e}")
+
+    # 3. HF Models (Complex, risk of corruption, so verified download is preferred)
     # But we can try to copy if user insists on "moving".
     # However, diffusers/HF cache structure is hash-based. Simple move might fail validation.
     # We will skip HF migration and rely on re-download which checks hashes anyway.
     # We will skip HF migration and rely on re-download which checks hashes anyway.
-    pass
+    return
 
 def download_marigold():
     print("\n=== Checking Marigold Models (Depth/Normal/Appearance) ===")
@@ -114,21 +142,6 @@ def download_birefnet():
         return True
     except Exception as e:
         print(f"BiRefNet Download Failed: {e}")
-        return False
-
-def download_ocr():
-    print("\n=== Checking RapidOCR Models ===")
-    try:
-        from rapidocr_onnxruntime import RapidOCR
-        import numpy as np
-        print("Initializing RapidOCR...")
-        ocr = RapidOCR()
-        dummy = np.zeros((32, 32, 3), dtype=np.uint8)
-        _ = ocr(dummy)
-        print("RapidOCR Verified.")
-        return True
-    except Exception as e:
-        print(f"RapidOCR Download Failed: {e}")
         return False
 
 def download_demucs():
@@ -217,7 +230,6 @@ def main():
         "Marigold": download_marigold(),
         "Upscale": download_upscale(),
         "Whisper": download_whisper(),
-        "OCR": download_ocr(),
         "Demucs": download_demucs(),
         "RIFE": check_rife(),
     }
@@ -225,7 +237,7 @@ def main():
     print("\n=== Model Download Summary ===")
     failed = []
     for name, success in results.items():
-        status = "✓ Ready" if success else "✗ Failed"
+        status = "[OK]" if success else "[FAIL]"
         print(f"  {name:<10}: {status}")
         if not success:
             failed.append(name)

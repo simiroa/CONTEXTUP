@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 import threading
 import time
+from ..theme import Theme
+
 
 class LogsFrame(ctk.CTkFrame):
     def __init__(self, parent, root_dir):
@@ -18,9 +20,9 @@ class LogsFrame(ctk.CTkFrame):
         ctrl = ctk.CTkFrame(self, height=40, fg_color="transparent")
         ctrl.grid(row=0, column=0, sticky="ew", padx=10, pady=5)
         
-        ctk.CTkLabel(ctrl, text="Log Viewer", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(ctrl, text="Log Viewer", font=ctk.CTkFont(size=16, weight="bold"), text_color=Theme.TEXT_MAIN[1]).pack(side="left", padx=10)
         
-        self.btn_refresh = ctk.CTkButton(ctrl, text="Refresh", width=80, command=self.load_logs)
+        self.btn_refresh = ctk.CTkButton(ctrl, text="Refresh", width=80, fg_color=Theme.GRAY_BTN, hover_color=Theme.GRAY_BTN_HOVER, command=self.load_logs)
         self.btn_refresh.pack(side="right", padx=10)
         
         self.chk_auto = ctk.CTkCheckBox(ctrl, text="Auto Refresh (3s)", command=self.toggle_auto)

@@ -20,7 +20,6 @@ HANDLER_MAP = {
     "texture_packer_orm": "features/image/packer_gui.py",
     "normal_flip_green": "features/image/normal.py",
     "simple_normal_roughness": "features/image/normal.py",
-    "paddle_ocr": "features/ai/standalone/pdf_ocr_tool.py",
     "rife_interpolation": "features/ai/frame_interp.py",
     "whisper_subtitle": "features/ai/subtitle.py",
     "esrgan_upscale": "features/image/upscale.py",
@@ -70,7 +69,7 @@ HANDLER_MAP = {
 TRACKED_LIBS = {
     "customtkinter", "Pillow", "requests", "numpy", "cv2", "torch", "yt_dlp", 
     "google-genai", "faster-whisper", "transformers", "kornia", "diffusers", 
-    "accelerate", "demucs", "rapidocr_onnxruntime", "ollama", "openai", "moviepy", "PyPDF2"
+    "accelerate", "demucs", "ollama", "openai", "moviepy", "PyPDF2"
 }
 
 # Normalize library names (import name -> pip package name)
@@ -83,7 +82,6 @@ LIB_MAP = {
     "faster_whisper": "faster-whisper",
     "moviepy": "moviepy",
     "PyPDF2": "PyPDF2",
-    "rapidocr_onnxruntime": "rapidocr-onnxruntime",
     "win32api": "pywin32",
     "win32con": "pywin32",
 }

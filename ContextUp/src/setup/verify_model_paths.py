@@ -101,26 +101,6 @@ def check_upscale():
     return False
 
 
-def check_ocr():
-    """Check RapidOCR models."""
-    cache_dirs = [
-        Path.home() / ".rapidocr",
-        Path.home() / ".cache" / "rapidocr",
-        paths.OCR_DIR,
-    ]
-    for cache_dir in cache_dirs:
-        if cache_dir.exists() and any(cache_dir.rglob("*")):
-            print(f"? OCR: Models in {cache_dir}")
-            return True
-
-    try:
-        import rapidocr_onnxruntime  # noqa: F401
-        print("? OCR: RapidOCR installed (model cache not verified)")
-        return True
-    except ImportError:
-        print("? OCR: RapidOCR not installed")
-        return False
-
 
 def main():
     print("=== ContextUp Model Path Verification ===\n")
@@ -134,7 +114,6 @@ def main():
         "Demucs": check_demucs(),
         "RIFE": check_rife(),
         "Upscale": check_upscale(),
-        "OCR": check_ocr(),
     }
     
     print("\n=== Verification Summary ===")

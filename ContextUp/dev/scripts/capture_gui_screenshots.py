@@ -133,7 +133,6 @@ GUI_LIST = [
     # AI
     ("marigold", "features/ai/marigold_gui.py", (["PBR", "Marigold"], ["PBR", "Marigold"]), "image", []),
     ("gemini_tools", "features/ai/standalone/gemini_img_tools/gui.py", (["Gemini", "AI"], ["Gemini", "AI"]), "image", []),
-    ("pdf_ocr", "features/ai/standalone/pdf_ocr_tool.py", (["OCR", "PDF"], ["OCR", "PDF"]), "image", []),
     ("ai_text_refine", "features/tools/ai_text_refine.py", (["Text", "Refine", "AI"], ["Text", "Refine", "텍스트"]), "none", []),
     
     # Mesh

@@ -238,26 +238,42 @@ class ImageResizeGUI(BaseWindow):
                             scale = 4
                     
                     if scale > 1:
-                        # Run AI
+                        # Use external realesrgan-ncnn-vulkan tool
                         import tempfile
+                        import subprocess
+                        from manager.mgr_core.packages import PackageManager
+                        
+                        pkg_mgr = PackageManager()
+                        esrgan_exe = pkg_mgr.get_tool_path("realesrgan-ncnn-vulkan")
+                        
+                        if not esrgan_exe or not esrgan_exe.exists():
+                            raise Exception("Real-ESRGAN tool not found. Please install via Manager -> Preferences.")
+                        
                         with tempfile.TemporaryDirectory() as temp_dir_str:
                             temp_dir = Path(temp_dir_str)
                             
-                            # Target file in temp dir
-                            temp_output_file = temp_dir / f"temp_out{path.suffix}"
+                            # Real-ESRGAN outputs PNG by default
+                            temp_output_file = temp_dir / f"{path.stem}.png"
                             
-                            args = ["upscale.py", str(path), "--scale", str(scale), "--output", str(temp_output_file)]
+                            # Build command for realesrgan-ncnn-vulkan
+                            cmd = [
+                                str(esrgan_exe),
+                                "-i", str(path),
+                                "-o", str(temp_output_file),
+                                "-s", str(scale),
+                                "-n", "realesrgan-x4plus"
+                            ]
                             
-                            ok, err_msg = run_ai_script(*args)
-                            if not ok: 
-                                raise Exception(f"AI Failed: {err_msg}")
+                            result = subprocess.run(cmd, capture_output=True, text=True)
+                            if result.returncode != 0:
+                                raise Exception(f"AI Failed: {result.stderr}")
                             
                             if not temp_output_file.exists():
-                                raise Exception(f"AI output missing: {err_msg}")
+                                raise Exception(f"AI output missing")
                             
                             # Move to actual destination with suffix
                             suffix = f"_ai{scale}x"
-                            new_name = f"{path.stem}{suffix}{path.suffix}"
+                            new_name = f"{path.stem}{suffix}.png"
                             dest_path = get_safe_path(out_dir / new_name)
                             
                             shutil.move(str(temp_output_file), str(dest_path))

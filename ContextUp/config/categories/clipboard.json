@@ -8,11 +8,10 @@
         "scope": "background",
         "enabled": true,
         "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "system",
+        "show_in_tray": true,
+        "environment": "embedded",
         "dependencies": [],
         "external_tools": [],
-        "command": "python src/features/system/open_from_clipboard.py",
         "hotkey": "<ctrl>+<alt>+v",
         "order": 903,
         "gui": false
@@ -27,7 +26,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow"
         ],
@@ -45,7 +44,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "pywin32"
@@ -64,7 +63,7 @@
         "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": false,
-        "environment": "system",
+        "environment": "embedded",
         "dependencies": [
             "Pillow",
             "pyperclip",

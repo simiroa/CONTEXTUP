@@ -78,6 +78,8 @@ class RegistryManager:
 
             # Initialize Package Manager for checks
             pm = PackageManager(self.config.root_dir)
+            # Clear cache to get fresh package list
+            pm.refresh_package_cache()
             installed_packages = pm.get_installed_packages()
 
             for item in self.config.items:
@@ -103,6 +105,7 @@ class RegistryManager:
                 
                 if scope == 'directory':
                     targets.append("Directory")
+                    targets.append("Directory\\Background")
 
                 if scope == 'file' or scope == 'both':
                     targets.append("*")

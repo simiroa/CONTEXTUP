@@ -4,11 +4,10 @@ Use this checklist to verify that all features of ContextUp are working correctl
 
 > [!TIP]
 > Feature IDs match those in `config/categories/*.json`
-> RapidOCR smoke test: `dev/scripts/rapidocr_smoke_test.py`
 
 ---
 
-## 1. AI Tools (9)
+## 1. AI Tools (8)
 - [ ] `rife_interpolation` - RIFE Frame Interpolation
 - [ ] `whisper_subtitle` - Whisper Subtitle AI
 - [ ] `esrgan_upscale` - ESRGAN Upscale
@@ -17,7 +16,6 @@ Use this checklist to verify that all features of ContextUp are working correctl
 - [ ] `prompt_master` - Prompt Master
 - [ ] `gemini_image_tool` - Gemini Image Tool
 - [ ] `demucs_stems` - Demucs Stem Separation
-- [ ] `paddle_ocr` - RapidOCR Text Recognition
 
 ## 2. ComfyUI Tools (5)
 - [ ] `seedvr2_upscaler` - SeedVR2 Video Upscaler
@@ -93,7 +91,7 @@ Use this checklist to verify that all features of ContextUp are working correctl
 
 ---
 
-**Total: 61 features**
+**Total: 60 features**
 
 ---
 

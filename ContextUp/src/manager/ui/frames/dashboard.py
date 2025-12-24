@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import datetime
 from core.user_overrides import UserOverrideManager
 from manager.helpers.requirements import RequirementHelper
+from ..theme import Theme
+
 
 # Core
 # Core
@@ -77,7 +79,7 @@ class DashboardFrame(ctk.CTkFrame):
     # ========================
 
     def _setup_status_section(self):
-        self.status_frame = ctk.CTkFrame(self.scroll, corner_radius=10, fg_color=("gray85", "gray20"))
+        self.status_frame = ctk.CTkFrame(self.scroll, corner_radius=10, fg_color=Theme.BG_CARD)
         self.status_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15))
         self.status_frame.grid_columnconfigure(1, weight=1)
         
@@ -101,19 +103,20 @@ class DashboardFrame(ctk.CTkFrame):
         # "Check Updates" Button (Always there)
         ctk.CTkButton(self.action_frame, text=self.tr("manager.dashboard.status.check_updates"), 
                      width=140, height=32, 
-                     fg_color="transparent", border_width=1, border_color="gray",
+                     fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
                      command=self._on_check_updates_click).pack(pady=2)
 
         # "Restart Explorer" Button (Fix for 'WEIRD MENU')
         ctk.CTkButton(self.action_frame, text="Restart Explorer", 
                      width=140, height=32, 
-                     fg_color="#E67E22", hover_color="#D35400",
+                     fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
                      command=self._restart_explorer).pack(pady=2)
 
         # "Upgrade" Button (Hidden by default, shown if Minimal)
         self.btn_upgrade = ctk.CTkButton(self.action_frame, text=self.tr("manager.dashboard.status.change_tier"),
-                                        width=140, height=32, fg_color="#2ECC71", hover_color="#27AE60",
+                                        width=140, height=32, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
                                         command=self._show_tier_menu)
+
         self.btn_upgrade.pack(pady=2)
 
     def _refresh_status(self):
@@ -138,9 +141,10 @@ class DashboardFrame(ctk.CTkFrame):
             status_text = f"{enabled} / {total} {self.tr('manager.dashboard.status.features_active')}"
             if issues > 0:
                 status_text += f" | ⚠️ {issues} {self.tr('manager.dashboard.status.issues_detect')}"
-                self.lbl_features_active.configure(text_color="#E74C3C")
+                self.lbl_features_active.configure(text_color=Theme.TEXT_DANGER)
+            else:
                 status_text += f" | ✅ {self.tr('manager.dashboard.status.no_issues')}"
-                self.lbl_features_active.configure(text_color="gray")
+                self.lbl_features_active.configure(text_color=Theme.TEXT_DIM)
                 
             self.lbl_features_active.configure(text=status_text)
             
@@ -153,9 +157,9 @@ class DashboardFrame(ctk.CTkFrame):
         has_ffmpeg = (tools_dir / "ffmpeg").exists()
         
         if has_blender and has_ffmpeg:
-            self.lbl_install_type.configure(text=self.tr("manager.dashboard.status.install_full"), text_color=("#2ECC71", "#27AE60"))
+            self.lbl_install_type.configure(text=self.tr("manager.dashboard.status.install_full"), text_color=Theme.TEXT_MAIN)
         else:
-            self.lbl_install_type.configure(text=self.tr("manager.dashboard.status.install_minimal"), text_color=("#3498DB", "#2980B9"))
+            self.lbl_install_type.configure(text=self.tr("manager.dashboard.status.install_minimal"), text_color=Theme.TEXT_MAIN)
 
         # Last Sync Time
         last_sync = self.settings.get("LAST_REGISTRY_SYNC", "Never")
@@ -167,7 +171,7 @@ class DashboardFrame(ctk.CTkFrame):
         else:
             display_time = self.tr("manager.dashboard.status.never_synced")
             
-        self.lbl_features_active.configure(text=f"{self.lbl_features_active.cget('text')} | 🕒 {display_time}")
+        self.lbl_features_active.configure(text=f"{self.lbl_features_active.cget('text')} | 🕒 {display_time}", text_color=Theme.TEXT_DIM)
 
     def _restart_explorer(self):
         if messagebox.askyesno(self.tr("manager.dashboard.restart_explorer_title"), self.tr("manager.dashboard.restart_explorer_msg")):
@@ -539,7 +543,7 @@ class DashboardFrame(ctk.CTkFrame):
     # 2. APPEARANCE & BEHAVIOR
     # ========================
     def _setup_appearance_behavior(self):
-        card = ctk.CTkFrame(self.scroll, corner_radius=8)
+        card = ctk.CTkFrame(self.scroll, corner_radius=8, fg_color=Theme.BG_CARD)
         card.grid(row=1, column=0, sticky="nsew", padx=(0, 5), pady=5)
         card.grid_columnconfigure(1, weight=1)
         
@@ -594,7 +598,7 @@ class DashboardFrame(ctk.CTkFrame):
     # 3. HOTKEYS (Right Col)
     # ========================
     def _setup_hotkeys_section(self):
-        card = ctk.CTkFrame(self.scroll, corner_radius=8)
+        card = ctk.CTkFrame(self.scroll, corner_radius=8, fg_color=Theme.BG_CARD)
         # Just row 1
         card.grid(row=1, column=1, sticky="nsew", padx=(5, 0), pady=5)
         card.grid_columnconfigure(0, weight=1)
@@ -630,7 +634,7 @@ class DashboardFrame(ctk.CTkFrame):
     # 4. CONNECTIVITY (Paths & APIs)
     # ========================
     def _setup_connectivity_section(self):
-        card = ctk.CTkFrame(self.scroll, corner_radius=8)
+        card = ctk.CTkFrame(self.scroll, corner_radius=8, fg_color=Theme.BG_CARD)
         card.grid(row=2, column=0, columnspan=2, sticky="ew", pady=5)
         card.grid_columnconfigure(1, weight=1)
         
@@ -705,12 +709,12 @@ class DashboardFrame(ctk.CTkFrame):
     # ========================
     def _setup_danger_section(self):
         # Move to Main Frame (Bottom) instead of Scroll
-        card = ctk.CTkFrame(self, corner_radius=8, fg_color=("gray95", "#2c1c1c")) 
+        card = ctk.CTkFrame(self, corner_radius=8, fg_color=Theme.BG_DANGER_CARD) 
         card.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
         card.grid_columnconfigure(0, weight=1)
         
         # Header
-        header = ctk.CTkLabel(card, text=self.tr("manager.dashboard.danger.title"), text_color="#E74C3C", font=ctk.CTkFont(weight="bold", size=14))
+        header = ctk.CTkLabel(card, text=self.tr("manager.dashboard.danger.title"), text_color=Theme.TEXT_DANGER, font=ctk.CTkFont(weight="bold", size=14))
         header.pack(anchor="w", padx=15, pady=(10, 5))
         
         # Content Container
@@ -723,18 +727,18 @@ class DashboardFrame(ctk.CTkFrame):
         
         ctk.CTkLabel(row1, text=self.tr("manager.dashboard.danger.data_management"), width=120, anchor="w", text_color="gray").pack(side="left")
         
-        ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.export_userdata"), width=120, height=28, fg_color="#34495E", command=self._export_userdata).pack(side="left", padx=5)
-        ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.import_userdata"), width=120, height=28, fg_color="#34495E", command=self._import_userdata).pack(side="left", padx=5)
-        ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.backup_settings"), width=120, height=28, fg_color="gray", command=self._backup).pack(side="left", padx=5)
+        ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.export_userdata"), width=120, height=28, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, command=self._export_userdata).pack(side="left", padx=5)
+        ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.import_userdata"), width=120, height=28, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, command=self._import_userdata).pack(side="left", padx=5)
+        ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.backup_settings"), width=120, height=28, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, command=self._backup).pack(side="left", padx=5)
 
         # Row 2: Reset / Destructive
         row2 = ctk.CTkFrame(content, fg_color="transparent")
         row2.pack(fill="x", pady=(10, 2))
         
-        ctk.CTkLabel(row2, text=self.tr("common.reset"), width=120, anchor="w", text_color="#E74C3C").pack(side="left")
+        ctk.CTkLabel(row2, text=self.tr("common.reset"), width=120, anchor="w", text_color=Theme.TEXT_DANGER).pack(side="left")
         
-        ctk.CTkButton(row2, text=self.tr("manager.dashboard.danger.reset_userdata"), width=120, height=28, fg_color="#C0392B", hover_color="#A93226", command=self._reset_userdata).pack(side="left", padx=5)
-        ctk.CTkButton(row2, text=self.tr("manager.dashboard.danger.factory_reset"), width=120, height=28, fg_color="#922B21", hover_color="#641E16", command=self._reset).pack(side="left", padx=5)
+        ctk.CTkButton(row2, text=self.tr("manager.dashboard.danger.reset_userdata"), width=120, height=28, fg_color=Theme.DANGER, hover_color=Theme.DANGER_HOVER, command=self._reset_userdata).pack(side="left", padx=5)
+        ctk.CTkButton(row2, text=self.tr("manager.dashboard.danger.factory_reset"), width=120, height=28, fg_color=Theme.DANGER, hover_color=Theme.DANGER_HOVER, command=self._reset).pack(side="left", padx=5)
 
 
     # ========================

@@ -135,28 +135,32 @@ def build_handler_map():
         "texture_packer_orm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "packer_gui.py"), str(p)]),
         "normal_flip_green": _lazy("features.image.normal", "flip_normal_green"),
         "simple_normal_roughness": _lazy("features.image.normal", "generate_simple_normal_roughness"),
+        "image_compare": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "compare_gui.py"), str(p)]),
 
         # === AI ===
-        "paddle_ocr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "ai" / "standalone" / "pdf_ocr_tool.py"), str(p)]),
         "rife_interpolation": _lazy("features.ai.frame_interp", "interpolate_frames"),
         "whisper_subtitle": _lazy("features.ai.subtitle", "generate_subtitles"),
         "esrgan_upscale": _lazy("features.image.upscale", "upscale_image"),
         "rmbg_background": _lazy("features.ai.tools", "remove_background"),
         "marigold_pbr": _lazy("features.ai.marigold_gui", "run_marigold_gui"),
         "gemini_prompt_master": _lazy("features.prompt_master", "open_prompt_master"),
+        "prompt_master": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "prompt_master" / "main.py")]),
         "gemini_image_tool": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "ai" / "standalone" / "gemini_img_tools.py"), str(p)]),
         "demucs_stems": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), str(p)]),
 
         # === Video ===
-        "sequence_arrange": lambda p, s=None: _lazy("features.system.tools", "arrange_sequences")(p, selection=s),
         "video_convert": _lazy("features.video.tools", "convert_video"),
         "extract_audio": _lazy("features.video.tools", "extract_audio"),
-        "sequence_find_missing": lambda p, s=None: _lazy("features.system.tools", "find_missing_frames")(p, selection=s),
         "interpolate_30fps": _lazy("features.video.tools", "frame_interp_30fps"),
         "create_proxy": _lazy("features.video.tools", "create_proxy"),
         "remove_audio": _lazy("features.video.tools", "remove_audio"),
-        "sequence_to_video": _lazy("features.video.tools", "seq_to_video"),
-        "sequence_analyze": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "sequence_analyze.py"), str(p)]),
+
+        # === Sequence ===
+        "sequence_arrange": _lazy("features.sequence.tools", "arrange_sequences"),
+        "sequence_find_missing": _lazy("features.sequence.tools", "find_missing_frames"),
+        "sequence_to_video": _lazy("features.sequence.tools", "seq_to_video"),
+        "sequence_analyze": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "sequence" / "analyze_gui.py"), str(p)]),
+        "sequence_renumber": _lazy("features.system.rename", "run_renumber_gui"),
 
         # === Audio ===
         "audio_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "convert_gui.py"), str(p)]),
@@ -186,7 +190,7 @@ def build_handler_map():
         # The context menu handles copying dynamically via sys_copy_content.py.
         "copy_my_info": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "scripts" / "sys_info_manager.py")]),
         "analyze_error": _lazy("features.system.clipboard", "analyze_error"),
-        "open_from_clipboard": lambda p, s=None: _lazy("tray.modules.clipboard_opener", "open_folder_from_clipboard")(),
+        "open_from_clipboard": lambda p, s=None: _lazy("features.system.open_from_clipboard", "open_path_from_clipboard")(),
         "save_clipboard_image": _lazy("features.system.tools", "save_clipboard_image"),
         "clipboard_to_new_folder": _lazy("features.system.tools", "clipboard_to_new_folder"),
         "copy_unc_path": _lazy("features.system.tools", "copy_unc_path"),
@@ -198,11 +202,11 @@ def build_handler_map():
 
         # === Rename ===
         "batch_rename": _lazy("features.system.rename", "run_rename_gui"),
-        "sequence_renumber": _lazy("features.system.rename", "run_renumber_gui"),
 
         # === Tools ===
         "youtube_downloader": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "downloader_gui.py")]),
-        "vacance": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "vacance" / "gui.py")]),
+        "vacance": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "leave_manager" / "gui.py")]),
+        "leave_manager": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "leave_manager" / "gui.py")]),
         "ai_text_lab": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "tools" / "ai_text_lab.py")]),
 
         # === ComfyUI ===

@@ -23,18 +23,6 @@
         "approx_size": "150 MB",
         "is_critical": false
     },
-    "rapidocr-onnxruntime": {
-        "pip_name": "rapidocr-onnxruntime",
-        "description": "RapidOCR engine (ONNX Runtime) for text recognition.",
-        "approx_size": "50 MB",
-        "is_critical": false
-    },
-    "onnxruntime-gpu": {
-        "pip_name": "onnxruntime-gpu",
-        "description": "ONNX Runtime GPU provider for accelerated inference.",
-        "approx_size": "250 MB",
-        "is_critical": false
-    },
     "torch": {
         "pip_name": "torch",
         "description": "PyTorch Deep Learning Library. Required for AI features.",

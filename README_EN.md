@@ -52,7 +52,7 @@ Each feature is designed to be **Zero-Friction**:
 ### 💼 Productivity & System
 *   **Quick Menu (`Ctrl+Shift+C`)**: A beautiful **Frosted Glass** overlay for quick actions.
 *   **Duplicate Finder**: Smartly find and clean up duplicate files (Name, Size, Hash).
-*   **Document Tools**: PDF Merge, Split, Convert to Markdown/Images, OCR.
+*   **Document Tools**: PDF Merge, Split, Convert to Markdown/Images.
 *   **Smart Clipboard**: "Copy Path as Image", "Paste to New Folder", "Copy My Info".
 *   **Batch Rename**: Powerful Regex-based bulk renaming.
 *   **Quick Actions**: Clean empty folders, unwrap folders, create symlinks.
