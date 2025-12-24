@@ -1,21 +1,32 @@
-# ContextUp (한국어)
+<div align="center">
 
-![Version](https://img.shields.io/badge/version-4.0.1-green.svg)
+# ContextUp
+
+**Windows Context Menu on Steroids ⚡**
+
+> "Why click 10 times when you can just Right-Click once?"
+
+[![Version](https://img.shields.io/badge/version-4.0.1-green.svg)](CHANGELOG.md)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
+[**전체 기능 보기 (Features)**](ContextUp/docs/user/FEATURES.md) | [**🇬🇧 English Manual**](README_EN.md)
+
+</div>
+
+<br>
+
 **ContextUp**은 Windows 오른쪽 클릭 메뉴를 생산성 허브로 바꿔 주는 올인원 도구입니다.
 
-우클릭 버튼, 트레이 메뉴, 퀵메뉴, 단축키를 통해 다양한 기능을 사용할 수 있습니다.
+> **💡 매일 사용하는 단순 반복 작업부터, 첨단 오픈소스 AI 기능까지.**
+> <br>무거운 소프트웨어를 실행할 필요 없이, 우클릭 한 번으로 즉시 해결하세요.
 
-매일 사용하는 단순하지만 귀찮던 기능부터, 첨단 오픈소스 AI까지 다양한 기능까지 최소과정으로 실행하는것이 가능합니다.
+현재 **테스트 버전 (v4.0.1)** 입니다.<br>
+지속적인 업데이트로 다양한 기능과 외부 도구 연동이 추가되고 있습니다. 많은 피드백 부탁드립니다.
 
-각각의 기능과 대부분의 앱은 독립실행으로, 더이상 무거운 소프트웨어를 설치할 필요가 없습니다.
+<br>
 
-
-현재 테스트 버전으로, 업데이트마다 다양한 기능들이 추가되고, 외부 툴 연결도 계속 추가되고있으니 많은 피드백을 주시면 감사하겠습니다.
-
-> [Changelog](CHANGELOG.md) | [전체 기능 보기](ContextUp/docs/user/FEATURES.md)
+> [Changelog](CHANGELOG.md)에서 변경 사항을 확인하세요.
 
 ---
 
