@@ -12,8 +12,6 @@
 
 [**전체 기능 보기 (Features)**](ContextUp/docs/user/FEATURES.md) | [**🇬🇧 English Manual**](README_EN.md)
 
-</div>
-
 <br>
 
 **ContextUp**은 Windows 오른쪽 클릭 메뉴를 생산성 허브로 바꿔 주는 올인원 도구입니다.
@@ -27,6 +25,8 @@
 <br>
 
 > [Changelog](CHANGELOG.md)에서 변경 사항을 확인하세요.
+
+</div>
 
 ---
 
