@@ -413,10 +413,31 @@
                 "features_active": "Active Features",
                 "check_updates": "Check Updates",
                 "upgrade_full": "Upgrade to Full",
+                "change_tier": "Change Tier",
                 "issues_detect": "Issues Detected",
                 "no_issues": "No Issues Detected",
                 "never_synced": "Never",
                 "restart_explorer": "Restart Explorer"
+            },
+            "tier": {
+                "title": "Install Tier",
+                "minimal": "Minimal",
+                "standard": "Standard",
+                "full": "Full",
+                "not_found": "Install tier not found."
+            },
+            "upgrade": {
+                "title": "Change Install Tier",
+                "prompt": "Change install tier?\nYes: Full (all features + local AI)\nNo: Standard (recommended)\nCancel: keep current",
+                "missing_tools": "External tools require manual setup: {tools}\nOpen Dependencies tab to connect paths?",
+                "install_prompt": "Missing packages for the selected tier:\n{packages}\n\nInstall now?",
+                "models_prompt": "AI models are large (8-10GB).\nDownload now?",
+                "cleanup_prompt": "Remove packages/models not required for the selected tier?\nThis may take time.\n\n{details}\n\nProceed?",
+                "cleanup_details": "Packages: {packages}\nModels: {models}{tools_note}",
+                "cleanup_tools_note": "\nExternal tools must be removed manually: {tools}",
+                "cleanup_none": "No removable packages or models found for this tier.",
+                "install_success": "Tier change completed.",
+                "install_partial": "Tier change saved, but some installs or cleanup failed or were skipped."
             },
             "restart_explorer_title": "Restart Explorer",
             "restart_explorer_msg": "This will restart Windows Explorer to clear icon/menu cache.\nYour taskbar will disappear briefly.\nContinue?",
@@ -467,7 +488,12 @@
                 "disabled": "Disabled",
                 "apply_registry": "Apply Registry",
                 "applying": "Applying...",
-                "drag_to_reorder": "Drag to reorder"
+                "drag_to_reorder": "Drag to reorder",
+                "requirements_title": "Missing Requirements",
+                "requirements_external_tools": "External tools require manual setup: {tools}\nOpen Dependencies tab to connect paths?",
+                "requirements_install_prompt": "This feature needs additional packages/models:\n{requirements}\n\nInstall now?",
+                "requirements_install_success": "Install complete. Feature enabled.",
+                "requirements_install_failed": "Install failed. Feature remains disabled."
             },
             "settings": {
                 "tray_control": "Tray Control",

@@ -11,7 +11,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, MissingDependencyWindow
 from manager.helpers.comfyui_client import ComfyUIManager
 from manager.helpers.comfyui_service import ComfyUIService
 
@@ -159,8 +159,13 @@ class ComfyUIFeatureBase(BaseWindow):
                 missing.append(dep)
         
         if missing:
-            messagebox.showerror("Missing Dependencies", 
-                               f"The following required libraries are missing:\\n{', '.join(missing)}\\n\\nPlease install them via ContextUp Manager.")
+            # Close the current window (which presumably is the feature window trying to load)
+            self.destroy()
+            
+            # Show the missing dependency window
+            # Since we destroyed the root, we can create a new one.
+            err_app = MissingDependencyWindow(self.title(), missing)
+            err_app.mainloop()
             return False
         return True
 

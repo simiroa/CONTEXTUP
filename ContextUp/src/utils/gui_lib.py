@@ -186,9 +186,6 @@ class ModernInputDialog(ctk.CTkToplevel):
 def ask_string_modern(title, text, initial_value=""):
     # Check if a root window exists
     try:
-        # This is a hacky way to check if a root exists in CustomTkinter/Tkinter
-        # If no root exists, CTkToplevel will create a default Tk root which is ugly.
-        # We want to create a hidden CTk root instead.
         if not ctk._default_root_arg:
             root = ctk.CTk()
             root.withdraw() # Hide it
@@ -199,15 +196,62 @@ def ask_string_modern(title, text, initial_value=""):
         root.withdraw()
 
     app = ModernInputDialog(title, text, initial_value)
-    
-    # If we created a temporary root, we need to destroy it after the dialog closes
-    # But app.wait_window() blocks.
-    # So we can destroy root after app.result is set?
-    # ModernInputDialog calls destroy() on itself.
-    
     result = app.result
     
     if root:
         root.destroy()
         
     return result
+
+class MissingDependencyWindow(BaseWindow):
+    """
+    A specific window to show when a tool cannot run due to missing dependencies.
+    """
+    def __init__(self, tool_name, missing_items):
+        super().__init__(title=f"Missing Requirements - {tool_name}", width=500, height=400)
+        
+        # Create a hidden dummy root if needed to prevent issues? 
+        # BaseWindow calls super init which does ctk.CTk(), so it is the root.
+        
+        # Icon (Error/Warning)
+        self.lbl_icon = ctk.CTkLabel(self.main_frame, text="⚠️", font=("Segoe UI Emoji", 64))
+        self.lbl_icon.pack(pady=(20, 10))
+        
+        self.add_header(f"{tool_name} Unavailable", font_size=24)
+        
+        msg = f"This feature requires external tools that are not currently installed or connected."
+        ctk.CTkLabel(self.main_frame, text=msg, wraplength=400, justify="center").pack(pady=(0, 20))
+        
+        # Missing List
+        bg_frame = ctk.CTkFrame(self.main_frame, fg_color=("gray90", "gray20"))
+        bg_frame.pack(fill="x", padx=40, pady=10)
+        
+        ctk.CTkLabel(bg_frame, text="Missing Components:", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=10, pady=(5,0))
+        
+        for item in missing_items:
+            ctk.CTkLabel(bg_frame, text=f"• {item}", anchor="w", text_color="#ff5555").pack(anchor="w", padx=20, pady=2)
+            
+        ctk.CTkLabel(bg_frame, text="").pack(pady=2) # Spacer
+        
+        # Action Arguments
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", pady=20)
+        
+        # Open Manager Button
+        ctk.CTkButton(btn_frame, text="Open Manager", command=self.open_manager, fg_color="#2cc985", hover_color="#22a36b").pack(side="top", pady=5)
+        
+        # Close
+        ctk.CTkButton(btn_frame, text="Close", command=self.destroy, fg_color="transparent", border_width=1, border_color="gray").pack(side="top", pady=5)
+        
+    def open_manager(self):
+        """Attempts to launch the Manager."""
+        try:
+            # We assume manage.py is in the root
+            root = Path(__file__).resolve().parents[3]
+            manage_script = root / "manage.py"
+            if manage_script.exists():
+                import subprocess
+                subprocess.Popen([sys.executable, str(manage_script)])
+                self.destroy()
+        except Exception as e:
+            print(f"Failed to open manager: {e}")

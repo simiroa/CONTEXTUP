@@ -2,7 +2,7 @@
 Settings Dashboard - Central Hub for Status & Configuration
 """
 import customtkinter as ctk
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, Menu
 import logging
 import sys
 import json
@@ -12,6 +12,8 @@ import subprocess
 import webbrowser
 from pathlib import Path
 from datetime import datetime
+from core.user_overrides import UserOverrideManager
+from manager.helpers.requirements import RequirementHelper
 
 # Core
 # Core
@@ -36,6 +38,7 @@ class DashboardFrame(ctk.CTkFrame):
         self.config_dir = self.src_dir.parent / "config"
         self.userdata_dir = self.src_dir.parent / "userdata"
         self.backup_dir = self.src_dir.parent / "backups"
+        self.requirements = RequirementHelper(self.src_dir.parent, self.package_manager)
         
         # Grid Layout
         self.grid_columnconfigure(0, weight=1)
@@ -108,10 +111,10 @@ class DashboardFrame(ctk.CTkFrame):
                      command=self._restart_explorer).pack(pady=2)
 
         # "Upgrade" Button (Hidden by default, shown if Minimal)
-        self.btn_upgrade = ctk.CTkButton(self.action_frame, text=self.tr("manager.dashboard.status.upgrade_full"),
+        self.btn_upgrade = ctk.CTkButton(self.action_frame, text=self.tr("manager.dashboard.status.change_tier"),
                                         width=140, height=32, fg_color="#2ECC71", hover_color="#27AE60",
-                                        command=lambda: self.master.master.master.show_frame("dependencies"))
-        # self.btn_upgrade.pack(pady=2) # Packed dynamically in refresh
+                                        command=self._show_tier_menu)
+        self.btn_upgrade.pack(pady=2)
 
     def _refresh_status(self):
         # 1. Feature Count
@@ -141,19 +144,6 @@ class DashboardFrame(ctk.CTkFrame):
                 
             self.lbl_features_active.configure(text=status_text)
             
-            # Update Checker Mini-Visual
-            if self.update_checker:
-                info = self.update_checker.get_cached_update()
-                if info and info.is_newer:
-                    self.btn_upgrade.configure(text=f"Update Available (v{info.latest_version})", fg_color="#E74C3C", hover_color="#C0392B")
-                    self.btn_upgrade.pack(pady=2)
-                elif self.lbl_install_type.cget("text") == self.tr("manager.dashboard.status.install_minimal"):
-                    # Show upgrade prompt if minimal and no update
-                    self.btn_upgrade.configure(text=self.tr("manager.dashboard.status.upgrade_full"), fg_color="#2ECC71", hover_color="#27AE60")
-                    self.btn_upgrade.pack(pady=2)
-                else:
-                    self.btn_upgrade.pack_forget()
-            
         except:
             self.lbl_features_active.configure(text="Unknown Status")
             
@@ -164,10 +154,8 @@ class DashboardFrame(ctk.CTkFrame):
         
         if has_blender and has_ffmpeg:
             self.lbl_install_type.configure(text=self.tr("manager.dashboard.status.install_full"), text_color=("#2ECC71", "#27AE60"))
-            self.btn_upgrade.pack_forget()
         else:
             self.lbl_install_type.configure(text=self.tr("manager.dashboard.status.install_minimal"), text_color=("#3498DB", "#2980B9"))
-            self.btn_upgrade.pack(pady=2)
 
         # Last Sync Time
         last_sync = self.settings.get("LAST_REGISTRY_SYNC", "Never")
@@ -215,6 +203,337 @@ class DashboardFrame(ctk.CTkFrame):
                 self.after(0, lambda: messagebox.showinfo("Up to Date", "You are using the latest version."))
         
         self.update_checker.check_for_updates(callback=on_result)
+
+    def _open_dependencies(self):
+        root = self.winfo_toplevel()
+        if hasattr(root, "show_frame"):
+            root.show_frame("dependencies")
+
+    def _show_tier_menu(self):
+        menu = Menu(self, tearoff=0)
+        menu.add_command(
+            label=self.tr("manager.dashboard.tier.minimal"),
+            command=lambda: self._run_tier_change("minimal")
+        )
+        menu.add_command(
+            label=self.tr("manager.dashboard.tier.standard"),
+            command=lambda: self._run_tier_change("standard")
+        )
+        menu.add_command(
+            label=self.tr("manager.dashboard.tier.full"),
+            command=lambda: self._run_tier_change("full")
+        )
+        try:
+            menu.tk_popup(
+                self.btn_upgrade.winfo_rootx(),
+                self.btn_upgrade.winfo_rooty() + self.btn_upgrade.winfo_height()
+            )
+        finally:
+            menu.grab_release()
+
+    def _load_install_tiers(self) -> dict:
+        user_tiers = self.userdata_dir / "install_tiers.json"
+        tiers_path = user_tiers if user_tiers.exists() else (self.config_dir / "install_tiers.json")
+        try:
+            if tiers_path.exists():
+                return json.loads(tiers_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            logger.warning(f"Failed to load install tiers: {e}")
+        return {}
+
+    def _load_install_profile(self) -> dict:
+        profile_path = self.userdata_dir / "install_profile.json"
+        if profile_path.exists():
+            try:
+                return json.loads(profile_path.read_text(encoding="utf-8"))
+            except Exception as e:
+                logger.warning(f"Failed to load install profile: {e}")
+        return {}
+
+    def _save_install_profile(self, profile: dict):
+        profile_path = self.userdata_dir / "install_profile.json"
+        profile_path.parent.mkdir(parents=True, exist_ok=True)
+        profile_path.write_text(json.dumps(profile, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    def _collect_requirements_for_categories(self, categories: set) -> tuple[list, list]:
+        deps = set()
+        tools = set()
+        if not self.config_manager:
+            return [], []
+        for item in self.config_manager.get_base_items():
+            cat = item.get("category")
+            if not cat or cat not in categories:
+                continue
+            deps.update(item.get("dependencies", []) or [])
+            tools.update(item.get("external_tools", []) or [])
+        return sorted(deps), sorted(tools)
+
+    def _collect_all_requirements(self) -> tuple[list, list]:
+        deps = set()
+        tools = set()
+        if not self.config_manager:
+            return [], []
+        for item in self.config_manager.get_base_items():
+            deps.update(item.get("dependencies", []) or [])
+            tools.update(item.get("external_tools", []) or [])
+        return sorted(deps), sorted(tools)
+
+    def _get_all_categories(self) -> set:
+        categories = set()
+        if not self.config_manager:
+            return categories
+        for item in self.config_manager.get_base_items():
+            cat = item.get("category")
+            if cat:
+                categories.add(cat)
+        return categories
+
+    def _determine_current_tier(self, tiers_config: dict) -> str:
+        tiers = tiers_config.get("tiers", {})
+        profile = self._load_install_profile()
+        profile_cats = profile.get("categories", {})
+
+        def matches(tier_key: str) -> bool:
+            tier_data = tiers.get(tier_key, {})
+            ai_level = tier_data.get("ai", "")
+            required = set(tier_data.get("categories", []))
+            if ai_level in ("light", "heavy"):
+                required.add("AI")
+            if ai_level == "heavy":
+                required.add("AI_Heavy")
+            if not required:
+                return False
+            return all(profile_cats.get(cat, False) for cat in required)
+
+        for key in ("full", "standard", "minimal"):
+            if matches(key):
+                return key
+        return "custom"
+
+    def _format_list_preview(self, items: list, max_items: int = 12) -> str:
+        items = sorted({str(i) for i in items if i})
+        if not items:
+            return "None"
+        if len(items) <= max_items:
+            return ", ".join(items)
+        return ", ".join(items[:max_items]) + f" (+{len(items) - max_items})"
+
+    def _apply_tier_profile(self, selected_categories: set, ai_level: str, models_ok: bool, disabled_categories: set | None = None):
+        profile = self._load_install_profile()
+        categories = profile.get("categories", {})
+
+        all_categories = set(categories.keys())
+        all_categories |= selected_categories
+        if disabled_categories:
+            all_categories |= disabled_categories
+
+        for cat in all_categories:
+            categories[cat] = cat in selected_categories
+
+        categories["AI"] = ai_level in ("light", "heavy")
+        categories["AI_Heavy"] = ai_level == "heavy"
+
+        profile["categories"] = categories
+        profile["timestamp"] = datetime.now().isoformat()
+        if ai_level == "heavy" and models_ok:
+            profile["models_pre_downloaded"] = True
+        elif ai_level != "heavy":
+            profile["models_pre_downloaded"] = False
+
+        self._save_install_profile(profile)
+
+        try:
+            overrides_mgr = UserOverrideManager(self.src_dir.parent)
+            overrides = overrides_mgr.load_overrides()
+            hidden = set(overrides.get("hidden", []))
+
+            enabled_ids = {
+                item.get("id")
+                for item in self.config_manager.get_base_items()
+                if item.get("category") in selected_categories and item.get("id")
+            }
+
+            if enabled_ids:
+                hidden -= enabled_ids
+
+            if disabled_categories:
+                disabled_ids = {
+                    item.get("id")
+                    for item in self.config_manager.get_base_items()
+                    if item.get("category") in disabled_categories and item.get("id")
+                }
+                hidden |= disabled_ids
+
+            overrides["hidden"] = sorted(hidden)
+            overrides_mgr.save_overrides(overrides)
+        except Exception as e:
+            logger.warning(f"Failed to update overrides for tier change: {e}")
+
+    def _run_tier_change(self, tier_key: str):
+        tiers_config = self._load_install_tiers()
+        tiers = tiers_config.get("tiers", {})
+        tier_data = tiers.get(tier_key)
+        if not tier_data:
+            messagebox.showerror(self.tr("manager.dashboard.tier.title"), self.tr("manager.dashboard.tier.not_found"))
+            return
+
+        ai_level = tier_data.get("ai", "")
+        selected_categories = set(tier_data.get("categories", []))
+        if ai_level in ("light", "heavy"):
+            selected_categories.add("AI")
+
+        all_categories = self._get_all_categories()
+        disabled_categories = all_categories - selected_categories
+
+        deps, tools = self._collect_requirements_for_categories(selected_categories)
+        installed = self.package_manager.get_installed_packages()
+        missing_packages = self.requirements.get_missing_packages(deps, installed_packages=installed)
+        missing_tools = self.requirements.get_missing_external_tools(tools)
+
+        missing_models = []
+        if ai_level == "heavy":
+            missing_models = self.requirements.get_missing_models(list(self.requirements.ALL_MODEL_KEYS))
+
+        if missing_tools:
+            msg = self.tr("manager.dashboard.upgrade.missing_tools").format(
+                tools=", ".join(sorted(missing_tools))
+            )
+            if messagebox.askyesno(self.tr("manager.dashboard.upgrade.title"), msg):
+                self._open_dependencies()
+
+        tier_rank = {"minimal": 0, "standard": 1, "full": 2}
+        current_tier = self._determine_current_tier(tiers_config)
+        current_rank = tier_rank.get(current_tier, -1)
+        target_rank = tier_rank.get(tier_key, -1)
+        allow_cleanup = current_rank == -1 or target_rank <= current_rank
+
+        cleanup_packages = []
+        cleanup_models = []
+        cleanup_tools = []
+        cleanup_requested = False
+
+        if allow_cleanup:
+            keep_categories = set(selected_categories)
+            if ai_level != "heavy":
+                keep_categories.discard("AI")
+
+            keep_deps, keep_tools = self._collect_requirements_for_categories(keep_categories)
+            all_deps, all_tools = self._collect_all_requirements()
+            removable_deps = {d for d in all_deps if d not in keep_deps}
+            removable_tools = {t for t in all_tools if t not in keep_tools}
+            critical = self.requirements.get_critical_packages()
+
+            missing_for_cleanup = self.requirements.get_missing_packages(list(removable_deps), installed_packages=installed)
+            cleanup_packages = [
+                dep.lower() for dep in removable_deps
+                if dep.lower() not in missing_for_cleanup and dep.lower() not in critical
+            ]
+
+            if ai_level != "heavy":
+                cleanup_models = list(self.requirements.ALL_MODEL_KEYS)
+
+            cleanup_tools = sorted(removable_tools)
+
+            if cleanup_packages or cleanup_models:
+                details = self.tr("manager.dashboard.upgrade.cleanup_details").format(
+                    packages=self._format_list_preview(cleanup_packages),
+                    models=self._format_list_preview(cleanup_models),
+                    tools_note=""
+                )
+                if cleanup_tools:
+                    tools_note = self.tr("manager.dashboard.upgrade.cleanup_tools_note").format(
+                        tools=self._format_list_preview(cleanup_tools)
+                    )
+                    details = self.tr("manager.dashboard.upgrade.cleanup_details").format(
+                        packages=self._format_list_preview(cleanup_packages),
+                        models=self._format_list_preview(cleanup_models),
+                        tools_note=tools_note
+                    )
+
+                prompt = self.tr("manager.dashboard.upgrade.cleanup_prompt").format(details=details)
+                cleanup_requested = messagebox.askyesno(self.tr("manager.dashboard.upgrade.title"), prompt)
+            elif allow_cleanup and current_rank != -1 and target_rank < current_rank:
+                messagebox.showinfo(
+                    self.tr("manager.dashboard.upgrade.title"),
+                    self.tr("manager.dashboard.upgrade.cleanup_none")
+                )
+
+        def finalize(pkg_ok, models_ok, cleanup_ok, skipped=False):
+            def run():
+                self._apply_tier_profile(selected_categories, ai_level, models_ok, disabled_categories=disabled_categories)
+                self._refresh_status()
+                if skipped or not pkg_ok or not models_ok or not cleanup_ok:
+                    messagebox.showwarning(
+                        self.tr("manager.dashboard.upgrade.title"),
+                        self.tr("manager.dashboard.upgrade.install_partial")
+                    )
+                else:
+                    messagebox.showinfo(
+                        self.tr("manager.dashboard.upgrade.title"),
+                        self.tr("manager.dashboard.upgrade.install_success")
+                    )
+
+            self.after(0, run)
+
+        def run_cleanup(after_install_ok: bool, after_models_ok: bool, skipped=False):
+            if not cleanup_requested or (not cleanup_packages and not cleanup_models):
+                finalize(after_install_ok, after_models_ok, True, skipped=skipped)
+                return
+
+            def on_models_removed(results):
+                cleanup_ok = all(results.values()) if results else True
+                finalize(after_install_ok, after_models_ok, cleanup_ok, skipped=skipped)
+
+            def on_packages_removed(success):
+                if not success:
+                    finalize(after_install_ok, after_models_ok, False, skipped=skipped)
+                    return
+                if cleanup_models:
+                    self.requirements.remove_models_async(cleanup_models, completion_callback=on_models_removed)
+                else:
+                    finalize(after_install_ok, after_models_ok, True, skipped=skipped)
+
+            if cleanup_packages:
+                dep_meta = self.requirements.build_dep_metadata(cleanup_packages)
+                self.package_manager.uninstall_packages(cleanup_packages, dep_meta, completion_callback=on_packages_removed)
+            elif cleanup_models:
+                self.requirements.remove_models_async(cleanup_models, completion_callback=on_models_removed)
+            else:
+                finalize(after_install_ok, after_models_ok, True, skipped=skipped)
+
+        def on_models_complete(results):
+            models_ok = all(results.values()) if results else True
+            run_cleanup(True, models_ok, skipped=not results)
+
+        def prompt_models_and_install():
+            if not missing_models:
+                run_cleanup(True, True, skipped=False)
+                return
+            if not messagebox.askyesno(
+                self.tr("manager.dashboard.upgrade.title"),
+                self.tr("manager.dashboard.upgrade.models_prompt")
+            ):
+                run_cleanup(True, False, skipped=True)
+                return
+            self.requirements.install_models_async(missing_models, completion_callback=on_models_complete)
+
+        def on_packages_complete(success):
+            if not success:
+                run_cleanup(False, False, skipped=False)
+                return
+            self.after(0, prompt_models_and_install)
+
+        if missing_packages:
+            prompt = self.tr("manager.dashboard.upgrade.install_prompt").format(
+                packages=", ".join(sorted(missing_packages))
+            )
+            if not messagebox.askyesno(self.tr("manager.dashboard.upgrade.title"), prompt):
+                run_cleanup(False, False, skipped=True)
+                return
+            dep_meta = self.requirements.build_dep_metadata(missing_packages)
+            self.package_manager.install_packages(missing_packages, dep_meta, completion_callback=on_packages_complete)
+        else:
+            prompt_models_and_install()
 
     # ========================
     # 2. APPEARANCE & BEHAVIOR

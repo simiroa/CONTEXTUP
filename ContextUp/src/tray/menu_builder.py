@@ -105,7 +105,10 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
     # 2. Dynamic Tools from JSON (show_in_tray: true)
     try:
         menu_config = MenuConfig()
-        tray_tools = [item for item in menu_config.items if item.get("show_in_tray", False)]
+        tray_tools = [
+            item for item in menu_config.items
+            if item.get("show_in_tray", False) and item.get("enabled", True)
+        ]
         
         # Filter by dependencies
         pm = PackageManager(src_dir.parent)

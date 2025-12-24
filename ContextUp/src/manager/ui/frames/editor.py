@@ -3,14 +3,16 @@ import tkinter.messagebox
 from tkinter import Menu
 from ..dialogs.item_editor import ItemEditorDialog
 from manager.helpers.icons import IconManager
+from manager.helpers.requirements import RequirementHelper
 
 class MenuEditorFrame(ctk.CTkFrame):
-    def __init__(self, parent, config_manager, settings, package_manager, on_save_registry=None):
+    def __init__(self, parent, config_manager, settings, package_manager, on_save_registry=None, translator=None):
         super().__init__(parent)
         self.config_manager = config_manager
         self.settings = settings
         self.package_manager = package_manager
         self.on_save_registry = on_save_registry
+        self.tr = translator if translator else lambda k: k
         
         self.items = [] 
         self.filtered_items = []
@@ -20,6 +22,7 @@ class MenuEditorFrame(ctk.CTkFrame):
         
         # Cache for performance
         self.installed_packages = self.package_manager.get_installed_packages()
+        self.requirements = RequirementHelper(self.config_manager.root_dir, self.package_manager)
         
         # Widget pooling for performance
         self._row_pool = []  # List of reusable row widgets
@@ -40,6 +43,106 @@ class MenuEditorFrame(ctk.CTkFrame):
     def load_items(self):
         self.items = self.config_manager.load_config()
         self.refresh_list()
+
+    def _open_dependencies(self):
+        root = self.winfo_toplevel()
+        if hasattr(root, "show_frame"):
+            root.show_frame("dependencies")
+
+    def _format_requirements_text(self, missing_packages, missing_models):
+        lines = []
+        if missing_packages:
+            lines.append("Packages: " + ", ".join(sorted(missing_packages)))
+        if missing_models:
+            lines.append("Models: " + ", ".join(sorted(missing_models)))
+        return "\n".join(lines)
+
+    def _set_switch_state(self, switch, var, state):
+        switch._busy = True
+        var.set(state)
+        switch._busy = False
+
+    def _on_item_toggle(self, item, enabled_var, switch):
+        if getattr(switch, "_busy", False):
+            return
+
+        new_state = bool(enabled_var.get())
+        if not new_state:
+            item["enabled"] = False
+            return
+
+        missing_tools = self.requirements.get_missing_external_tools(item.get("external_tools", []))
+        if missing_tools:
+            msg = self.tr("manager.frames.editor.requirements_external_tools").format(
+                tools=", ".join(sorted(missing_tools))
+            )
+            if tkinter.messagebox.askyesno(self.tr("manager.frames.editor.requirements_title"), msg):
+                self._open_dependencies()
+            self._set_switch_state(switch, enabled_var, False)
+            item["enabled"] = False
+            return
+
+        missing_packages = self.requirements.get_missing_packages(
+            item.get("dependencies", []),
+            installed_packages=self.installed_packages
+        )
+        missing_models = self.requirements.get_missing_models_for_item(item)
+
+        if not missing_packages and not missing_models:
+            item["enabled"] = True
+            return
+
+        requirements_text = self._format_requirements_text(missing_packages, missing_models)
+        prompt = self.tr("manager.frames.editor.requirements_install_prompt").format(
+            requirements=requirements_text
+        )
+        if not tkinter.messagebox.askyesno(self.tr("manager.frames.editor.requirements_title"), prompt):
+            self._set_switch_state(switch, enabled_var, False)
+            item["enabled"] = False
+            return
+
+        switch.configure(state="disabled")
+
+        def finalize(success):
+            def update_ui():
+                switch.configure(state="normal")
+                self.installed_packages = self.package_manager.get_installed_packages()
+                self.refresh_list()
+                if success:
+                    item["enabled"] = True
+                    self._set_switch_state(switch, enabled_var, True)
+                    tkinter.messagebox.showinfo(
+                        self.tr("manager.frames.editor.requirements_title"),
+                        self.tr("manager.frames.editor.requirements_install_success")
+                    )
+                else:
+                    item["enabled"] = False
+                    self._set_switch_state(switch, enabled_var, False)
+                    tkinter.messagebox.showerror(
+                        self.tr("manager.frames.editor.requirements_title"),
+                        self.tr("manager.frames.editor.requirements_install_failed")
+                    )
+
+            self.after(0, update_ui)
+
+        def on_models_complete(results):
+            models_ok = all(results.values()) if results else True
+            finalize(models_ok)
+
+        def on_packages_complete(success):
+            if not success:
+                finalize(False)
+                return
+            if missing_models:
+                self.requirements.install_models_async(missing_models, completion_callback=on_models_complete)
+            else:
+                finalize(True)
+
+        if missing_packages:
+            dep_meta = self.requirements.build_dep_metadata(missing_packages)
+            self.package_manager.install_packages(missing_packages, dep_meta, completion_callback=on_packages_complete)
+        elif missing_models:
+            self.requirements.install_models_async(missing_models, completion_callback=on_models_complete)
 
     def _setup_toolbar(self):
         toolbar = ctk.CTkFrame(self, height=40)
@@ -310,16 +413,9 @@ class MenuEditorFrame(ctk.CTkFrame):
         # If missing deps, force disable visual (unless user deliberately wants to toggle it?)
         # Better: keep the var reflecting config, but disable the switch or show warning.
         
-        def on_toggle(i=item, v=enabled_var):
-            i['enabled'] = v.get()
-            
-        switch = ctk.CTkSwitch(row, text="", width=40, height=20, variable=enabled_var, 
-                     command=lambda: on_toggle())
+        switch = ctk.CTkSwitch(row, text="", width=40, height=20, variable=enabled_var)
+        switch.configure(command=lambda: self._on_item_toggle(item, enabled_var, switch))
         switch.pack(side="left", padx=5)
-        
-        if not valid:
-            switch.configure(state="disabled") # Disable toggling if broken?
-            # Or just show warning
             
         # [Icon]
         icon_img = IconManager.load_icon(item.get('icon', ''))

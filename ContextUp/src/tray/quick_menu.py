@@ -290,8 +290,9 @@ class QuickMenu(ctk.CTkToplevel):
             
             # Get all tray items, excluding manager (bottom) and Copy My Info (Quick Actions)
             tray_items = [
-                item for item in menu_config.items 
-                if item.get("show_in_tray", False) 
+                item for item in menu_config.items
+                if item.get("show_in_tray", False)
+                and item.get("enabled", True)
                 and item.get("id") != "manager"
                 and item.get("id") != "copy_my_info"
             ]

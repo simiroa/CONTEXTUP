@@ -169,6 +169,41 @@ class PackageManager:
 
         threading.Thread(target=run, daemon=True).start()
 
+    def uninstall_packages(self, deps: list, dep_metadata: dict, progress_callback=None, completion_callback=None):
+        """
+        Uninstall list of packages in a background thread.
+        Callback signature: progress(current_dependency_name, fraction_complete)
+        """
+        def run():
+            python_exe = self._resolve_python()
+            total = len(deps)
+            success = True
+
+            for i, dep in enumerate(deps):
+                meta = dep_metadata.get(dep, {})
+                pip_name = meta.get('pip_name', dep)
+
+                if progress_callback:
+                    progress_callback(dep, i / total if total else 1.0)
+
+                try:
+                    cmd = [python_exe, "-m", "pip", "uninstall", "-y", pip_name]
+                    subprocess.check_call(cmd)
+                except Exception as e:
+                    logger.error(f"Failed to uninstall {dep}: {e}")
+                    success = False
+                    break
+
+            PackageManager.refresh_package_cache()
+
+            if progress_callback:
+                progress_callback("Done", 1.0)
+
+            if completion_callback:
+                completion_callback(success)
+
+        threading.Thread(target=run, daemon=True).start()
+
     def update_system_libs(self, on_complete=None):
         """Run pip install -r requirements.txt using system python."""
         def run():

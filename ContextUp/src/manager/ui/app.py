@@ -82,7 +82,8 @@ class ContextUpManager(ctk.CTk):
                 self.config_manager, 
                 self.settings,
                 self.package_manager,
-                on_save_registry=self.apply_registry_changes
+                on_save_registry=self.apply_registry_changes,
+                translator=self.tr
             ),
             "categories": lambda: CategoriesFrame(self.main_frame, self.settings, self.config_manager),
             # Pass config_manager to DashboardFrame to reuse cached config

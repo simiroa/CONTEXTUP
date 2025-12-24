@@ -815,7 +815,18 @@ def main():
         if manager_script.exists():
             try:
                 # Use the verified python executable to launch manager GUI
-                subprocess.Popen([str(chosen_python), str(manager_script)], cwd=str(ROOT_DIR))
+                # DETACHED_PROCESS to allow installer to close
+                creationflags = 0x00000008  # DETACHED_PROCESS on Windows
+                if sys.platform == "win32":
+                    creationflags = subprocess.CREATE_NO_WINDOW
+                
+                # Use Popen to launch and proceed
+                subprocess.Popen(
+                    [str(chosen_python), str(manager_script)], 
+                    cwd=str(ROOT_DIR),
+                    creationflags=creationflags
+                )
+                print("매니저가 실행되었습니다.")
             except Exception as e:
                 print(f"매니저 실행 실패: {e}")
         else:
