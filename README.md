@@ -56,16 +56,33 @@
 
 > 설치 후에는 `tools/python/`에 내장된 Python 3.11을 사용하므로 시스템 환경과 완전히 분리됩니다.
 
-### 1. 설치 및 마이그레이션 (Setup)
+### 1. 다운로드 (Get Code)
 
-최상위 디렉토리에서 `install.bat`을 실행하거나 다음 명령어를 사용하여 설치를 진행하세요. (embedded Python이 없을 때만 시스템 Python이 필요합니다.)
+먼저 소스 코드를 다운로드해야 합니다. Git을 사용하거나 ZIP 파일로 받을 수 있습니다.
+
+**Option A: Git Clone (권장)**
+```bash
+git clone https://github.com/simiroa/ContextUp.git
+cd ContextUp
+```
+
+**Option B: Download ZIP**
+1. 상단 `Code` 버튼 클릭 -> `Download ZIP`
+2. 압축을 풀고 해당 폴더로 이동
+
+---
+
+### 2. 설치 및 마이그레이션 (Setup)
+
+최상위 디렉토리에서 **`install.bat`** 파일을 더블 클릭하여 실행하세요.<br>
 기존 사용자의 경우 설정 파일이 `userdata/` 폴더로 자동 마이그레이션됩니다.
 
+> 또는 터미널에서 다음 명령어로 실행:
 ```bash
 python ContextUp/src/setup/install.py
 ```
 
-### 2. 메뉴 관리 (Manager)
+### 3. 메뉴 관리 (Manager)
 
 설치가 완료되면 Manager GUI를 통해 메뉴를 레지스트리에 등록/해제할 수 있습니다.
 
@@ -85,7 +102,7 @@ python ContextUp/src/setup/install.py
 - **Tray 메뉴**: 상시 실행되어 백그라운드 작업을 관리하고 자주 쓰는 도구에 접근합니다.
 - **새로고침**: 설정을 변경한 경우, Tray 메뉴의 **Reload**를 클릭하면 즉시 반영됩니다.
 
-### 3. CLI (Command Line Interface)
+### 4. CLI (Command Line Interface)
 
 명령줄에서도 관리가 가능합니다:
 ```bash
