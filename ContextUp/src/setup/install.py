@@ -696,6 +696,9 @@ def main():
     pkg_ok = install_packages(chosen_python, categories)
 
     download_models = categories.get("AI_Heavy") and pkg_ok
+    if safe_test and download_models:
+        print("[INFO] SAFE TEST mode enabled. Skipping model downloads and GPU checks.")
+        download_models = False
     models_ok = True
     model_status = {}
     if download_models:
@@ -712,7 +715,7 @@ def main():
             # Apply granular disablement instead of entire category
             apply_granular_overrides(model_status)
 
-    if categories.get("AI_Heavy") and pkg_ok:
+    if categories.get("AI_Heavy") and pkg_ok and not safe_test:
         run_gpu_check(chosen_python)
 
     # Persist profile

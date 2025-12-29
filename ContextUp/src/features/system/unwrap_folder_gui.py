@@ -23,6 +23,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
+from utils.gui_lib import BaseWindow
 from utils.files import get_safe_path
 from utils.i18n import t
 from core.logger import setup_logger
@@ -30,42 +31,33 @@ from core.logger import setup_logger
 logger = setup_logger("unwrap_folder")
 
 
-class UnwrapFolderGUI(ctk.CTk):
+class UnwrapFolderGUI(BaseWindow):
     """Clean minimal GUI for unwrapping folders."""
     
     def __init__(self, folders):
-        super().__init__()
-        ctk.set_appearance_mode("Dark")
-        ctk.set_default_color_theme("blue")
+        super().__init__(title="ContextUp Unwrap Folder", width=340, height=200, icon_name="unwrap_folder")
         
+        # Ensure folders is a list of Path objects
+        if isinstance(folders, str):
+            folders = [folders]
+            
         self.folders = [Path(f) for f in folders if Path(f).is_dir()]
         self.recursive_var = tk.BooleanVar(value=False)
         
-        self.title(t("unwrap_folder.title"))
-        self.geometry("320x180")
-        self.resizable(False, False)
-        
-        self._build_ui()
-        self._center_window()
+        self.create_widgets()
         
         self.lift()
         self.attributes("-topmost", True)
         self.focus_force()
 
-    def _center_window(self):
-        self.update_idletasks()
-        x = (self.winfo_screenwidth() - 320) // 2
-        y = (self.winfo_screenheight() - 180) // 2
-        self.geometry(f"+{x}+{y}")
-
-    def _build_ui(self):
+    def create_widgets(self):
         # Main container with padding
-        main = ctk.CTkFrame(self, fg_color="transparent")
+        main = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         main.pack(fill="both", expand=True, padx=15, pady=10)
         
         # Title
         ctk.CTkLabel(main, text=t("unwrap_folder.title"), 
-                    font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w")
+                    font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w")
         
         # Folder info
         folder_text = f"📁 {len(self.folders)}개 폴더 선택됨"
@@ -77,7 +69,7 @@ class UnwrapFolderGUI(ctk.CTk):
         # Recursive checkbox
         ctk.CTkCheckBox(main, text=t("unwrap_folder.recursive"),
                        variable=self.recursive_var, 
-                       font=ctk.CTkFont(size=11)).pack(anchor="w", pady=(0, 10))
+                       font=ctk.CTkFont(size=11)).pack(anchor="w", pady=(0, 5))
         
         # Buttons row - fixed at bottom
         btn_row = ctk.CTkFrame(main, fg_color="transparent")

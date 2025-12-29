@@ -32,6 +32,12 @@ def main():
             self.folder = self.target_path.parent if self.target_path.is_file() else self.target_path
             
             self.detect_sequence()
+            
+            if self.frame_count < 2:
+                messagebox.showerror(t("common.error"), "Not a sequence (single file detected).")
+                self.destroy()
+                return
+
             self.create_widgets()
             
         def detect_sequence(self):
@@ -126,10 +132,10 @@ def main():
             ctk.CTkLabel(content, text="Format:", font=ctk.CTkFont(weight="bold")).grid(row=2, column=0, padx=(0, 10), pady=10, sticky="w")
             
             self.presets = [
-                "MP4 High (H.264)",
-                "MP4 Proxy (Fast)",
+                "H.264 High Quality",
+                "H.264 Low Bitrate",
                 "ProRes 422",
-                "ProRes 4444 + Alpha"
+                "ProRes 4444 (Alpha)"
             ]
             self.var_preset = ctk.StringVar(value=self.presets[0])
             ctk.CTkOptionMenu(content, variable=self.var_preset, values=self.presets).grid(row=2, column=1, padx=0, pady=10, sticky="ew")
@@ -161,14 +167,14 @@ def main():
                 
                 if "High" in preset:
                     output_name += "_high.mp4"
-                    ffmpeg_args = ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18"]
-                elif "Proxy" in preset:
-                    output_name += "_proxy.mp4"
-                    ffmpeg_args = ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "28", "-preset", "fast"]
+                    ffmpeg_args = ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "slow"]
+                elif "Low" in preset:
+                    output_name += "_low.mp4"
+                    ffmpeg_args = ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "28", "-preset", "medium"]
                 elif "422" in preset:
                     output_name += "_422.mov"
                     ffmpeg_args = ["-c:v", "prores_ks", "-profile:v", "2", "-pix_fmt", "yuv422p10le"]
-                elif "4444" in preset:
+                elif "Alpha" in preset:
                     output_name += "_4444.mov"
                     ffmpeg_args = ["-c:v", "prores_ks", "-profile:v", "4", "-pix_fmt", "yuva444p10le"]
                     

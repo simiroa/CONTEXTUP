@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER
 
 class TranslationMixin:
     def translate_text(self, text):
@@ -25,7 +26,7 @@ class TranslationMixin:
         label.grid(row=row, column=0, sticky="e", padx=(10, 10), pady=5)
         
         # Entry field (Expandable)
-        entry = ctk.CTkEntry(parent)
+        entry = ctk.CTkEntry(parent, fg_color=THEME_BG, border_color=THEME_BORDER)
         entry.insert(0, input_data.get("default", ""))
         entry.grid(row=row, column=1, sticky="ew", pady=5)
         entry.bind("<KeyRelease>", self.update_output)
@@ -37,6 +38,10 @@ class TranslationMixin:
             width=35,
             height=28,
             command=lambda e=entry: self.translate_and_update(e),
+            fg_color="#1a1a1a",
+            hover_color="#222",
+            border_width=1,
+            border_color=THEME_BORDER,
             border_spacing=0
         )
         translate_btn.grid(row=row, column=2, padx=(5, 10), pady=5)

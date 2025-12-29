@@ -29,106 +29,146 @@ from features.image.compare_core import (
     load_image, get_exr_channels, compute_diff, compute_ssim, 
     array_to_pil, create_side_by_side
 )
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER
 from utils.i18n import t
 from core.logger import setup_logger
 
 logger = setup_logger("image_compare")
 
 
-class ImageCompareGUI(ctk.CTk):
+class ImageCompareGUI(BaseWindow):
     """Image comparison GUI with EXR channel support."""
     
     def __init__(self, files: List[str]):
-        super().__init__()
-        ctk.set_appearance_mode("Dark")
-        ctk.set_default_color_theme("blue")
+        super().__init__(title="ContextUp Image Compare", width=1280, height=800, icon_name="image_compare")
         
-        self.title("ContextUp Image Compare")
-        self.geometry("1100x800")
-        self.minsize(800, 600)
+        # Remove default padding from BaseWindow main_frame for full canvas experience
+        self.main_frame.pack_configure(padx=0, pady=0)
         
         # State
-        self.files = [Path(f) for f in files]  # Allow more than 4 initial files, but UI might limit view
+        self.files = [Path(f) for f in files]
         self.images: List[Optional[np.ndarray]] = []
         self.original_pils: List[Optional[Image.Image]] = []
         self.photo_images: List[Optional[ImageTk.PhotoImage]] = []
+        
+        # Caching layer
+        self._resize_cache = {}
+        self._diff_cache = None
+        self._cache_job = None  # For predictive caching debounce
+        
         self.current_channel = "RGB"
         self.current_mode = "Side by Side"
         self.zoom_level = 1.0
         self.pan_offset = [0, 0]
         self._drag_start = (0, 0)
+        self._dragging_slider = False
+        self.slider_pos = 0.5 # Internal state for slider comparison
+        
+        # Slots for comparison
+        self.slots = {"A": 0, "B": 1 if len(files) > 1 else 0}
+        self.active_slot = "A"
+        
+        
+        # Remove default padding from BaseWindow main_frame for full canvas experience
+        self.main_frame.pack_configure(padx=0, pady=0)
         
         self._build_ui()
         self._load_initial_images()
+        self._setup_hotkeys()
         
         self.lift()
         self.focus_force()
 
     def _build_ui(self):
-        # Top toolbar
-        toolbar = ctk.CTkFrame(self, height=50, fg_color="#222")
-        toolbar.pack(fill="x", padx=10, pady=(10, 0))
-        toolbar.pack_propagate(False)
+        # Top toolbar - Unified and Clean
+        toolbar = ctk.CTkFrame(self.main_frame, height=50, fg_color=THEME_CARD, corner_radius=0)
+        toolbar.pack(fill="x", padx=0, pady=0)
+        toolbar.pack_propagate(False) # Fixed height
         
-        # Left side: Selectors
-        left_box = ctk.CTkFrame(toolbar, fg_color="transparent")
-        left_box.pack(side="left", fill="y", padx=5)
+        # Center Container for alignment
+        center_row = ctk.CTkFrame(toolbar, fg_color="transparent")
+        center_row.pack(expand=True, fill="y")
+        
+        # Unified Dropdown Style
+        dd_width = 130
+        dd_height = 32
+        dd_font = ("", 11)
+        
+        # 1. Add Button (Leftmost)
+        self.btn_add = ctk.CTkButton(center_row, text="+ Add Image", width=90, height=dd_height,
+                                    fg_color=THEME_BORDER, hover_color="#444", font=dd_font,
+                                    command=self._add_image)
+        self.btn_add.pack(side="left", padx=(0, 15))
 
-        ctk.CTkLabel(left_box, text="Mode:", font=("", 11, "bold")).pack(side="left", padx=(10, 5))
+        # 2. Mode Selector
         self.mode_var = ctk.StringVar(value="Side by Side")
-        self.mode_menu = ctk.CTkOptionMenu(toolbar, variable=self.mode_var,
-                                           values=["Side by Side", "Slider", "Difference", "Grid"],
-                                           width=110, height=28, command=self._on_mode_change)
+        self.mode_menu = ctk.CTkOptionMenu(center_row, variable=self.mode_var,
+                                           values=["Single", "Side by Side", "Slider", "Difference", "Grid"],
+                                           width=dd_width, height=dd_height, font=dd_font,
+                                           command=self._on_mode_change)
         self.mode_menu.pack(side="left", padx=5)
         
-        ctk.CTkLabel(toolbar, text="Channel:", font=("", 11, "bold")).pack(side="left", padx=(15, 5))
+        # 3. Channel Selector
         self.channel_var = ctk.StringVar(value="RGB")
-        self.channel_menu = ctk.CTkOptionMenu(toolbar, variable=self.channel_var,
-                                              values=["RGB", "R", "G", "B", "A"],
-                                              width=80, height=28, command=self._on_channel_change)
+        self.channel_menu = ctk.CTkOptionMenu(center_row, variable=self.channel_var,
+                                               values=["RGB", "R", "G", "B", "A"],
+                                               width=80, height=dd_height, font=dd_font,
+                                               command=self._on_channel_change)
         self.channel_menu.pack(side="left", padx=5)
-        
-        # Center side: Stats
-        self.stats_label = ctk.CTkLabel(toolbar, text="", font=("", 11), text_color="#00b894")
-        self.stats_label.pack(side="left", expand=True)
-        
-        # Right side: Actions
-        right_box = ctk.CTkFrame(toolbar, fg_color="transparent")
-        right_box.pack(side="right", fill="y", padx=5)
 
-        ctk.CTkButton(right_box, text="+ Add Image", width=90, height=28,
-                     fg_color="#333", hover_color="#444",
-                     command=self._add_image).pack(side="left", padx=5)
+        # 4. Slot A Selector
+        self.slot_a_var = ctk.StringVar(value="Slot A")
+        self.slot_a_menu = ctk.CTkOptionMenu(center_row, variable=self.slot_a_var,
+                                             width=180, height=dd_height, font=dd_font,
+                                             fg_color=THEME_CARD, button_color=THEME_BORDER,
+                                             anchor="w",
+                                             command=lambda v: self._on_slot_selector_change("A", v))
+        self.slot_a_menu.pack(side="left", padx=(15, 5))
         
-        # Main canvas area
-        self.canvas_frame = ctk.CTkFrame(self, fg_color="#111")
-        self.canvas_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        # 5. Slot B Selector
+        self.slot_b_var = ctk.StringVar(value="Slot B")
+        self.slot_b_menu = ctk.CTkOptionMenu(center_row, variable=self.slot_b_var,
+                                             width=180, height=dd_height, font=dd_font,
+                                             fg_color=THEME_CARD, button_color=THEME_BORDER,
+                                             anchor="w",
+                                             command=lambda v: self._on_slot_selector_change("B", v))
+        self.slot_b_menu.pack(side="left", padx=5)
         
-        self.canvas = tk.Canvas(self.canvas_frame, bg="#111", highlightthickness=0)
+        # 6. Stats (Rightmost)
+        self.stats_label = ctk.CTkLabel(center_row, text="", font=("", 11), text_color="#00b894")
+        self.stats_label.pack(side="left", padx=(20, 0))
+        
+        # Main Layout: Just Canvas (No Sidebar)
+        # Main Layout: Just Canvas (No Sidebar)
+        # We pack directly into self.main_frame which is already inside outer_frame
+        self.canvas_container = ctk.CTkFrame(self.main_frame, fg_color="#000000")
+        self.canvas_container.pack(fill="both", expand=True, padx=2, pady=(5, 5))
+        
+        self.canvas = tk.Canvas(self.canvas_container, bg="#000000", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
         
-        # Slider (for slider mode) - Custom Overlay style
-        self.slider_overlay = ctk.CTkFrame(self.canvas_frame, height=40, fg_color="#222", corner_radius=10)
-        self.slider_overlay.place(relx=0.5, rely=0.9, anchor="center")
-        
-        self.slider = ctk.CTkSlider(self.slider_overlay, from_=0, to=100, width=300,
-                                   command=self._on_slider_change)
-        self.slider.set(50)
-        self.slider.pack(padx=20, pady=10)
-        self.slider_overlay.place_forget()  # Hidden by default
+
         
         # Bottom bar
-        bottom = ctk.CTkFrame(self, height=45, fg_color="transparent")
-        bottom.pack(fill="x", padx=10, pady=(5, 10))
+        bottom = ctk.CTkFrame(self.main_frame, height=40, fg_color="transparent")
+        bottom.pack(side="bottom", fill="x", padx=10, pady=(0, 5))
         
-        # Pixel info
-        self.pixel_label = ctk.CTkLabel(bottom, text="Hover for pixel info", 
-                                        font=ctk.CTkFont(size=10), text_color="#888")
-        self.pixel_label.pack(side="left", padx=10)
+        # Pixel info and Help
+        help_text = "[Click] Flip A/B (Single Mode) | [Drag Image] Pan | [Drag Center] Slider"
+        self.help_label = ctk.CTkLabel(bottom, text=help_text, 
+                                        font=ctk.CTkFont(size=10), text_color="#555")
+        self.help_label.pack(side="left", padx=10)
+        
+        self.pixel_label = ctk.CTkLabel(bottom, text="Pos: -, -", font=ctk.CTkFont(size=10), text_color="#00b894")
+        self.pixel_label.pack(side="left", padx=20)
         
         # Buttons
-        ctk.CTkButton(bottom, text="Save Diff", width=80, height=28,
-                     command=self._save_diff).pack(side="right", padx=5)
+        ctk.CTkButton(bottom, text="-", width=30, height=28,
+                     fg_color="transparent", border_width=1,
+                     command=self._zoom_out).pack(side="right", padx=2)
+        ctk.CTkButton(bottom, text="+", width=30, height=28,
+                     fg_color="transparent", border_width=1,
+                     command=self._zoom_in).pack(side="right", padx=2)
         ctk.CTkButton(bottom, text="Reset Zoom", width=80, height=28,
                      fg_color="transparent", border_width=1,
                      command=self._reset_zoom).pack(side="right", padx=5)
@@ -140,9 +180,18 @@ class ImageCompareGUI(ctk.CTk):
         self.canvas.bind("<B1-Motion>", self._on_drag)
         self.canvas.bind("<Configure>", self._on_resize)
 
+    def _setup_hotkeys(self):
+        """Bind keyboard shortcuts."""
+        self.bind("<space>", lambda e: self._toggle_slots())
+        self.bind("<Tab>", lambda e: self._toggle_slots())
+        for i in range(1, 10):
+            self.bind(str(i), lambda e, idx=i-1: self._select_image_by_index(idx))
+
     def _load_initial_images(self):
         """Load initial images from file list."""
-        for f in self.files:
+        initial_files = list(self.files)
+        self.files = [] # Clear so _add_image_to_slots doesn't skip them
+        for f in initial_files:
             self._add_image_to_slots(str(f))
         
         # Update EXR channels if first file is EXR
@@ -156,13 +205,42 @@ class ImageCompareGUI(ctk.CTk):
 
     def _add_image_to_slots(self, path: str):
         """Add a new image to the internal lists."""
-        arr = load_image(path, self.current_channel)
+        p = Path(path).resolve()
+        if p in self.files:
+            return # Skip duplicates
+            
+        arr = load_image(str(p), self.current_channel)
         if arr is not None:
             self.images.append(arr)
-            self.original_pils.append(array_to_pil(arr))
+            pil = array_to_pil(arr)
+            self.original_pils.append(pil)
             self.photo_images.append(None)
-            if Path(path) not in self.files:
-                self.files.append(Path(path))
+            
+            self.files.append(p)
+            self._update_slot_selectors()
+
+    # Gallery and Context Menu methods removed (Cleanup)
+
+    def _set_slot(self, slot_id, index):
+        self.slots[slot_id] = index
+        self._update_slot_selectors() # Sync dropdowns
+        self._update_display()
+
+    def _select_image_by_index(self, index):
+        if 0 <= index < len(self.images):
+            # In Single mode, we just update Slot A and show it
+            self.slots["A"] = index
+            self.active_slot = "A"
+            self._update_display()
+            self._update_slot_selectors()
+
+    def _toggle_slots(self):
+        """Flip between Slot A and B in single mode."""
+        if self.active_slot == "A":
+            self.active_slot = "B"
+        else:
+            self.active_slot = "A"
+        self._update_display()
 
     def _load_image_at(self, index: int, path: str):
         """Load image at specific index."""
@@ -185,17 +263,20 @@ class ImageCompareGUI(ctk.CTk):
         if cw < 10 or ch < 10:
             return
         
-        valid_images = [img for img in self.images if img is not None]
-        if not valid_images:
+        valid_indices = [i for i, img in enumerate(self.images) if img is not None]
+        if not valid_indices:
             self.canvas.create_text(cw//2, ch//2, text="No images loaded", 
                                    fill="#666", font=("Arial", 14))
             return
         
         mode = self.mode_var.get()
         
-        if mode == "Difference" and len(valid_images) >= 2:
+        if mode == "Single":
+            idx = self.slots[self.active_slot]
+            self._draw_single(cw, ch, idx)
+        elif mode == "Difference":
             self._draw_difference(cw, ch)
-        elif mode == "Slider" and len(valid_images) >= 2:
+        elif mode == "Slider":
             self._draw_slider(cw, ch)
         elif mode == "Grid":
             self._draw_grid(cw, ch)
@@ -204,21 +285,139 @@ class ImageCompareGUI(ctk.CTk):
         
         # Update stats
         self._update_stats()
+        
+        # Trigger predictive cache
+        if self._cache_job:
+            self.after_cancel(self._cache_job)
+        self._cache_job = self.after(200, self._run_predictive_cache)
+
+    def _run_predictive_cache(self):
+        """Cache current view size for ALL images to prevent flicker."""
+        try:
+            cw = self.canvas.winfo_width()
+            ch = self.canvas.winfo_height()
+            if cw < 50 or ch < 50: return # Skip if too small
+            
+            # Determine target size based on current mode & zoom
+            mode = self.mode_var.get()
+            panel_w = cw // 2 if mode == "Side by Side" else cw
+            
+            # We want to cache for the CURRENT Zoom level
+            # Strategy: For all loaded images, compute resize and store if missing
+            
+            # Limit caching to first 10 images to avoid OOM on huge lists? 
+            # Or just cache neighbors? For now, all is fine as they are just TkImages (shared memory usually ok)
+            
+            for i, pil_img in enumerate(self.original_pils):
+                if pil_img is None: continue
+                
+                # Calculate target dimensions
+                base_scale = min(panel_w / pil_img.width, ch / pil_img.height) 
+                if mode == "Side by Side": base_scale *= 0.95 
+                else: base_scale *= 0.98
+                
+                scale = base_scale * self.zoom_level
+                new_w = int(pil_img.width * scale)
+                new_h = int(pil_img.height * scale)
+                
+                if new_w <= 0 or new_h <= 0: continue
+
+                # Check keys
+                # We need to cover Single/Slider (full width) AND Side by Side (half width)?
+                # Actually mode changes trigger redraw, so we just cache for the CURRENT mode.
+                
+                cache_key_single = (i, self.zoom_level, self.current_channel)
+                cache_key_side = (i, self.zoom_level, self.current_channel, "side")
+                cache_key_slider = (i, self.zoom_level, self.current_channel, "slider")
+                
+                target_key = cache_key_single
+                if mode == "Side by Side": target_key = cache_key_side
+                elif mode == "Slider": target_key = cache_key_slider
+                
+                if target_key not in self._resize_cache:
+                    # Generate
+                    img_display = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                    photo = ImageTk.PhotoImage(img_display)
+                    self._resize_cache[target_key] = photo
+                    
+                    # Also update photo_images list if this is a currently visible slot
+                    # But the drawing loop handles that.
+            
+            # No UI update needed, just filling cache
+            
+        except Exception as e:
+            logger.error(f"Cache Error: {e}")
+
+    def _update_slot_selectors(self):
+        """Update the dropdown values matching file list."""
+        names = [f"{i+1}: {f.name}" for i, f in enumerate(self.files)]
+        if not names: return
+        
+        self.slot_a_menu.configure(values=names)
+        self.slot_b_menu.configure(values=names)
+        
+        # Sync values
+        idx_a = self.slots["A"]
+        idx_b = self.slots["B"]
+        if idx_a < len(names): self.slot_a_var.set(names[idx_a])
+        if idx_b < len(names): self.slot_b_var.set(names[idx_b])
+
+    def _on_slot_selector_change(self, slot, value):
+        """Handle dropdown selection."""
+        try:
+            # Value format "1: filename.png"
+            idx = int(value.split(":")[0]) - 1
+            if 0 <= idx < len(self.files):
+                self._set_slot(slot, idx)
+        except: pass
+
+    def _draw_single(self, cw: int, ch: int, index: int):
+        """Draw a single focused image with caching."""
+        if index >= len(self.images) or self.images[index] is None:
+            return
+            
+        pil_img = self.original_pils[index]
+        base_scale = min(cw / pil_img.width, ch / pil_img.height) * 0.98
+        scale = base_scale * self.zoom_level
+        
+        new_w = int(pil_img.width * scale)
+        new_h = int(pil_img.height * scale)
+        
+        if new_w > 0 and new_h > 0:
+            # Cache lookup
+            cache_key = (index, self.zoom_level, self.current_channel)
+            if cache_key in self._resize_cache:
+                photo = self._resize_cache[cache_key]
+            else:
+                img_display = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(img_display)
+                self._resize_cache[cache_key] = photo
+                
+            self.photo_images[index] = photo
+            
+            x = cw // 2 + self.pan_offset[0]
+            y = ch // 2 + self.pan_offset[1]
+            self.canvas.create_image(x, y, image=photo, anchor="center")
+            
+            # Label
+            name = self.files[index].name
+            slot_label = "SLOT A" if self.slots["A"] == index else ("SLOT B" if self.slots["B"] == index else "")
+            display_text = f"{name} ({slot_label})" if slot_label else name
+            self.canvas.create_text(10, 20, text=display_text, fill="#00b894", anchor="nw", font=("", 12, "bold"))
 
     def _draw_side_by_side(self, cw: int, ch: int):
-        """Draw images side by side."""
-        valid = [(i, img) for i, img in enumerate(self.images) if img is not None]
-        if not valid:
+        """Draw Slot A and Slot B side by side with caching."""
+        idx_a = self.slots["A"]
+        idx_b = self.slots["B"]
+        
+        if idx_a >= len(self.images) or self.images[idx_a] is None: return
+        if idx_b >= len(self.images) or self.images[idx_b] is None:
+            self._draw_single(cw, ch, idx_a)
             return
-        
-        n = len(valid)
-        panel_w = cw // n
-        
-        for idx, (i, arr) in enumerate(valid):
+
+        panel_w = cw // 2
+        for idx, i in enumerate([idx_a, idx_b]):
             pil_img = self.original_pils[i]
-            if not pil_img: continue
-            
-            # Synchronized View Calculation
             base_scale = min(panel_w / pil_img.width, ch / pil_img.height) * 0.95
             scale = base_scale * self.zoom_level
             
@@ -226,93 +425,96 @@ class ImageCompareGUI(ctk.CTk):
             new_h = int(pil_img.height * scale)
             
             if new_w > 0 and new_h > 0:
-                img_display = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(img_display)
+                # Cache lookup
+                cache_key = (i, self.zoom_level, self.current_channel, "side")
+                if cache_key in self._resize_cache:
+                    photo = self._resize_cache[cache_key]
+                else:
+                    img_display = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                    photo = ImageTk.PhotoImage(img_display)
+                    self._resize_cache[cache_key] = photo
+                
                 self.photo_images[i] = photo
                 
                 x = idx * panel_w + panel_w // 2 + self.pan_offset[0]
                 y = ch // 2 + self.pan_offset[1]
                 self.canvas.create_image(x, y, image=photo, anchor="center")
-            
-            # Labels and Interactive Buttons
+
+            # Label
             label_y = 20
-            img_name = self.files[i].name if i < len(self.files) else f"Image {i+1}"
-            
-            self.canvas.create_text(idx * panel_w + 10, label_y, text=img_name, fill="#00b894", 
+            name = f"{'A' if idx==0 else 'B'}: {self.files[i].name}"
+            self.canvas.create_text(idx * panel_w + 10, label_y, text=name, fill="#00b894", 
                                    anchor="nw", font=("", 10, "bold"))
-            
-            btn_y = label_y + 20
-            rid = self.canvas.create_text(idx * panel_w + 10, btn_y, text="[Replace]", fill="#888", 
-                                   anchor="nw", font=("", 9))
-            self.canvas.tag_bind(rid, "<Button-1>", lambda e, idx=i: self._replace_image(idx))
-            
-            xid = self.canvas.create_text(idx * panel_w + 70, btn_y, text="[Remove]", fill="#cc4444", 
-                                   anchor="nw", font=("", 9))
-            self.canvas.tag_bind(xid, "<Button-1>", lambda e, idx=i: self._remove_image(idx))
 
     def _draw_difference(self, cw: int, ch: int):
-        """Draw difference visualization."""
-        if self.images[0] is None or self.images[1] is None:
+        """Draw only the difference result."""
+        idx_a, idx_b = self.slots["A"], self.slots["B"]
+        if self.images[idx_a] is None or self.images[idx_b] is None:
             return
         
-        diff, count = compute_diff(self.images[0], self.images[1])
+        self._update_stats()
+        _, _, _, diff_img, _, _ = self._diff_cache
         
-        # Show original A, B, and diff
-        panel_w = cw // 3
+        # Draw focused Diff
+        base_scale = min(cw / diff_img.width, ch / diff_img.height) * 0.98
+        scale = base_scale * self.zoom_level
+        new_w, new_h = int(diff_img.width * scale), int(diff_img.height * scale)
         
-        for idx, (arr, label) in enumerate([
-            (self.images[0], "A"),
-            (self.images[1], "B"),
-            (diff, "Diff")
-        ]):
-            pil_img = array_to_pil(arr)
-            scale = min(panel_w / pil_img.width, ch / pil_img.height) * 0.9
-            new_w = int(pil_img.width * scale)
-            new_h = int(pil_img.height * scale)
-            pil_img = pil_img.resize((new_w, new_h), Image.LANCZOS)
+        cache_key = ("diff_result", self.zoom_level, self.current_channel)
+        if cache_key in self._resize_cache:
+            photo = self._resize_cache[cache_key]
+        else:
+            photo = ImageTk.PhotoImage(diff_img.resize((new_w, new_h), Image.LANCZOS))
+            self._resize_cache[cache_key] = photo
             
-            photo = ImageTk.PhotoImage(pil_img)
-            self.photo_images[idx] = photo
-            
-            x = idx * panel_w + panel_w // 2
-            self.canvas.create_image(x, ch // 2, image=photo, anchor="center")
-            self.canvas.create_text(x, 15, text=label, fill="#aaa", font=("Arial", 10))
+        x = cw // 2 + self.pan_offset[0]
+        y = ch // 2 + self.pan_offset[1]
+        self.canvas.create_image(x, y, image=photo, anchor="center")
+        self.canvas.create_text(10, 20, text="DIFFERENCE RESULT", fill="#e74c3c", anchor="nw", font=("", 12, "bold"))
 
     def _draw_slider(self, cw: int, ch: int):
-        """Draw slider comparison."""
-        if self.images[0] is None or self.images[1] is None:
+        """Draw slider comparison internally driven."""
+        idx_a, idx_b = self.slots["A"], self.slots["B"]
+        if self.images[idx_a] is None or self.images[idx_b] is None:
             return
         
-        self.slider_frame.pack(fill="x", padx=10)
+        img_a = self.original_pils[idx_a]
+        img_b = self.original_pils[idx_b]
         
-        # Get slider position (0-100)
-        pos = self.slider.get() / 100.0
+        base_scale = min(cw / img_a.width, ch / img_a.height) * 0.98
+        scale = base_scale * self.zoom_level
+        new_w, new_h = int(img_a.width * scale), int(img_a.height * scale)
         
-        img_a = array_to_pil(self.images[0])
-        img_b = array_to_pil(self.images[1])
+        cache_key_a = (idx_a, self.zoom_level, self.current_channel, "slider")
+        cache_key_b = (idx_b, self.zoom_level, self.current_channel, "slider")
         
-        # Resize both to fit canvas
-        scale = min(cw / img_a.width, ch / img_a.height) * 0.9
-        new_w = int(img_a.width * scale)
-        new_h = int(img_a.height * scale)
+        res_a = self._resize_cache.get(cache_key_a)
+        if not res_a:
+            res_a = img_a.resize((new_w, new_h), Image.LANCZOS)
+            self._resize_cache[cache_key_a] = res_a
+            
+        res_b = self._resize_cache.get(cache_key_b)
+        if not res_b:
+            res_b = img_b.resize((new_w, new_h), Image.LANCZOS)
+            self._resize_cache[cache_key_b] = res_b
+            
+        # Composite using internal slider_pos
+        split_x = int(new_w * self.slider_pos)
         
-        img_a = img_a.resize((new_w, new_h), Image.LANCZOS)
-        img_b = img_b.resize((new_w, new_h), Image.LANCZOS)
-        
-        # Composite
-        split_x = int(new_w * pos)
         composite = Image.new("RGB", (new_w, new_h))
-        composite.paste(img_a.crop((0, 0, split_x, new_h)), (0, 0))
-        composite.paste(img_b.crop((split_x, 0, new_w, new_h)), (split_x, 0))
+        composite.paste(res_a.crop((0, 0, split_x, new_h)), (0, 0))
+        composite.paste(res_b.crop((split_x, 0, new_w, new_h)), (split_x, 0))
         
         photo = ImageTk.PhotoImage(composite)
         self.photo_images[0] = photo
         
-        self.canvas.create_image(cw // 2, ch // 2, image=photo, anchor="center")
+        cx = cw // 2 + self.pan_offset[0]
+        cy = ch // 2 + self.pan_offset[1]
+        self.canvas.create_image(cx, cy, image=photo, anchor="center")
         
-        # Draw split line
-        line_x = cw // 2 - new_w // 2 + split_x
-        self.canvas.create_line(line_x, 0, line_x, ch, fill="#fff", width=2)
+        line_x = cx - new_w // 2 + split_x
+        self.canvas.create_line(line_x, cy - new_h // 2, line_x, cy + new_h // 2, fill="#fff", width=2)
+        self.canvas.create_oval(line_x-6, cy-6, line_x+6, cy+6, fill="#00b894", outline="#fff")
 
     def _draw_grid(self, cw: int, ch: int):
         """Draw 2x2 grid."""
@@ -349,23 +551,36 @@ class ImageCompareGUI(ctk.CTk):
                                    fill="#aaa", font=("Arial", 9))
 
     def _update_stats(self):
-        """Update statistics label."""
-        valid = [img for img in self.images if img is not None]
-        
-        if len(valid) >= 2:
-            try:
-                diff, count = compute_diff(valid[0], valid[1])
-                ssim = compute_ssim(valid[0], valid[1])
-                self.stats_label.configure(text=f"SSIM: {ssim:.4f}  |  Diff Pixels: {count:,}")
-            except:
-                self.stats_label.configure(text="")
+        """Update statistics label with caching."""
+        idx_a, idx_b = self.slots["A"], self.slots["B"]
+        if idx_a < len(self.images) and idx_b < len(self.images):
+            # Check cache
+            cache_key = (idx_a, idx_b, self.current_channel)
+            if self._diff_cache and self._diff_cache[0:3] == cache_key:
+                _, _, _, _, count, ssim = self._diff_cache
+            else:
+                try:
+                    img_a, img_b = self.images[idx_a], self.images[idx_b]
+                    diff, count = compute_diff(img_a, img_b)
+                    ssim = compute_ssim(img_a, img_b)
+                    # Cache it
+                    diff_img = array_to_pil(diff)
+                    self._diff_cache = (idx_a, idx_b, self.current_channel, diff_img, count, ssim)
+                except Exception as e:
+                    logger.error(f"Stat calculation failed: {e}")
+                    self.stats_label.configure(text="")
+                    return
+
+            self.stats_label.configure(text=f"SSIM: {ssim:.4f}  |  Diff Pixels: {count:,}")
         else:
-            n = len(valid)
+            n = len([img for img in self.images if img is not None])
             self.stats_label.configure(text=f"{n} image(s) loaded")
 
     def _on_channel_change(self, value):
         """Handle channel selection change."""
         self.current_channel = value
+        self._resize_cache.clear()
+        self._diff_cache = None
         # Reload all images with new channel
         for i, f in enumerate(self.files):
             arr = load_image(str(f), self.current_channel)
@@ -376,11 +591,7 @@ class ImageCompareGUI(ctk.CTk):
 
     def _on_mode_change(self, value):
         """Handle mode selection change."""
-        # Toggle slider visibility
-        if value == "Slider":
-            self.slider_overlay.place(relx=0.5, rely=0.9, anchor="center")
-        else:
-            self.slider_overlay.place_forget()
+        self._resize_cache.clear()
         self._update_display()
 
     def _on_slider_change(self, value):
@@ -388,59 +599,122 @@ class ImageCompareGUI(ctk.CTk):
         self._update_display()
 
     def _on_mouse_move(self, event):
-        """Show pixel info on mouse move."""
+        """Show pixel info and handle slider cursor."""
         cw = self.canvas.winfo_width()
         ch = self.canvas.winfo_height()
-        valid_indices = [i for i, img in enumerate(self.images) if img is not None]
-        if not valid_indices: return
-
-        # Simple logic: detect which image mouse is over (assuming Side-by-Side)
         mode = self.mode_var.get()
-        if mode == "Side by Side":
-            n = len(valid_indices)
-            panel_w = cw // n
-            idx = event.x // panel_w
-            if idx < n:
-                img_idx = valid_indices[idx]
-                arr = self.images[img_idx]
-                pil_img = self.original_pils[img_idx]
-                
-                # Reverse scale to get original pixel coordinates
-                base_scale = min(panel_w / pil_img.width, ch / pil_img.height) * 0.95
-                scale = base_scale * self.zoom_level
-                
-                # Image center on canvas
-                cx = idx * panel_w + panel_w // 2 + self.pan_offset[0]
-                cy = ch // 2 + self.pan_offset[1]
-                
-                rel_x = (event.x - cx) / scale + pil_img.width / 2
-                rel_y = (event.y - cy) / scale + pil_img.height / 2
-                
-                px, py = int(rel_x), int(rel_y)
-                if 0 <= px < arr.shape[1] and 0 <= py < arr.shape[0]:
-                    val = arr[py, px]
-                    if len(val) >= 3:
-                        rgb = [int(v * 255) for v in val]
-                        self.pixel_label.configure(text=f"Pos: {px}, {py} | RGB: {rgb[0]}, {rgb[1]}, {rgb[2]}", text_color="#00b894")
-                    else:
-                        self.pixel_label.configure(text=f"Pos: {px}, {py} | Val: {val[0]:.3f}", text_color="#00b894")
+        
+        # 1. Update Cursor for Slider
+        if mode == "Slider":
+            split_x = self._get_slider_split_x(cw)
+            if abs(event.x - split_x) < 10:
+                self.canvas.configure(cursor="sb_h_double_arrow")
+            else:
+                self.canvas.configure(cursor="")
+        else:
+            self.canvas.configure(cursor="")
+
+        # 2. Pixel Info
+        img_idx = -1
+        cx, cy = 0, 0
+        panel_w = cw
+        
+        if mode == "Single":
+            img_idx = self.slots[self.active_slot]
+            cx, cy = cw // 2 + self.pan_offset[0], ch // 2 + self.pan_offset[1]
+        elif mode == "Side by Side":
+            panel_w = cw // 2
+            col = 0 if event.x < panel_w else 1
+            img_idx = self.slots["A"] if col == 0 else self.slots["B"]
+            cx = col * panel_w + panel_w // 2 + self.pan_offset[0]
+            cy = ch // 2 + self.pan_offset[1]
+        
+        if img_idx >= 0 and img_idx < len(self.images) and self.images[img_idx] is not None:
+            arr = self.images[img_idx]
+            pil_img = self.original_pils[img_idx]
+            base_scale = min(panel_w / pil_img.width, ch / pil_img.height) * (0.95 if mode=="Side by Side" else 0.98)
+            scale = base_scale * self.zoom_level
+            
+            rel_x = (event.x - cx) / scale + pil_img.width / 2
+            rel_y = (event.y - cy) / scale + pil_img.height / 2
+            
+            px, py = int(rel_x), int(rel_y)
+            if 0 <= px < arr.shape[1] and 0 <= py < arr.shape[0]:
+                val = arr[py, px]
+                text = f"Pos: {px}, {py} | "
+                if len(val) >= 3:
+                    rgb = [int(v * 255) for v in val]
+                    text += f"RGB: {rgb[0]}, {rgb[1]}, {rgb[2]}"
                 else:
-                    self.pixel_label.configure(text="Outside Image", text_color="#888")
+                    text += f"Val: {val[0]:.3f}"
+                self.pixel_label.configure(text=text, text_color="#00b894")
+            else:
+                self.pixel_label.configure(text="Outside Image", text_color="#888")
+
+    def _get_slider_split_x(self, cw):
+        """Calculate line position using internal slider_pos."""
+        idx_a = self.slots["A"]
+        if idx_a >= len(self.original_pils): return cw // 2
+        pil_img = self.original_pils[idx_a]
+        ch = self.canvas.winfo_height()
+        base_scale = min(cw / pil_img.width, ch / pil_img.height) * 0.98
+        scale = base_scale * self.zoom_level
+        new_w = int(pil_img.width * scale)
+        
+        cx = cw // 2 + self.pan_offset[0]
+        return cx - new_w // 2 + int(new_w * self.slider_pos)
 
     def _on_scroll(self, event):
         """Handle mouse wheel for zoom."""
         if event.delta > 0:
-            self.zoom_level = min(20.0, self.zoom_level * 1.2)
+            self._zoom_in()
         else:
-            self.zoom_level = max(0.05, self.zoom_level / 1.2)
+            self._zoom_out()
+
+    def _zoom_in(self):
+        """Increase zoom level."""
+        self.zoom_level = min(20.0, self.zoom_level * 1.2)
+        self._update_display()
+
+    def _zoom_out(self):
+        """Decrease zoom level."""
+        self.zoom_level = max(0.05, self.zoom_level / 1.2)
         self._update_display()
 
     def _on_click(self, event):
-        """Handle click for pan start."""
+        """Handle click for flip (Single) or slider drag."""
+        mode = self.mode_var.get()
+        if mode == "Single":
+            self._toggle_slots()
+            return
+            
+        if mode == "Slider":
+            cw = self.canvas.winfo_width()
+            split_x = self._get_slider_split_x(cw)
+            if abs(event.x - split_x) < 20:
+                self._dragging_slider = True
+                return
+        
         self._drag_start = (event.x, event.y)
+        self._dragging_slider = False
 
     def _on_drag(self, event):
-        """Handle drag for panning."""
+        """Handle drag for panning or slider move."""
+        if self._dragging_slider:
+            cw = self.canvas.winfo_width()
+            idx_a = self.slots["A"]
+            pil_img = self.original_pils[idx_a]
+            ch = self.canvas.winfo_height()
+            base_scale = min(cw / pil_img.width, ch / pil_img.height) * 0.98
+            scale = base_scale * self.zoom_level
+            new_w = int(pil_img.width * scale)
+            
+            cx = cw // 2 + self.pan_offset[0]
+            rel_pos = (event.x - (cx - new_w // 2)) / new_w
+            self.slider_pos = max(0, min(1, rel_pos))
+            self._update_display()
+            return
+
         dx = event.x - self._drag_start[0]
         dy = event.y - self._drag_start[1]
         self.pan_offset[0] += dx
@@ -463,6 +737,7 @@ class ImageCompareGUI(ctk.CTk):
             for path in paths:
                 self._add_image_to_slots(path)
             self._update_display()
+            self._update_slot_selectors()
             
     def _replace_image(self, index: int):
         """Replace image at index via file dialog."""
@@ -475,9 +750,14 @@ class ImageCompareGUI(ctk.CTk):
             arr = load_image(path, self.current_channel)
             if arr is not None:
                 self.images[index] = arr
-                self.original_pils[index] = array_to_pil(arr)
+                pil = array_to_pil(arr)
+                self.original_pils[index] = pil
                 self.files[index] = Path(path)
+                
+                # Update thumbnail removed
+                
                 self._update_display()
+                self._update_slot_selectors()
 
     def _remove_image(self, index: int):
         """Remove image at index."""
@@ -485,25 +765,15 @@ class ImageCompareGUI(ctk.CTk):
             self.images.pop(index)
             self.original_pils.pop(index)
             self.photo_images.pop(index)
+            # Thumbnails removed
             self.files.pop(index)
+            
+            # Clean up slots if they point to removed index
+            if self.slots["A"] == index: self.slots["A"] = 0
+            if self.slots["B"] == index: self.slots["B"] = 0
+            
             self._update_display()
-
-    def _save_diff(self):
-        """Save difference image."""
-        if self.images[0] is None or self.images[1] is None:
-            messagebox.showwarning("Warning", "Need at least 2 images")
-            return
-        
-        diff, _ = compute_diff(self.images[0], self.images[1])
-        result = create_side_by_side(self.images[0], self.images[1], diff)
-        
-        path = filedialog.asksaveasfilename(
-            defaultextension=".png",
-            filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg")]
-        )
-        if path:
-            result.save(path)
-            messagebox.showinfo("Saved", f"Saved to {Path(path).name}")
+            self._update_slot_selectors()
 
     def _reset_zoom(self):
         """Reset zoom to 100%."""
@@ -516,7 +786,7 @@ def launch_compare_gui(target_path: str = None, selection=None):
     """Entry point for menu.py"""
     from utils.batch_runner import collect_batch_context
     
-    paths = collect_batch_context("image_compare", target_path)
+    paths = collect_batch_context("image_compare", target_path, timeout=1.5)
     if not paths:
         return
     

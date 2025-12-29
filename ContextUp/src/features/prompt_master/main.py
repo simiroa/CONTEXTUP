@@ -1,14 +1,24 @@
 import os
 import sys
+from pathlib import Path
+
+# Add src to path for absolute imports
+try:
+    current_dir = Path(__file__).resolve().parent
+    src_dir = current_dir.parent.parent  # features/prompt_master -> src
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+except: pass
+
 import customtkinter as ctk
 from tkinter import messagebox
 import requests
 import threading
 
-from .mixins import PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
-from .tooltip import Tooltip
-from .constants import PRESETS_DIR
-from utils.gui_lib import setup_theme
+from features.prompt_master.mixins import PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
+from features.prompt_master.tooltip import Tooltip
+from features.prompt_master.constants import PRESETS_DIR
+from utils.gui_lib import setup_theme, THEME_BG, THEME_CARD, THEME_BORDER
 
 class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin, ctk.CTk):
     """
@@ -46,15 +56,15 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
         self.selected_tags = []
         self.engine_tabs = {}  # Store tab buttons
 
-        # Main container
-        main_container = ctk.CTkFrame(self, corner_radius=0)
+        # Main container (Deep Black Background)
+        main_container = ctk.CTkFrame(self, corner_radius=0, fg_color=THEME_BG)
         main_container.pack(fill="both", expand=True)
         main_container.grid_columnconfigure(1, weight=1)
         main_container.grid_rowconfigure(1, weight=1)
         main_container.grid_columnconfigure(2, weight=0, minsize=450) # Result Card Width
 
         # Top bar for engine tabs
-        self.top_bar = ctk.CTkFrame(main_container, height=50, corner_radius=0)
+        self.top_bar = ctk.CTkFrame(main_container, height=50, corner_radius=0, fg_color=THEME_BG, border_width=1, border_color=THEME_BORDER)
         self.top_bar.grid(row=0, column=0, columnspan=3, sticky="ew")
         
         # Logo on left
@@ -65,8 +75,8 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
         self.tabs_frame = ctk.CTkFrame(self.top_bar, fg_color="transparent")
         self.tabs_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-        # Left Panel: Preset Manager (COMPACT)
-        self.left_frame = ctk.CTkFrame(main_container, width=100, corner_radius=0)
+        # Left Panel: Preset Manager (COMPACT) - Slightly Brighter Card
+        self.left_frame = ctk.CTkFrame(main_container, width=100, corner_radius=0, fg_color="#121212", border_width=1, border_color=THEME_BORDER)
         self.left_frame.grid(row=1, column=0, sticky="nsew")
         self.left_frame.grid_rowconfigure(0, weight=0) # Search & Tools
         self.left_frame.grid_rowconfigure(1, weight=1) # List (Expand)
@@ -84,7 +94,8 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
             height=24,
             font=ctk.CTkFont(size=12),
             border_width=1,
-            border_color="gray30"
+            border_color=THEME_BORDER,
+            fg_color=THEME_BG
         )
         self.preset_search.grid(row=0, column=0, sticky="ew", padx=(0, 2))
         self.preset_search.bind("<KeyRelease>", self.filter_presets)
@@ -99,8 +110,8 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
             width=24,
             fg_color="transparent",
             border_width=1,
-            border_color="gray",
-            hover_color="gray30",
+            border_color=THEME_BORDER,
+            hover_color="#1a1a1a",
             border_spacing=0
         )
         self.open_folder_btn.grid(row=0, column=1, padx=(2, 0))
@@ -114,8 +125,8 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
             width=24,
             fg_color="transparent",
             border_width=1,
-            border_color="gray",
-            hover_color="gray30",
+            border_color=THEME_BORDER,
+            hover_color="#1a1a1a",
             border_spacing=0
         )
         self.guide_btn.grid(row=0, column=2, padx=(2, 0))
@@ -125,21 +136,21 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
         self.preset_scroll = ctk.CTkScrollableFrame(
             self.left_frame, 
             scrollbar_fg_color="transparent",
-            scrollbar_button_color="gray25",
-            scrollbar_button_hover_color="gray35"
+            scrollbar_button_color="#222",
+            scrollbar_button_hover_color="#333"
         )
         self.preset_scroll.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="nsew")
         self.preset_scroll.grid_columnconfigure(0, weight=1) # Ensure buttons fill width
 
         # Center Panel: Split into Builder (top) + Tag Library (bottom)
-        self.center_frame = ctk.CTkFrame(main_container, corner_radius=0)
+        self.center_frame = ctk.CTkFrame(main_container, corner_radius=0, fg_color=THEME_BG)
         self.center_frame.grid(row=1, column=1, sticky="nsew")
         self.center_frame.grid_rowconfigure(0, weight=0, minsize=600)  # Builder: Fixed Height (600px)
         self.center_frame.grid_rowconfigure(1, weight=1)  # Tag Library: Variable (Fills remaining)
         self.center_frame.grid_columnconfigure(0, weight=1)
 
-        # Builder Frame: Unified Card Style
-        self.builder_frame = ctk.CTkFrame(self.center_frame, corner_radius=10)
+        # Custom Template section (Builder) - Slightly Brighter Card
+        self.builder_frame = ctk.CTkFrame(self.center_frame, corner_radius=10, fg_color="#121212", border_width=1, border_color=THEME_BORDER)
         # Reduced padding for more compact look
         self.builder_frame.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="nsew")
         
@@ -168,8 +179,8 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
             self.builder_frame, 
             fg_color="transparent",
             scrollbar_fg_color="transparent",
-            scrollbar_button_color="gray25",
-            scrollbar_button_hover_color="gray35"
+            scrollbar_button_color="#222",
+            scrollbar_button_hover_color="#333"
         )
         self.input_scroll.grid(row=2, column=0, sticky="nsew", padx=(10, 5), pady=(0, 10))
 
@@ -183,9 +194,9 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
         self.image_placeholder = ctk.CTkLabel(self.image_panel, text="No Image", text_color="gray")
         self.image_placeholder.grid(row=0, column=0)
 
-        # Tag Library section (bottom section)
-        self.tag_library_frame = ctk.CTkFrame(self.center_frame, corner_radius=10)
-        self.tag_library_frame.grid(row=1, column=0, padx=20, pady=(10, 20), sticky="nsew")
+        # Tag Library section (bottom section) - Slightly Brighter Card
+        self.tag_library_frame = ctk.CTkFrame(self.center_frame, corner_radius=10, fg_color="#121212", border_width=1, border_color=THEME_BORDER)
+        self.tag_library_frame.grid(row=1, column=0, padx=10, pady=(5, 10), sticky="nsew")
         self.tag_library_frame.grid_rowconfigure(2, weight=1)  # Scrollable area (now row 2)
         self.tag_library_frame.grid_columnconfigure(0, weight=1)
         
@@ -198,7 +209,7 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
         tag_header.grid(row=0, column=0, sticky="w", padx=15, pady=(15, 5))
 
         # Custom Prompt (User Context) - Persistent
-        self.custom_input = ctk.CTkTextbox(self.tag_library_frame, height=50)
+        self.custom_input = ctk.CTkTextbox(self.tag_library_frame, height=50, fg_color=THEME_BG, border_width=1, border_color=THEME_BORDER)
         self.custom_input.grid(row=1, column=0, sticky="ew", padx=15, pady=(0, 10))
         self.custom_input.bind("<KeyRelease>", self.update_output)
         
@@ -213,8 +224,8 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
         self.right_frame.grid_rowconfigure(0, weight=1)
         self.right_frame.grid_columnconfigure(0, weight=1)
 
-        # Output Display Container
-        self.output_container = ctk.CTkFrame(self.right_frame, corner_radius=10)
+        # Output Display Container - Slightly Brighter Card
+        self.output_container = ctk.CTkFrame(self.right_frame, corner_radius=10, fg_color="#121212", border_width=1, border_color=THEME_BORDER)
         self.output_container.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
         
         # Output Text Widget (Centered inside container)
@@ -387,7 +398,11 @@ class PromptMasterApp(PresetMixin, TagLibraryMixin, TranslationMixin, ImageMixin
                 combo = ctk.CTkComboBox(
                     self.input_scroll, 
                     values=opt.get("choices", []), 
-                    command=self.update_output
+                    command=self.update_output,
+                    fg_color=THEME_BG,
+                    border_color=THEME_BORDER,
+                    button_color="#1a1a1a",
+                    button_hover_color="#222"
                 )
                 combo.set(opt.get("default", ""))
                 combo.grid(row=row, column=1, sticky="ew", pady=2)

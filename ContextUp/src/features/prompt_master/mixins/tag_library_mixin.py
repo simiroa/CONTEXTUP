@@ -3,6 +3,7 @@ import json
 import customtkinter as ctk
 from ..constants import TAGS_FILE, TAG_CATEGORIES_FILE
 from ..tooltip import Tooltip
+from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER
 
 class TagLibraryMixin:
     def load_tags(self):
@@ -61,7 +62,9 @@ class TagLibraryMixin:
             center_container, 
             placeholder_text="🔍 Search...",
             textvariable=self.search_var,
-            width=200 # Slightly wider for better usability
+            width=200,
+            fg_color=THEME_BG,
+            border_color=THEME_BORDER
         )
         search_entry.pack(side="left", padx=(0, 5))
         Tooltip(search_entry, "Search Tags")
@@ -73,8 +76,10 @@ class TagLibraryMixin:
             text="⚙️", 
             width=30,
             command=self.manage_tags,
-            fg_color="gray",
-            hover_color="gray30",
+            fg_color="#1a1a1a",
+            hover_color="#222",
+            border_width=1,
+            border_color=THEME_BORDER,
             border_spacing=0
         )
         manage_btn.pack(side="left", padx=2)
@@ -86,8 +91,10 @@ class TagLibraryMixin:
             text="🌐", 
             width=30,
             command=self.translate_user_context,
-            fg_color="gray",
-            hover_color="gray30",
+            fg_color="#1a1a1a",
+            hover_color="#222",
+            border_width=1,
+            border_color=THEME_BORDER,
             border_spacing=0
         )
         translate_btn.pack(side="left", padx=2)
@@ -99,15 +106,26 @@ class TagLibraryMixin:
             text="🔄", 
             width=30,
             command=self.reset_user_context,
-            fg_color="gray",
-            hover_color="gray30",
+            fg_color="#1a1a1a",
+            hover_color="#222",
+            border_width=1,
+            border_color=THEME_BORDER,
             border_spacing=0
         )
         reset_btn.pack(side="left", padx=2)
         Tooltip(reset_btn, "Reset Context")
         
         # Tab View for Categories
-        self.tag_tabs = ctk.CTkTabview(self.tag_library_scroll, height=250)
+        self.tag_tabs = ctk.CTkTabview(
+            self.tag_library_scroll, 
+            height=250,
+            fg_color=THEME_CARD,
+            segmented_button_fg_color=THEME_BG,
+            segmented_button_selected_color=THEME_BORDER,
+            segmented_button_selected_hover_color="#1a1a1a",
+            segmented_button_unselected_color=THEME_BG,
+            segmented_button_unselected_hover_color="#1a1a1a"
+        )
         self.tag_tabs.pack(fill="both", expand=True, padx=5, pady=5)
         
         # Create Tabs
@@ -153,8 +171,8 @@ class TagLibraryMixin:
             tab_frame, 
             fg_color="transparent", 
             scrollbar_fg_color="transparent",
-            scrollbar_button_color="gray25",
-            scrollbar_button_hover_color="gray35"
+            scrollbar_button_color="#222",
+            scrollbar_button_hover_color="#333"
         )
         scroll.pack(fill="both", expand=True)
         
@@ -223,8 +241,8 @@ class TagLibraryMixin:
                 font=ctk.CTkFont(size=11),
                 fg_color="transparent",
                 border_width=1,
-                border_color="gray",
-                hover_color="gray30"
+                border_color=THEME_BORDER,
+                hover_color="#1a1a1a"
             )
             btn.pack(side="left", padx=2)
             
@@ -294,9 +312,9 @@ class TagLibraryMixin:
                                             if found_text: break
                                     
                                     if found_text and found_text in current_text:
-                                        widget.configure(fg_color="green", border_color="green")
+                                        widget.configure(fg_color="#1E4620", border_color="#2E7D32") # Darker green
                                     else:
-                                        widget.configure(fg_color="transparent", border_color="gray")
+                                        widget.configure(fg_color="transparent", border_color=THEME_BORDER)
 
         # Update Custom Tab
         try:

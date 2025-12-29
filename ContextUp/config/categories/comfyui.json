@@ -26,7 +26,8 @@
                 "ComfyUI"
             ],
             "description": "Upscale videos using SeedVR2 (ComfyUI)",
-            "script": "src.features.comfyui.seedvr2_gui"
+            "script": "src.features.comfyui.seedvr2_gui",
+            "show_in_context_menu": false
         },
         {
             "category": "Comfyui",
@@ -46,7 +47,8 @@
                 "ComfyUI"
             ],
             "description": "Unified workspace for prompt layers, icon generation, and asset creation (Z-Turbo).",
-            "script": "src.features.comfyui.creative_studio_z_gui"
+            "script": "src.features.comfyui.creative_studio_z_gui",
+            "show_in_context_menu": false
         },
         {
             "category": "Comfyui",
@@ -66,7 +68,8 @@
                 "ComfyUI"
             ],
             "description": "Professional workspace with Checkpoint, LoRA Stacking, FaceDetailer & SUPIR.",
-            "script": "src.features.comfyui.creative_studio_advanced_gui"
+            "script": "src.features.comfyui.creative_studio_advanced_gui",
+            "show_in_context_menu": false
         },
         {
             "category": "Comfyui",
@@ -88,7 +91,8 @@
             "description": "AI Audio Generation & Editing using ACE Step",
             "script": "src.features.comfyui.ace_audio_edit_gui",
             "scope": "file",
-            "types": ".mp3;.wav;.flac;.ogg;.m4a"
+            "types": ".mp3;.wav;.flac;.ogg;.m4a",
+            "show_in_context_menu": false
         },
         {
             "category": "Comfyui",
@@ -106,7 +110,8 @@
                 "ComfyUI"
             ],
             "description": "Open ComfyUI Web UI (starts server if needed)",
-            "script": "src.features.comfyui.open_dashboard"
+            "script": "src.features.comfyui.open_dashboard",
+            "show_in_context_menu": false
         }
     ]
 }

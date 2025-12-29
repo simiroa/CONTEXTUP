@@ -76,7 +76,7 @@ def flip_normal_green(target_path, selection=None):
 class NormalStrengthGUI(BaseWindow):
     def __init__(self, target_path, selection=None):
         super().__init__(title="ContextUp Normal & Roughness Gen", width=500, height=750, icon_name="simple_pbr")
-        self.main_frame.grid_configure(padx=10, pady=10)
+        self.main_frame.pack_configure(padx=10, pady=10)
         
         # Handle selection
         if selection:

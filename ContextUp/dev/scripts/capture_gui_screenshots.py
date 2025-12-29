@@ -114,6 +114,7 @@ GUI_LIST = [
     
     # Image
     ("image_convert", "features/image/convert_gui.py", (["Image", "Convert"], ["Image", "Convert", "이미지"]), "image", []),
+    ("image_compare", "features/image/compare_gui.py", (["Image", "Compare"], ["Image", "Compare", "비교"]), "image", ["--demo"]),
     ("merge_exr", "features/image/merge_exr.py", (["EXR", "Merge"], ["EXR", "Merge"]), "image", []),
     ("split_exr", "features/image/split_exr.py", (["EXR", "Split"], ["EXR", "Split"]), "exr", []),
     ("resize", "features/image/resize_gui.py", (["Resize", "Image"], ["Resize", "Image", "이미지"]), "image", []),
@@ -124,16 +125,23 @@ GUI_LIST = [
     ("video_audio", "features/video/audio_gui.py", (["Audio", "Tools"], ["Audio", "Tool", "오디오"]), "video", []),
     ("downloader", "features/video/downloader_gui.py", (["Downloader", "Video"], ["Downloader", "다운로더"]), "none", []),
     ("sequence_video", "features/video/seq_gui.py", (["Sequence", "Video"], ["Sequence", "Video", "시퀀스"]), "folder", []),
+    ("to_video", "features/sequence/to_video_gui.py", (["Sequence", "Video"], ["Sequence", "Video"]), "sequence", []),
+    ("analyze_seq", "features/sequence/analyze_gui.py", (["Sequence", "Analyze"], ["Sequence", "Analyze"]), "sequence", []),
     ("interpolation", "features/video/interpolation_gui.py", (["Interpolation", "Frame"], ["Interpolation", "Frame", "프레임"]), "video", []),
     
     # Audio
     ("audio_convert", "features/audio/convert_gui.py", (["Audio", "Convert"], ["Audio", "Convert", "오디오"]), "audio", []),
     ("audio_separate", "features/audio/separate_gui.py", (["Audio", "Separate"], ["Audio", "Separate", "분리"]), "none", ["--demo"]),
     
-    # AI
+    # AI / ComfyUI
     ("marigold", "features/ai/marigold_gui.py", (["PBR", "Marigold"], ["PBR", "Marigold"]), "image", []),
     ("gemini_tools", "features/ai/standalone/gemini_img_tools/gui.py", (["Gemini", "AI"], ["Gemini", "AI"]), "image", []),
-    ("ai_text_refine", "features/tools/ai_text_refine.py", (["Text", "Refine", "AI"], ["Text", "Refine", "텍스트"]), "none", []),
+
+    ("creative_studio_z", "features/comfyui/creative_studio_z_gui.py", (["Creative", "Studio"], ["Creative", "Studio"]), "none", []),
+    ("creative_studio_adv", "features/comfyui/creative_studio_advanced_gui.py", (["Creative", "Advanced"], ["Creative", "Advanced"]), "none", []),
+
+    ("seedvr2", "features/comfyui/seedvr2_gui.py", (["SeedVR2"], ["SeedVR2"]), "none", []),
+    ("ace_audio", "features/comfyui/ace_audio_edit_gui.py", (["ACE", "Audio"], ["ACE", "Audio"]), "none", []),
     
     # Mesh
     ("mesh_lod", "features/mesh/lod_gui.py", (["LOD", "Auto"], ["LOD", "Auto"]), "none", ["--demo"]),
@@ -144,7 +152,7 @@ GUI_LIST = [
     
     # System
     ("rename", "features/system/rename.py", (["Rename", "Batch"], ["이름 바꾸기", "Rename"]), "folder", ["rename"]),
-    ("translator", "features/system/translator.py", (["Translator", "Translate"], ["번역기", "Translator"]), "none", []),
+
     ("unwrap", "features/system/unwrap_folder_gui.py", (["Unwrap", "Folder"], ["폴더 풀기", "Unwrap"]), "folder", []),
     
     # Finder / Prompt Master  
@@ -158,6 +166,11 @@ RESIZE_MAP = {
     "doc_convert": (900, 950),
     "marigold": (900, 950),
     "image_convert": (900, 950),
+    "creative_studio_z": (1360, 900),
+    "creative_studio_adv": (1380, 950),
+
+    "ace_audio": (1200, 800),
+    "image_compare": (1100, 800),
 }
 
 
@@ -514,6 +527,18 @@ def create_test_files(logger) -> Dict[str, str]:
         logger.debug(f"SETUP | Created: {obj_path.name}")
     files['mesh'] = str(obj_path)
     
+    # Sequence Folder
+    seq_dir = TEMP_DIR / "test_sequence"
+    seq_dir.mkdir(exist_ok=True)
+    for i in range(1, 6):
+         p = seq_dir / f"frame_{i:04d}.jpg"
+         if not p.exists() and HAS_PIL:
+             img = Image.new('RGB', (100, 100), color=(i*40 % 255, 0, 0))
+             img.save(p)
+         elif not p.exists():
+             p.write_bytes(b"FAKE JPG")
+    files['sequence'] = str(seq_dir)
+
     files['folder'] = str(TEMP_DIR)
     files['none'] = None
     

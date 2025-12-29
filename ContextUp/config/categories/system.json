@@ -37,22 +37,6 @@
     },
     {
         "category": "System",
-        "id": "reopen_recent",
-        "name": "Reopen Recent",
-        "icon": "assets/icons/icon_sys_open_recent_folder.ico",
-        "types": "*",
-        "scope": "background",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "embedded",
-        "dependencies": [],
-        "external_tools": [],
-        "order": 1003,
-        "gui": false
-    },
-    {
-        "category": "System",
         "id": "unwrap_folder",
         "name": "Unwrap Folder",
         "icon": "assets/icons/icon_sys_unwrap_folder.ico",

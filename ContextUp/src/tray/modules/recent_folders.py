@@ -192,15 +192,7 @@ class RecentFolders(TrayModule):
         from utils import i18n
         from pystray import Menu
         
-        # 1. Reopen Last Closed Folder (Legacy simple behavior)
-        reopen_last_text = i18n.t("features.system.reopen_last_folder", "🔄 Reopen Last Closed Folder")
-        menu_items = [item(reopen_last_text, self.reopen_last)]
-        
-        # 2. Submenu for individual folders
-        if not self.closed_history:
-            return menu_items
-        
-        # Create a submenu of the last 10 folders
+        # Build submenu items
         recent_items = []
         
         # Flatten and keep unique recent folders
@@ -212,19 +204,25 @@ class RecentFolders(TrayModule):
                     seen.add(p)
                     flat_list.append(p)
         
-        for path in flat_list[:5]: # Show up to 5
+        # Show up to 5 recent folders
+        for path in flat_list[:5]:
             name = Path(path).name
-            if not name: name = path # Handle drive roots
+            if not name: name = path  # Handle drive roots
             recent_items.append(item(f"  {name}", lambda i, p=path: subprocess.Popen(f'explorer "{p}"')))
         
-        recent_items.append(Menu.SEPARATOR)
-        clear_text = i18n.t("common.clear_history", "Clear History")
-        recent_items.append(item(f"  {clear_text}", self.clear_history))
+        # Add clear history option
+        if recent_items:
+            recent_items.append(Menu.SEPARATOR)
+            clear_text = i18n.t("common.clear_history", "Clear History")
+            recent_items.append(item(f"  {clear_text}", self.clear_history))
+        else:
+            # Empty placeholder
+            recent_items.append(item("  (Empty)", lambda: None))
         
+        # Return only the submenu
         submenu_text = i18n.t("features.system.recent_folders", "📂 Recent Folders")
-        menu_items.append(item(submenu_text, Menu(*recent_items)))
-        
-        return menu_items
+        return [item(submenu_text, Menu(*recent_items))]
+
 
     def clear_history(self):
         """Clear history and log file."""
@@ -232,6 +230,11 @@ class RecentFolders(TrayModule):
         try:
             if self.log_file.exists():
                 self.log_file.unlink()
+            
+            # Refresh the tray menu immediately
+            if hasattr(self.agent, "refresh_menu"):
+                self.agent.refresh_menu()
+                
             self.agent.notify("Recent Folders", "History cleared.")
         except Exception as e:
             logger.error(f"Failed to clear history: {e}")

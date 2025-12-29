@@ -9,7 +9,7 @@ from tkinter import filedialog, messagebox
 from .models import FinderGroup, FinderItem
 from .scanner import scan_worker
 from core.logger import setup_logger
-from utils.gui_lib import setup_theme
+from utils.gui_lib import setup_theme, BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_ACCENT
 
 # PIP: send2trash
 try:
@@ -19,15 +19,12 @@ except ImportError:
 
 logger = setup_logger("finder_ui")
 
-class FinderApp(ctk.CTk):
-    PAGE_SIZE = 100  # Increased for better batch loading performance
+class FinderApp(BaseWindow):
+    PAGE_SIZE = 100
     
     def __init__(self, target_path=""):
-        super().__init__()
-        setup_theme()  # Apply theme from settings.json
-        self.title("ContextUp - Advanced Finder")
-        self.geometry("1000x800")
-
+        super().__init__(title="Advanced Finder", width=1050, height=850)
+        
         self.target_path = target_path
         
         # Data
@@ -42,13 +39,15 @@ class FinderApp(ctk.CTk):
             self._start_scan_thread()
 
     def _setup_ui(self):
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        # Use BaseWindow's main_frame
+        container = self.main_frame
+        container.grid_columnconfigure(1, weight=1)
+        container.grid_rowconfigure(0, weight=1)
 
-        # Left Sidebar (compact)
-        self.frm_sidebar = ctk.CTkFrame(self, width=150, corner_radius=0)
-        self.frm_sidebar.grid(row=0, column=0, sticky="nsew")
-        self.frm_sidebar.grid_propagate(False)  # Prevent auto-resize
+        # Left Sidebar
+        self.frm_sidebar = ctk.CTkFrame(container, width=220, corner_radius=12, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
+        self.frm_sidebar.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        self.frm_sidebar.grid_propagate(False)
         self.frm_sidebar.grid_rowconfigure(5, weight=1) # Spacer at bottom
 
         # 1. Scope
@@ -61,7 +60,7 @@ class FinderApp(ctk.CTk):
         self.lbl_path.pack(pady=5, padx=8)
         
         # 2. Mode (Tab view)
-        self.tab_mode = ctk.CTkTabview(self.frm_sidebar, height=140)
+        self.tab_mode = ctk.CTkTabview(self.frm_sidebar, height=140, fg_color=THEME_BG, segmented_button_selected_color=THEME_ACCENT)
         self.tab_mode.pack(pady=10, padx=8, fill="x")
         
         tab_simple = self.tab_mode.add("Simple")
@@ -70,7 +69,7 @@ class FinderApp(ctk.CTk):
         # Simple Tab Content
         self.var_chk_name = ctk.BooleanVar(value=True)
         self.var_chk_size = ctk.BooleanVar(value=True)
-        self.var_chk_hash = ctk.BooleanVar(value=False)
+        self.var_chk_hash = ctk.BooleanVar(value=True) # CHANGED: Default True
         
         ctk.CTkCheckBox(tab_simple, text="Dup Name", variable=self.var_chk_name).pack(anchor="w", pady=2, padx=5)
         ctk.CTkCheckBox(tab_simple, text="Dup Size", variable=self.var_chk_size).pack(anchor="w", pady=2, padx=5)
@@ -119,21 +118,22 @@ class FinderApp(ctk.CTk):
         self.btn_delete.pack(side="bottom", pady=10, padx=8, fill="x")
         
         # Right Panel
-        self.frm_right = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
-        self.frm_right.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.frm_right = ctk.CTkFrame(container, corner_radius=12, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
+        self.frm_right.grid(row=0, column=1, sticky="nsew")
         
         # Sort Options + Header (compact)
-        self.frm_header = ctk.CTkFrame(self.frm_right, fg_color="gray25", corner_radius=6, height=32)
+        self.frm_header = ctk.CTkFrame(self.frm_right, fg_color=THEME_BG, corner_radius=6, height=32)
         self.frm_header.pack(fill="x", pady=(0, 3))
         self.frm_header.pack_propagate(False)
         
         ctk.CTkLabel(self.frm_header, text="Results", font=("Arial", 12, "bold")).pack(side="left", padx=10)
-        self.var_sort = ctk.StringVar(value="Size")
+        self.var_sort = ctk.StringVar(value="Count") # CHANGED: Default Count
         ctk.CTkSegmentedButton(self.frm_header, values=["Size", "Count", "Name"], width=150, height=24,
+                               fg_color=THEME_CARD, selected_color=THEME_ACCENT,
                                variable=self.var_sort, command=self._apply_sort).pack(side="right", padx=5, pady=4)
         ctk.CTkLabel(self.frm_header, text="Sort:", font=("Arial", 10), text_color="gray").pack(side="right")
         
-        self.scroll_results = ctk.CTkScrollableFrame(self.frm_right)
+        self.scroll_results = ctk.CTkScrollableFrame(self.frm_right, fg_color=THEME_BG)
         self.scroll_results.pack(fill="both", expand=True)
         
         self.btn_load_more = ctk.CTkButton(self.frm_right, text="Load More", command=self._load_next_page)
@@ -314,14 +314,15 @@ class FinderApp(ctk.CTk):
             })
             
             # --- Render Header ---
-            frm_grp = ctk.CTkFrame(self.scroll_results, fg_color="gray25")
-            frm_grp.pack(fill="x", pady=1, padx=5) # Reduced pady
+            frm_grp = self.create_card_frame(self.scroll_results)
+            frm_grp.pack(fill="x", pady=2, padx=5)
             
             frm_header = ctk.CTkFrame(frm_grp, fg_color="transparent", height=28) # Fixed height for compactness
             frm_header.pack(fill="x", padx=2, pady=2) # Reduced padding
             
             # Components
-            btn_toggle = ctk.CTkButton(frm_header, text="▶", width=24, height=20, fg_color="gray40", 
+            btn_toggle = ctk.CTkButton(frm_header, text="▶", width=24, height=20, fg_color=THEME_CARD, 
+                                     hover_color="gray30",
                                      font=("Arial", 10),
                                      command=lambda idx=group_index: self._toggle_group(idx))
             btn_toggle.pack(side="left", padx=(0, 2))

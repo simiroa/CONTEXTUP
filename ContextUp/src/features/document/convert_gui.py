@@ -47,7 +47,7 @@ try:
     from utils.gui_lib import FileListFrame, setup_theme
     # Use custom BaseWindow with less padding but theme-aware
     class BaseWindow(ctk.CTk):
-        def __init__(self, title, width, height):
+        def __init__(self, title, width, height, icon_name=None):
             super().__init__()
             setup_theme()  # Apply theme from settings.json
             self.title(title)
@@ -57,7 +57,7 @@ try:
             self.main_frame.pack(fill="both", expand=True, padx=5, pady=5)
 except ImportError:
     class BaseWindow(ctk.CTk):
-        def __init__(self, title, width, height):
+        def __init__(self, title, width, height, icon_name=None):
             super().__init__()
             self.title(title)
             self.geometry(f"{width}x{height}")
@@ -88,7 +88,7 @@ OUTPUT_FORMATS = {
 class DocConverterGUI(BaseWindow):
     def __init__(self, files_list=None):
         try:
-            super().__init__(title="Document Converter", width=380, height=520, icon_name="doc_convert")
+            super().__init__(title="Document Converter", width=380, height=520, icon_name="document_convert")
             
             raw_files = [Path(f) for f in files_list] if files_list else []
             self.files = [f for f in raw_files if f.exists() and f.suffix.lower() == '.pdf']

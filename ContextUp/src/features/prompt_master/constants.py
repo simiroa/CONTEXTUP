@@ -19,9 +19,9 @@ print(f"[PromptMaster] PRESETS_DIR: {PRESETS_DIR}")
 
 # Engine color themes (for tabs)
 ENGINE_COLORS = {
-    "Flux": ("#9B59B6", "#8E44AD"),
-    "Midj": ("#E74C3C", "#C0392B"),
-    "Veo3": ("#3498DB", "#2980B9"),
-    "nanobanana": ("#F39C12", "#E67E22"),
-    "custom": ("#95A5A6", "#7F8C8D")
+    "Flux": ("#6B4986", "#5E347D"),      # Subdued Purple
+    "Midj": ("#A73C2C", "#90291B"),      # Subdued Red
+    "Veo3": ("#2478AB", "#196099"),      # Subdued Blue
+    "nanobanana": ("#C37C12", "#B66E22"), # Subdued Orange
+    "custom": ("#758586", "#5F6C6D")      # Neutral Gray
 }

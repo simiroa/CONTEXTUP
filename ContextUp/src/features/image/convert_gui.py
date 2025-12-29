@@ -52,7 +52,7 @@ def main():
                  if item: self.tool_name = item.get("name", self.tool_name)
             except: pass
 
-            super().__init__(title=self.tool_name, width=600, height=550, icon_name="image_format_convert")
+            super().__init__(title=self.tool_name, width=550, height=700, icon_name="image_format_convert")
             
             if files_list and len(files_list) > 0:
                 self.selection, _ = scan_for_images(files_list)

@@ -4,6 +4,7 @@ import subprocess
 import customtkinter as ctk
 from tkinter import messagebox
 from ..constants import PRESETS_DIR, ENGINE_COLORS
+from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER
 
 class PresetMixin:
     def load_engines(self):
@@ -26,8 +27,8 @@ class PresetMixin:
                     width=100,
                     height=35,
                     fg_color="transparent",
-                    border_width=2,
-                    border_color="gray30"
+                    border_width=1,
+                    border_color=THEME_BORDER
                 )
                 tab_btn.pack(side="left", padx=2)
                 self.engine_tabs[engine] = tab_btn
@@ -56,8 +57,8 @@ class PresetMixin:
             else:
                 tab_btn.configure(
                     fg_color="transparent",
-                    border_color="gray30",
-                    text_color="gray"
+                    border_color=THEME_BORDER,
+                    text_color="#666"
                 )
         
         # Load presets
@@ -127,9 +128,11 @@ class PresetMixin:
                 text=preset_name, 
                 command=lambda f=filename: self.load_preset_file(f),
                 anchor="w",
-                height=24,
-                fg_color="gray25",
-                hover_color="gray30"
+                height=26,
+                fg_color="#0a0a0a",
+                hover_color="#1a1a1a",
+                border_width=1,
+                border_color=THEME_BORDER
             )
             btn.grid(row=row, column=0, padx=1, pady=1, sticky="ew")
             row += 1

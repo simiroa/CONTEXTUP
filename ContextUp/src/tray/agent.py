@@ -73,27 +73,23 @@ def main():
     
     # Menu callbacks (defined before build_menu to allow closure)
     def reload(icon, item):
-        logger.info("Reloading tray...")
-        # Reload Menu
-        icon.menu = pystray.Menu(*build_menu(icon, reload, exit_tray))
-        
-        # Reload Hotkeys (Important for development)
-        unregister_all()
+        logger.info("Restarting tray...")
         try:
-            cfg = MenuConfig()
-            register_hotkeys(cfg)
+            # Re-register Quick Menu Hotkey cleanup (best effort)
+            unregister_all()
+            close_quick_menu_daemon()
             
-            # Re-register Quick Menu Hotkey
-            def show_popup_menu():
-                try:
-                    from tray.quick_menu import launch_quick_menu_one_shot
-                    launch_quick_menu_one_shot()
-                except Exception as e:
-                    logger.error(f"Quick menu failed: {e}")
-            register_quick_menu_hotkey(show_popup_menu, "ctrl+shift+c")
+            # Spawn new process
+            import subprocess
+            subprocess.Popen([sys.executable] + sys.argv, creationflags=0x08000000)
+            
+            # Stop current icon (this exits the mainloop)
+            icon.stop()
             
         except Exception as e:
-            logger.error(f"Hotkey reload failed: {e}")
+            logger.error(f"Restart failed: {e}")
+            # Fallback to old reload logic if restart fails?
+            icon.menu = pystray.Menu(*build_menu(icon, reload, exit_tray))
 
 
     def exit_tray(icon, item):
@@ -136,8 +132,8 @@ def main():
         # Register quick menu hotkey
         def show_popup_menu():
             try:
-                from tray.quick_menu import launch_quick_menu_one_shot
-                launch_quick_menu_one_shot()
+                from tray.quick_menu import show_quick_menu
+                show_quick_menu()
             except Exception as e:
                 logger.error(f"Quick menu failed: {e}")
         

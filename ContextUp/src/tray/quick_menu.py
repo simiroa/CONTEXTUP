@@ -123,10 +123,6 @@ class QuickMenu(ctk.CTkToplevel):
             y = mouse_y - menu_height - 10
             
         self.geometry(f"{menu_width}x{menu_height}+{x}+{y}")
-        
-        # Apply blur after window is created
-        self.after(50, self._apply_blur)
-        
         # Main frame
         self.main_frame = ctk.CTkFrame(
             self, 
@@ -149,6 +145,32 @@ class QuickMenu(ctk.CTkToplevel):
         if self.is_daemon:
             self.withdraw() # Start hidden in daemon mode
             self._start_udp_listener()
+
+        # Apply blur after window is created
+        self.after(50, self._apply_blur)
+        
+        # Periodic check for visibility/focus to ensure it doesn't stay open if focus is lost somewhere else
+        self._check_focus_loop()
+
+    def _check_focus_loop(self):
+        """Periodic check to hide if lost focus, supplementary to <FocusOut>"""
+        if not self.pinned and self.winfo_exists():
+            try:
+                # If window is visible but not focused, and it's not a temporary focus loss
+                # (like clicking a child widget), withdraw it.
+                # Use windll to get actual foreground window
+                fg_hwnd = ctypes.windll.user32.GetForegroundWindow()
+                my_hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+                
+                if fg_hwnd != 0 and fg_hwnd != my_hwnd and self.state() == "normal":
+                    # Check if fg_hwnd is a child of my_hwnd
+                    # (Simplified: if not my_hwnd, just withdraw)
+                    self.withdraw()
+            except:
+                pass
+        
+        if self.winfo_exists():
+            self.after(1000, self._check_focus_loop)
 
     def _start_udp_listener(self):
         def listener():
@@ -197,16 +219,19 @@ class QuickMenu(ctk.CTkToplevel):
         except: pass
 
         self.geometry(f"{menu_width}x{menu_height}+{x}+{y}")
-        self.deiconify()
+        
+        # Ensure it's not iconified/withdrawn
+        if self.state() != "normal":
+            self.deiconify()
+        
         self.lift()
         self.attributes('-topmost', True)
         self.focus_force()
         self.attributes('-alpha', 0.95)
         self._apply_blur()
         
-        # Double ensure visibility
-        self.after(100, lambda: self.attributes('-topmost', True))
-        self.after(100, lambda: self.lift())
+        # One-shot lift but NOT continuous topmost re-assertion
+        self.after(10, lambda: self.lift())
 
     
     def _build_title_bar(self):
@@ -336,9 +361,8 @@ class QuickMenu(ctk.CTkToplevel):
                         name = item.get("name", "Tool")
                         item_id = item.get("id", "")
                         
-                        # SPECIAL HANDLING for Copy My Info - render as collapsible section
+                        # Skip Copy My Info as it's already at the top
                         if item_id == "copy_my_info":
-                            self._add_copy_my_info_section(scrollable)
                             continue
 
                         self._add_menu_button(
@@ -370,9 +394,8 @@ class QuickMenu(ctk.CTkToplevel):
                         name = item.get("name", "Tool")
                         item_id = item.get("id", "")
                         
-                        # SPECIAL HANDLING for Copy My Info
+                        # Skip Copy My Info as it's already at the top
                         if item_id == "copy_my_info":
-                            self._add_copy_my_info_section(scrollable)
                             continue
 
                         self._add_menu_button(
@@ -557,22 +580,6 @@ class QuickMenu(ctk.CTkToplevel):
                     # Show items
                     self.recent_items_frame = ctk.CTkFrame(submenu_frame, fg_color=("gray85", "#181818"), corner_radius=6)
                     self.recent_items_frame.pack(fill="x", padx=(10, 0), pady=(2, 0))
-                    
-                    # Add "Reopen Last" as first item in list
-                    reopen_text = i18n.t("features.system.reopen_last_folder", "🔄  Reopen Last Closed")
-                    reopen_btn = ctk.CTkButton(
-                        self.recent_items_frame,
-                        text=reopen_text,
-                        command=lambda: self._on_click(self._reopen_recent),
-                        anchor="w",
-                        fg_color="transparent",
-                        hover_color=("#C0C0C0", "#2A2A2A"),
-                        text_color=("gray10", "gray90"),
-                        height=30,
-                        corner_radius=4,
-                        font=("Segoe UI", 11)
-                    )
-                    reopen_btn.pack(fill="x", pady=1, padx=2)
 
                     if recent_paths:
                         for path in recent_paths:
@@ -584,7 +591,7 @@ class QuickMenu(ctk.CTkToplevel):
                                 command=lambda p=path: self._on_click(lambda: subprocess.Popen(f'explorer "{p}"')),
                                 anchor="w",
                                 fg_color="transparent",
-                                hover_color=("#C0C0C0", "#2A2A2A"),
+                                hover_color=("gray90", "#2A2A2A"),
                                 text_color=("gray10", "gray90"),
                                 height=30,
                                 corner_radius=4,

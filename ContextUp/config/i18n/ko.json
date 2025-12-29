@@ -125,13 +125,11 @@
     "system": {
       "clean_empty_folders": "빈 폴더 정리",
       "move_to_new_folder": "새 폴더로 이동",
-      "reopen_recent": "최근 항목 다시 열기",
-      "unwrap_folder": "폴더 언래핑",
-      "finder": "파인더",
+      "unwrap_folder": "폴더 풀기",
+      "finder": "중복 파일 찾기",
       "create_symlink": "심볼릭 링크 생성",
-      "manager": "매니저",
-      "recent_folders": "최근 폴더",
-      "reopen_last_folder": "최근 닫은 폴더 다시 열기"
+      "batch_rename": "일괄 이름 변경",
+      "recent_folders": "최근 폴더"
     },
     "tools": {
       "copy_my_info": "내 정보 복사",

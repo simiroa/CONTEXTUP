@@ -118,18 +118,6 @@ def create_udp_listener(icon, args, build_menu_func, reopen_handler=None):
                         logger.info("Menu reloaded successfully.")
                     except Exception as e:
                         logger.error(f"Menu reload failed: {e}")
-                elif msg.startswith(b"reopen_recent"):
-                    logger.info("Reopen recent signal received via UDP")
-                    try:
-                        if reopen_handler:
-                            reopen_handler()
-                        elif hasattr(icon, '_modules'):
-                            for mod in icon._modules:
-                                if hasattr(mod, 'reopen_last'):
-                                    mod.reopen_last()
-                                    break
-                    except Exception as e:
-                        logger.error(f"Reopen recent failed: {e}")
                         
         except Exception as e:
             logger.error(f"UDP listener failed: {e}")

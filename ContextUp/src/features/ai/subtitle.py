@@ -30,7 +30,7 @@ class SubtitleGUI(BaseWindow):
         except Exception as e:
              print(f"Config load error: {e}")
 
-        super().__init__(title=self.tool_name, width=550, height=650, icon_name="video_generate_subtitle")
+        super().__init__(title=self.tool_name, width=550, height=720, icon_name="video_generate_subtitle")
         
         self.files = []
         if target_path:

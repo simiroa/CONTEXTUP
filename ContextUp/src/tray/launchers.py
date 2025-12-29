@@ -114,8 +114,16 @@ def launch_tool(tool_id: str, tool_name: str = None, tool_script: str = None):
         
         if script_path and script_path.exists():
             logger.info(f"Launching tool: {display_name} ({script_path})")
+            
+            # Use pythonw.exe for GUI apps to avoid console windows
+            python_exe = sys.executable
+            if python_exe.endswith("python.exe"):
+                pythonw = Path(python_exe).parent / "pythonw.exe"
+                if pythonw.exists():
+                    python_exe = str(pythonw)
+
             subprocess.Popen(
-                [sys.executable, str(script_path)], 
+                [python_exe, str(script_path)], 
                 cwd=str(project_root),
                 creationflags=0x08000000  # CREATE_NO_WINDOW
             )
@@ -123,8 +131,16 @@ def launch_tool(tool_id: str, tool_name: str = None, tool_script: str = None):
             # Fallback: use menu.py dispatcher
             logger.info(f"Script not found, using menu.py dispatcher for {tool_id}")
             menu_py = SRC_DIR / "core" / "menu.py"
+            
+            # Resolve pythonw for menu.py as well
+            python_exe = sys.executable
+            if python_exe.endswith("python.exe"):
+                pythonw = Path(python_exe).parent / "pythonw.exe"
+                if pythonw.exists():
+                    python_exe = str(pythonw)
+
             subprocess.Popen(
-                [sys.executable, str(menu_py), tool_id, "background"],
+                [python_exe, str(menu_py), tool_id, "background"],
                 cwd=str(project_root),
                 creationflags=0x08000000
             )

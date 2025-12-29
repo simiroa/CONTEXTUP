@@ -21,15 +21,14 @@ from utils.files import get_safe_path
 from utils.image_utils import scan_for_images
 
 # Strict Column Width Configuration - TIGHTER AND TUNED
-# Strict Column Width Configuration - TIGHTER AND TUNED
 COL_CONFIG = {
-    0: 30,   # Check
-    1: 200,  # Source File (Fixed container) - Increased to avoid overflow
-    2: 25,   # Arrow
-    3: 180,  # Target Name - Increased for label match
-    4: 75,   # Mode
-    5: 110,  # Options
-    6: 35    # Del
+    0: {"width": 30, "weight": 0},   # Check
+    1: {"width": 150, "weight": 1},  # Source File (Flexible)
+    2: {"width": 25, "weight": 0},   # Arrow
+    3: {"width": 150, "weight": 1},  # Target Name (Flexible)
+    4: {"width": 75, "weight": 0},   # Mode
+    5: {"width": 110, "weight": 0},  # Options
+    6: {"width": 35, "weight": 0}    # Del
 }
 
 class ChannelRow(ctk.CTkFrame):
@@ -43,8 +42,8 @@ class ChannelRow(ctk.CTkFrame):
         self.index = index
         
         # Apply Strict Column Widths
-        for col, width in COL_CONFIG.items():
-            self.grid_columnconfigure(col, minsize=width, weight=0)
+        for col, cfg in COL_CONFIG.items():
+            self.grid_columnconfigure(col, minsize=cfg["width"], weight=cfg["weight"])
             
         # Col 0: Checkbox
         self.var_include = ctk.BooleanVar(value=True)
@@ -52,7 +51,8 @@ class ChannelRow(ctk.CTkFrame):
         self.chk_include.grid(row=0, column=0, padx=2, pady=5)
         
         # Col 1: Source File (STRICT CONTAINER)
-        self.frame_source = ctk.CTkFrame(self, width=COL_CONFIG[1], height=28, fg_color="transparent")
+        # Use weight=1 in frame to extend
+        self.frame_source = ctk.CTkFrame(self, height=28, fg_color="transparent")
         self.frame_source.grid(row=0, column=1, padx=2, sticky="ew") # Sticky EW
         self.frame_source.pack_propagate(False) 
         self.frame_source.grid_propagate(False)
@@ -70,20 +70,20 @@ class ChannelRow(ctk.CTkFrame):
             self.opt_file.pack(fill="x",  pady=2)
 
         # Col 2: Arrow
-        ctk.CTkLabel(self, text="➜", text_color="gray", width=COL_CONFIG[2]).grid(row=0, column=2)
+        ctk.CTkLabel(self, text="➜", text_color="gray", width=COL_CONFIG[2]["width"]).grid(row=0, column=2)
 
         # Col 3: Target Layer Name
-        self.entry_name = ctk.CTkEntry(self, placeholder_text="Layer Name", width=COL_CONFIG[3]-10, height=28)
+        self.entry_name = ctk.CTkEntry(self, placeholder_text="Layer Name", height=28)
         self.entry_name.grid(row=0, column=3, padx=5, sticky="ew") # Sticky EW
         
         # Col 4: Mode
         self.var_comp = ctk.StringVar(value="RGB") 
         self.opt_comp = ctk.CTkOptionMenu(self, variable=self.var_comp, values=["RGB", "RGBA", "R", "G", "B", "A", "L"], 
-                                          width=COL_CONFIG[4]-5, height=24)
+                                          width=COL_CONFIG[4]["width"]-5, height=24)
         self.opt_comp.grid(row=0, column=4, padx=2, sticky="ew")
         
         # Col 5: Options
-        sub_opts = ctk.CTkFrame(self, fg_color="transparent", width=COL_CONFIG[5], height=28)
+        sub_opts = ctk.CTkFrame(self, fg_color="transparent", width=COL_CONFIG[5]["width"], height=28)
         sub_opts.grid(row=0, column=5, padx=2)
         sub_opts.pack_propagate(False) 
         
@@ -157,8 +157,9 @@ class ExrChannelPackerGUI(BaseWindow):
         table_header = ctk.CTkFrame(self.main_frame, height=32, corner_radius=6)  # Use theme default
         table_header.grid(row=1, column=0, sticky="ew", padx=10, pady=(5, 0)) # Fixed padx=10 matching body
         
-        for col, width in COL_CONFIG.items():
-            table_header.grid_columnconfigure(col, minsize=width, weight=0)
+        
+        for col, cfg in COL_CONFIG.items():
+            table_header.grid_columnconfigure(col, minsize=cfg["width"], weight=cfg["weight"])
 
         # Labels - SAME PADDING AS ROWS (padx=2)
         ctk.CTkLabel(table_header, text="Use", text_color="#aaa", font=("", 11)).grid(row=0, column=0, padx=2)
@@ -197,6 +198,16 @@ class ExrChannelPackerGUI(BaseWindow):
         self.lbl_status.pack(pady=(2, 0))
 
     def add_channel(self, source_filename):
+        # If None, ask user to select files (Multi-select)
+        if source_filename is None:
+            files = filedialog.askopenfilenames(title="Select Images to Add")
+            if not files: return
+            for f_path in files:
+                self._create_channel_row(f_path)
+        else:
+            self._create_channel_row(source_filename)
+
+    def _create_channel_row(self, source_filename):
         idx = len(self.channel_rows)
         row = ChannelRow(self.channel_scroll, source_filename, self.file_names, self.remove_channel, idx)
         if source_filename:
@@ -276,8 +287,21 @@ class ExrChannelPackerGUI(BaseWindow):
 
             self.update_status("Loading References...")
             
-            ref_path = next((f for f in self.files if f.name == active_configs[0]['file']), None)
-            ref_img = imageio.imread(ref_path)
+            # Resolve Paths logic
+            def resolve_path(filename):
+                if not filename or filename == "(None)": return None
+                p = Path(filename)
+                if p.is_file(): return p
+                # Try in self.files
+                match = next((f for f in self.files if f.name == filename), None)
+                return match
+
+            first_file_path = resolve_path(active_configs[0]['file'])
+            if not first_file_path:
+                messagebox.showerror("Error", f"Could not find file: {active_configs[0]['file']}")
+                return
+
+            ref_img = imageio.imread(first_file_path)
             h, w = ref_img.shape[:2]
             
             # Prepare Layers
@@ -289,7 +313,8 @@ class ExrChannelPackerGUI(BaseWindow):
             for i, cfg in enumerate(active_configs):
                 self.update_status(f"Processing {cfg['name']}...")
                 
-                f_path = next((f for f in self.files if f.name == cfg['file']), None)
+                f_path = resolve_path(cfg['file'])
+                if not f_path: continue
                 src = imageio.imread(f_path)
                 
                 if src.shape[:2] != (h, w):
@@ -370,7 +395,11 @@ class ExrChannelPackerGUI(BaseWindow):
                 # Prepare data
                 exr_channel_data[key] = final_planes[key].tobytes()
             
-            out_name = self.files[0].parent / "MultiLayer_Output.exr"
+            # Determine Output Path
+            output_dir = first_file_path.parent
+            out_name = output_dir / "MultiLayer_Output.exr"
+            
+            self.update_status(f"Saving to {out_name.name}...")
             
             out = OpenEXR.OutputFile(str(out_name), header)
             out.writePixels(exr_channel_data)
@@ -383,9 +412,13 @@ class ExrChannelPackerGUI(BaseWindow):
             
         except Exception as e:
             self.update_status("Error")
-            print(e)
+            print(f"[EXR EXPORT ERROR] {e}")
             import traceback
             traceback.print_exc()
+            
+            # UI Error Report
+            err_msg = f"Export Failed:\n{str(e)}\n\nCheck console for details."
+            self.after(0, lambda: messagebox.showerror("Export Error", err_msg))
 
     def update_status(self, text):
         self.lbl_status.configure(text=text)

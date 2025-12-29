@@ -22,10 +22,11 @@ src_dir = SRC_DIR
 
 
 class TrayAgentWrapper:
-    """Simple wrapper for icon to provide notify method for modules."""
+    """Simple wrapper for icon to provide notify and menu refresh methods for modules."""
     
-    def __init__(self, icon):
+    def __init__(self, icon, build_menu_func=None):
         self._icon = icon
+        self._build_menu_func = build_menu_func
     
     def notify(self, title, message):
         try:
@@ -33,6 +34,19 @@ class TrayAgentWrapper:
                 self._icon.notify(f"{title}: {message}")
         except Exception as e:
             logger.error(f"Notify failed: {e}")
+
+    def refresh_menu(self):
+        """Rebuild and update the tray menu."""
+        try:
+            if self._icon and self._build_menu_func:
+                import pystray
+                # This should be called from the main thread if possible, 
+                # but pystray is generally thread-safe for menu updates.
+                self._icon.menu = pystray.Menu(*self._build_menu_func(self._icon))
+                self._icon.update_menu()
+                logger.debug("Tray menu refreshed via agent wrapper")
+        except Exception as e:
+            logger.error(f"Refresh menu failed: {e}")
 
 
 def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
@@ -51,11 +65,12 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
     
     # Global Agent Wrapper for modules
     if icon_ref:
-        agent_wrapper = TrayAgentWrapper(icon_ref)
+        agent_wrapper = TrayAgentWrapper(icon_ref, build_menu)
     else:
         # Dummy wrapper if icon not ready
         class DummyWrapper:
             def notify(self, msg): pass
+            def refresh_menu(self): pass
         agent_wrapper = DummyWrapper()
     
     if icon_ref and not hasattr(icon_ref, '_modules'):
@@ -86,6 +101,17 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
     except Exception as e:
         logger.error(f"Failed to load Tray Modules: {e}")
 
+    # 1.5. Copy My Info (directly after Recent Folders for easy access)
+    try:
+        from tray.modules.copy_my_info import CopyMyInfoModule
+        info_mod = CopyMyInfoModule(agent_wrapper)
+        info_items = info_mod.get_menu_items()
+        if info_items:
+            menu_entries.extend(info_items)
+            menu_entries.append(pystray.Menu.SEPARATOR)
+    except Exception as e:
+        logger.error(f"Failed to load CopyMyInfo: {e}")
+
     # 2. Dynamic Tools from JSON (show_in_tray: true)
     try:
         menu_config = MenuConfig()
@@ -108,9 +134,12 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
                 valid_tools.append(tool)
         tray_tools = valid_tools
         
-        # Group by category for submenu structure
+        # Group by category for submenu structure (exclude copy_my_info as it's already at top)
         categories = {}
         for tool in tray_tools:
+            # Skip copy_my_info as it's handled separately above
+            if tool.get("id") == "copy_my_info":
+                continue
             cat = tool.get("category", "Other")
             if cat not in categories:
                 categories[cat] = []
@@ -284,7 +313,7 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
 
     # 4. System (Reload, Exit)
     if reload_callback:
-        menu_entries.append(pystray.MenuItem(i18n.t("common.reload", "Reload"), reload_callback))
+        menu_entries.append(pystray.MenuItem(i18n.t("common.restart", "Restart"), reload_callback))
     if exit_callback:
         menu_entries.append(pystray.MenuItem(i18n.t("common.exit", "Exit"), exit_callback))
     

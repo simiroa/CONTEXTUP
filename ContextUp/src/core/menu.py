@@ -135,7 +135,7 @@ def build_handler_map():
         "texture_packer_orm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "packer_gui.py"), str(p)]),
         "normal_flip_green": _lazy("features.image.normal", "flip_normal_green"),
         "simple_normal_roughness": _lazy("features.image.normal", "generate_simple_normal_roughness"),
-        "image_compare": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "compare_gui.py"), str(p)]),
+        "image_compare": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "compare_gui.py"), *( [str(i) for i in s] if s else [str(p)] )]),
 
         # === AI ===
         "rife_interpolation": _lazy("features.ai.frame_interp", "interpolate_frames"),
@@ -143,7 +143,6 @@ def build_handler_map():
         "esrgan_upscale": _lazy("features.image.upscale", "upscale_image"),
         "rmbg_background": _lazy("features.ai.tools", "remove_background"),
         "marigold_pbr": _lazy("features.ai.marigold_gui", "run_marigold_gui"),
-        "gemini_prompt_master": _lazy("features.prompt_master", "open_prompt_master"),
         "prompt_master": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "prompt_master" / "main.py")]),
         "gemini_image_tool": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "ai" / "standalone" / "gemini_img_tools.py"), str(p)]),
         "demucs_stems": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), str(p)]),
@@ -171,7 +170,6 @@ def build_handler_map():
         # === System ===
         "clean_empty_folders": _lazy("features.system.tools", "clean_empty_dirs"),
         "move_to_new_folder": lambda p, s=None: _lazy("features.system.tools", "move_to_new_folder")(p, selection=s),
-        "reopen_recent": "recent_folder",
         "unwrap_folder": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "system" / "unwrap_folder_gui.py"), str(p)]),
         "finder": _lazy("features.finder", "open_finder"),
         "create_symlink": _lazy("features.system.tools", "create_symlink"),
@@ -259,31 +257,10 @@ def main():
         handlers = build_handler_map()
         handler = handlers.get(item_id)
 
+
         if handler == "ai_tab":
             gui_cls, tab = _ai_tab_handler(item_id)
             gui_cls(target_path, start_tab=tab).mainloop()
-        elif handler == "recent_folder":
-            import socket
-            import json
-            UDP_IP = "127.0.0.1"
-            UDP_PORT = 54321 # Fallback
-            
-            # fast read of handshake file
-            try:
-                handshake_path = LOGS_DIR / "tray_info.json"
-                if handshake_path.exists():
-                    data = json.loads(handshake_path.read_text(encoding="utf-8"))
-                    if data.get("port"):
-                        UDP_PORT = int(data["port"])
-            except: 
-                pass
-
-            try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                sock.sendto(b"reopen_recent", (UDP_IP, UDP_PORT))
-                sock.close()
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to communicate with Tray Agent: {e}\nIs it running?")
         elif handler:
             # Some handlers expect batch_selection
             try:

@@ -86,6 +86,11 @@ class RegistryManager:
                 if not item.get('enabled', True):
                     continue
                 
+                # Check if item explicitly disables context menu
+                if item.get('show_in_context_menu', True) == False:
+                    logger.info(f"Skipping {item['id']} for context menu registration (show_in_context_menu=false)")
+                    continue
+
                 # Check Dependencies
                 valid, missing = pm.check_dependencies(item, installed_packages)
                 if not valid:

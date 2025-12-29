@@ -22,7 +22,7 @@ from utils.i18n import t
 
 class ImageResizeGUI(BaseWindow):
     def __init__(self, files_list):
-        super().__init__(title="ContextUp Image Resize (POT)", width=500, height=600, icon_name="image_resize_pot")
+        super().__init__(title="ContextUp Image Resize (POT)", width=550, height=750, icon_name="image_resize_pot")
         
         # Accept list of files directly
         if isinstance(files_list, (list, tuple)) and len(files_list) > 0:
@@ -84,7 +84,7 @@ class ImageResizeGUI(BaseWindow):
                                           command=self.update_recommendation, width=140)
         self.opt_size.pack(side="left")
                           
-        self.var_square = ctk.BooleanVar(value=False)
+        self.var_square = ctk.BooleanVar(value=True)
         ctk.CTkCheckBox(left_frame, text=t("image_resize_gui.force_square"), variable=self.var_square).pack(anchor="w", pady=(10, 0))
 
         # Right Column: Method Settings

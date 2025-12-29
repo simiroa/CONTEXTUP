@@ -5,11 +5,11 @@ Extreme Minimal Design: 3 colors only (Gray, Red, Blue)
 
 class Theme:
     # --- Backgrounds ---
-    BG_MAIN = ("#f0f2f5", "#0d0d0d")         # Main background
-    BG_SIDEBAR = ("#e3e6e8", "#080808")      # Sidebar
-    BG_SIDEBAR_FOOTER = ("#e3e6e8", "#080808")
-    BG_CARD = ("#ffffff", "#161616")         # Cards
-    BG_DANGER_CARD = ("#fee2e2", "#1a0d0d")  # Subtle danger bg
+    BG_MAIN = ("#f0f2f5", "#050505")         # Main background (Solid Black)
+    BG_SIDEBAR = ("#e3e6e8", "#050505")      # Sidebar (Solid Black)
+    BG_SIDEBAR_FOOTER = ("#e3e6e8", "#050505")
+    BG_CARD = ("#ffffff", "#121212")         # Cards (Slightly Brighter for contrast)
+    BG_DANGER_CARD = ("#fee2e2", "#1a0808")  # Subdued danger
     
     # --- Action Colors: MINIMAL PALETTE ---
     
@@ -17,13 +17,13 @@ class Theme:
     PRIMARY = ("#3b7ecb", "#3b7ecb")
     PRIMARY_HOVER = ("#2e629f", "#2e629f")
     
-    # GRAY: ALL standard buttons (Check, Restart, Upgrade, Export, Import, Backup, Refresh, Edit, Add, Save)
-    STANDARD = ("#4a4a4a", "#3a3a3a")
-    STANDARD_HOVER = ("#5a5a5a", "#4a4a4a")
+    # STANDARD: Darker Grey for standard buttons
+    STANDARD = ("#4a4a4a", "#1a1a1a")
+    STANDARD_HOVER = ("#5a5a5a", "#222222")
     
-    # DANGER: ONLY destructive actions (Reset, Delete, Stop, Factory Reset)
-    DANGER = ("#8c2e2e", "#6b2323")
-    DANGER_HOVER = ("#a63a3a", "#7d2a2a")
+    # DANGER: Subdued Red
+    DANGER = ("#8c2e2e", "#4a1a1a")
+    DANGER_HOVER = ("#a63a3a", "#5a2222")
     
     # --- Legacy aliases for compatibility ---
     SUCCESS = STANDARD

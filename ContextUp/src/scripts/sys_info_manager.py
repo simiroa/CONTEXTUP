@@ -18,7 +18,7 @@ try:
     from utils.gui_lib import BaseWindow
 except ImportError:
     class BaseWindow(ctk.CTk):
-        def __init__(self, title="App", width=500, height=400):
+        def __init__(self, title="App", width=500, height=400, icon_name=None):
             super().__init__()
             self.title(title)
             self.geometry(f"{width}x{height}")
@@ -63,9 +63,9 @@ class InfoManagerApp(BaseWindow):
             self.menu_config = None
         
         # Compact Colors
-        self.c_bg = "#1A1A1A"
-        self.c_row_even = "#252525"
-        self.c_row_odd = "#2A2A2A"
+        self.c_bg = "#050505"
+        self.c_row_even = "#0A0A0A"
+        self.c_row_odd = "#0F0F0F"
         self.c_accent = "#3498DB"
         self.c_danger = "#E74C3C"
         

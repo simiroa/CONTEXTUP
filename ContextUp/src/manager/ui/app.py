@@ -57,6 +57,7 @@ class ContextUpManager(ctk.CTk):
         # Apply saved theme preference
         saved_theme = self.settings.get("THEME", "Dark")
         ctk.set_appearance_mode(saved_theme)
+        self.configure(fg_color=Theme.BG_MAIN)
         
         # Set window icon - single ContextUp icon for all
         self._set_app_icon()
@@ -184,8 +185,8 @@ class ContextUpManager(ctk.CTk):
         self.tray_frame = ctk.CTkFrame(self.sidebar_footer, fg_color="transparent")
         self.tray_frame.pack(fill="x", pady=(0, 15))
         
-        ctk.CTkLabel(self.tray_frame, text=self.tr("manager.sidebar.tray_agent"), font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
-        self.lbl_status = ctk.CTkLabel(self.tray_frame, text="● ...", text_color="gray", width=30)
+        ctk.CTkLabel(self.tray_frame, text=self.tr("manager.sidebar.tray_agent"), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60").pack(side="left")
+        self.lbl_status = ctk.CTkLabel(self.tray_frame, text="● ...", text_color="gray40", width=30)
         self.lbl_status.pack(side="left", padx=5)
         self.btn_tray = ctk.CTkButton(self.tray_frame, text="Start", width=50, height=20, 
                                      fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
@@ -206,7 +207,7 @@ class ContextUpManager(ctk.CTk):
         info_frame.grid(row=10, column=0, sticky="sew", padx=20, pady=(0, 5))
         
         ctk.CTkLabel(info_frame, text=self.tr("manager.dashboard.info.title"), 
-                    font=ctk.CTkFont(size=12, weight="bold"), text_color="gray").pack(anchor="w", pady=(0, 5))
+                    font=ctk.CTkFont(size=12, weight="bold"), text_color="gray40").pack(anchor="w", pady=(0, 5))
         
         links = [
             (self.tr("manager.dashboard.info.documentation"), "https://github.com/simiroa/CONTEXTUP/blob/main/README_KR.md"),
@@ -227,7 +228,7 @@ class ContextUpManager(ctk.CTk):
         btn_frame.grid_columnconfigure(0, weight=1)
         
         btn = ctk.CTkButton(btn_frame, text=text, height=40, border_spacing=10, fg_color="transparent", 
-                          text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"), anchor="w",
+                          text_color=("gray10", "gray70"), hover_color=("gray70", "#1a1a1a"), anchor="w",
                           command=lambda n=name: self.show_frame(n))
         btn.grid(row=0, column=0, sticky="ew")
         self.nav_buttons[name] = btn
@@ -240,8 +241,8 @@ class ContextUpManager(ctk.CTk):
             self.nav_badges[name] = badge
 
     def _create_main_area(self):
-        self.main_frame = ctk.CTkFrame(self, fg_color=Theme.BG_MAIN)
-        self.main_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.main_frame = ctk.CTkFrame(self, fg_color=Theme.BG_MAIN, corner_radius=0)
+        self.main_frame.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_rowconfigure(0, weight=1)
 

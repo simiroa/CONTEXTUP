@@ -48,7 +48,7 @@ class CTkToolTip:
 
 class MarigoldGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__(title="ContextUp PBR Generator (Marigold)", width=500, height=900, icon_name="ai_pbr")
+        super().__init__(title="ContextUp PBR Generator (Marigold)", width=400, height=860, icon_name="ai_pbr")
         
         self.target_path = Path(target_path)
         if not self.target_path.exists():
@@ -112,7 +112,7 @@ class MarigoldGUI(BaseWindow):
     def create_widgets(self):
         # 0. Title & Header
         title_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        title_frame.pack(fill="x", padx=10, pady=(10, 0))
+        title_frame.pack(fill="x", padx=10, pady=(10, 5))
         ctk.CTkLabel(title_frame, text="PBR Material Generator", font=("Arial", 18, "bold")).pack(side="left")
 
         # Model Check Button (Right)
@@ -120,8 +120,8 @@ class MarigoldGUI(BaseWindow):
                       font=("Arial", 11), command=self.check_models).pack(side="right")
         
         # 1. Preview Carousel (New)
-        self.prev_container = ctk.CTkFrame(self.main_frame, height=200, corner_radius=10)  # Use theme default
-        self.prev_container.pack(fill="x", padx=10, pady=10)
+        self.prev_container = ctk.CTkFrame(self.main_frame, height=240, corner_radius=10)  # Use theme default
+        self.prev_container.pack(fill="x", padx=10, pady=5)
         self.prev_container.pack_propagate(False)
         
         # Top Bar: Label + Arrows
@@ -143,11 +143,11 @@ class MarigoldGUI(BaseWindow):
 
         # Main Content
         content = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        content.pack(fill="both", expand=True, padx=10, pady=0)
+        content.pack(fill="both", expand=True, padx=10, pady=(0, 5))
         
         # === SECTION 1: Material Maps ===
         mat_frame = ctk.CTkFrame(content)
-        mat_frame.pack(fill="x", pady=(5, 3))
+        mat_frame.pack(fill="x", pady=(2, 3))
         
         mat_header = ctk.CTkFrame(mat_frame, fg_color="transparent")
         mat_header.pack(fill="x", padx=10, pady=(6, 2))
@@ -178,7 +178,7 @@ class MarigoldGUI(BaseWindow):
         
         # === SECTION 3: Quality Settings ===
         qual_frame = ctk.CTkFrame(content)
-        qual_frame.pack(fill="x", pady=3)
+        qual_frame.pack(fill="x", pady=2)
         
         # Presets
         h_frame = ctk.CTkFrame(qual_frame, fg_color="transparent")
@@ -219,7 +219,7 @@ class MarigoldGUI(BaseWindow):
 
         # === SECTION 4: Export Options ===
         export_frame = ctk.CTkFrame(content)
-        export_frame.pack(fill="x", pady=(3, 5))
+        export_frame.pack(fill="x", pady=(2, 2))
         
         ctk.CTkLabel(export_frame, text=t("marigold_gui.export_options"), font=("Arial", 11, "bold")).pack(anchor="w", padx=10, pady=(6, 4))
         
@@ -258,7 +258,7 @@ class MarigoldGUI(BaseWindow):
 
         # === Bottom: Buttons & Status ===
         footer = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        footer.pack(fill="x", side="bottom", padx=15, pady=10)
+        footer.pack(fill="x", side="bottom", padx=15, pady=(5, 15))
         
         # Progress Bar
         self.progress = ctk.CTkProgressBar(footer, height=8)
@@ -272,7 +272,7 @@ class MarigoldGUI(BaseWindow):
         btn_row.pack(fill="x")
         
         self.btn_run = ctk.CTkButton(btn_row, text=t("marigold_gui.generate_pbr"), height=40, 
-                                     fg_color="#00b894", hover_color="#00cec9",
+                                     fg_color="#3498db", hover_color="#2980b9",
                                      font=("Arial", 13, "bold"), command=self.start_generation)
         self.btn_run.pack(side="left", fill="x", expand=True, padx=(0, 5))
         
@@ -321,7 +321,7 @@ class MarigoldGUI(BaseWindow):
         # Resize for preview
         try:
             ratio = pil_img.height / pil_img.width
-            target_h = 200
+            target_h = 240
             target_w = int(target_h / ratio)
             
             # Limit width if super wide

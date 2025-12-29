@@ -72,7 +72,7 @@ class DashboardFrame(ctk.CTkFrame):
         
         # Footer
         ctk.CTkLabel(self.scroll, text=self.tr("manager.dashboard.footer_tip"), 
-                    text_color="gray", font=ctk.CTkFont(size=10)).grid(row=99, column=0, columnspan=2, pady=20)
+                    text_color="gray40", font=ctk.CTkFont(size=10)).grid(row=99, column=0, columnspan=2, pady=20)
 
     # ========================
     # 1. STATUS HEADER
@@ -93,7 +93,7 @@ class DashboardFrame(ctk.CTkFrame):
         self.lbl_install_type.grid(row=0, column=1, sticky="w", pady=(15, 0))
         
         self.lbl_features_active = ctk.CTkLabel(self.status_frame, text="...", 
-                                              font=ctk.CTkFont(size=14), text_color="gray", anchor="w")
+                                              font=ctk.CTkFont(size=14), text_color="gray50", anchor="w")
         self.lbl_features_active.grid(row=1, column=1, sticky="nw")
         
         # Quick Actions (Right side)
@@ -554,6 +554,7 @@ class DashboardFrame(ctk.CTkFrame):
         self._add_row_label(card, row, self.tr("manager.dashboard.appearance.theme"))
         self.theme_var = ctk.StringVar(value=self.settings.get("THEME", "Dark"))
         ctk.CTkOptionMenu(card, variable=self.theme_var, values=["Dark", "Light", "System"], width=120,
+                         fg_color=Theme.STANDARD, button_color=Theme.STANDARD,
                          command=self._on_theme_preview).grid(row=row, column=1, sticky="e", padx=15, pady=5)
         row += 1
         
@@ -561,11 +562,12 @@ class DashboardFrame(ctk.CTkFrame):
         self._add_row_label(card, row, self.tr("manager.dashboard.appearance.language"))
         current_lang = self.settings.get("LANGUAGE", "en")
         self.lang_var = ctk.StringVar(value=f"{current_lang}")
-        ctk.CTkOptionMenu(card, variable=self.lang_var, values=["en", "ko"], width=120).grid(row=row, column=1, sticky="e", padx=15, pady=5)
+        ctk.CTkOptionMenu(card, variable=self.lang_var, values=["en", "ko"], width=120,
+                         fg_color=Theme.STANDARD, button_color=Theme.STANDARD).grid(row=row, column=1, sticky="e", padx=15, pady=5)
         row += 1
         
         # Separator
-        ctk.CTkFrame(card, height=2, fg_color=("gray90", "gray30")).grid(row=row, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
+        ctk.CTkFrame(card, height=1, fg_color="#121212").grid(row=row, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
         row += 1
         
         # Menu Position (Top)
@@ -660,7 +662,7 @@ class DashboardFrame(ctk.CTkFrame):
             chk_var = ctk.BooleanVar(value=bool(val))
             self.tool_vars[key] = chk_var
             
-            entry = ctk.CTkEntry(frame)
+            entry = ctk.CTkEntry(frame, fg_color=Theme.BG_MAIN, border_color="#121212")
             entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
             entry.insert(0, val)
             
@@ -679,7 +681,9 @@ class DashboardFrame(ctk.CTkFrame):
             chk = ctk.CTkCheckBox(frame, text="", variable=chk_var, width=20, command=on_chk)
             chk.pack(side="left", padx=5)
             
-            btn = ctk.CTkButton(frame, text="📂", width=30, command=lambda e=entry: self._browse(e))
+            btn = ctk.CTkButton(frame, text="📂", width=30, 
+                              fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
+                              command=lambda e=entry: self._browse(e))
             btn.pack(side="right")
             
             r += 1
@@ -696,7 +700,7 @@ class DashboardFrame(ctk.CTkFrame):
         for key, name in api_map:
             ctk.CTkLabel(card, text=name, width=80, anchor="w", font=ctk.CTkFont(weight="bold")).grid(row=r, column=0, padx=15, pady=5)
             
-            entry = ctk.CTkEntry(card, show="•" if "KEY" in key else None)
+            entry = ctk.CTkEntry(card, show="•" if "KEY" in key else None, fg_color=Theme.BG_MAIN, border_color="#121212")
             entry.grid(row=r, column=1, sticky="ew", padx=15, pady=5)
             default = "http://localhost:11434" if "OLLAMA" in key else ""
             entry.insert(0, self.settings.get(key, default))

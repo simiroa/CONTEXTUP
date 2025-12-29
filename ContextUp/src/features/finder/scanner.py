@@ -255,8 +255,8 @@ def scan_worker(
     # Convert to FinderGroup objects
     final_groups = [FinderGroup(name, flist) for name, flist in groups_data.items()]
     
-    # Sort by total size (descending) by default for better UX
-    final_groups.sort(key=lambda x: x.total_size, reverse=True)
+    # Sort by count (descending) by default as requested
+    final_groups.sort(key=lambda x: len(x.items), reverse=True)
     
     if status_callback:
         hash_info = f" ({HASH_TYPE})" if criteria.get('hash') else ""

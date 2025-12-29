@@ -60,6 +60,9 @@ class SequenceAnalyzer:
             
             # Missing frames
             missing = []
+            if len(data['frames']) < 2:
+                 continue # Ignore single files
+
             if len(data['frames']) > 1:
                 full_range = set(range(data['frames'][0], data['frames'][-1] + 1))
                 existing = set(data['frames'])
@@ -139,7 +142,7 @@ class SequenceAnalyzer:
 
 class SequenceAnalyzeGUI(BaseWindow):
     def __init__(self, target_paths):
-        super().__init__(title="Sequence Analyze", width=900, height=650, icon_name="sequence_analyze")
+        super().__init__(title="Sequence Analyze", width=700, height=550, icon_name="sequence_analyze")
         self.analyzer = SequenceAnalyzer()
         self.all_sequences = []
         self.recursive_var = tk.BooleanVar(value=False)
@@ -208,18 +211,18 @@ class SequenceAnalyzeGUI(BaseWindow):
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview", 
-                       background="#2b2b2b", 
-                       foreground="white", 
-                       fieldbackground="#2b2b2b",
-                       bordercolor="#2b2b2b",
-                       lightcolor="#2b2b2b",
-                       darkcolor="#2b2b2b",
+                       background="#111111", 
+                       foreground="#E0E0E0", 
+                       fieldbackground="#111111",
+                       bordercolor="#111111",
+                       lightcolor="#111111",
+                       darkcolor="#111111",
                        rowheight=24,
                        font=("Segoe UI", 10))
         style.configure("Treeview.Heading", 
-                       background="#3d3d3d", 
-                       foreground="white",
-                       bordercolor="#3d3d3d",
+                       background="#1F1F1F", 
+                       foreground="#E0E0E0",
+                       bordercolor="#333333",
                        font=("Segoe UI", 10, "bold"))
         style.map("Treeview", background=[("selected", "#1f538d")])
 
