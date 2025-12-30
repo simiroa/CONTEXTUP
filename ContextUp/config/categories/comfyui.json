@@ -1,5 +1,5 @@
 {
-    "category": "Comfyui",
+    "category": "ComfyUI",
     "id": "comfyui",
     "name": "ComfyUI Tools",
     "enabled": true,
@@ -11,7 +11,7 @@
     "show_in_context_menu": false,
     "features": [
         {
-            "category": "Comfyui",
+            "category": "ComfyUI",
             "id": "seedvr2_upscaler",
             "name": "SeedVR2 Video Upscaler",
             "icon": "assets/icons/icon_video_upscale_ai.ico",
