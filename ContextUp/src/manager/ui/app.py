@@ -338,7 +338,8 @@ class ContextUpManager(ctk.CTk):
         running = self.process_manager.is_running()
         if running:
             success, msg = self.process_manager.stop()
-            # if not success: messagebox.showerror("Error", msg) # Silent on error?
+            if not success:
+                logging.warning(f"Failed to stop tray agent: {msg}")
             self.settings["TRAY_ENABLED"] = False
         else:
             success, msg = self.process_manager.start()

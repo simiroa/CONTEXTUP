@@ -7,6 +7,7 @@ import shutil
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 ROOT_DIR = Path(__file__).parent.parent.parent  # src/scripts/install_contextup.py -> ROOT
 TOOLS_DIR = ROOT_DIR / "tools"
@@ -199,51 +200,14 @@ def detect_existing_python():
     return []
 
 
-def setup_embedded_python(force_reinstall: bool = False) -> Path | None:
-    if force_reinstall and PYTHON_DIR.exists():
-        try:
-            shutil.rmtree(PYTHON_DIR)
-        except Exception as e:
-            print(f"[WARN] Could not clean existing python: {e}")
+def setup_embedded_python(force_reinstall: bool = False) -> Optional[Path]:
     py_exe = PYTHON_DIR / "python.exe"
-    if not force_reinstall and _python_ok(py_exe):
-        print(f"湲곗〈 ?댁옣 ?뚯씠?ъ쓣 ?ъ슜?⑸땲?? {py_exe}")
-        return py_exe
-
-    print("--- ?댁옣 ?뚯씠???ㅼ젙 以?---")
-    TOOLS_DIR.mkdir(exist_ok=True)
-    archive_path = TOOLS_DIR / PYTHON_ARCHIVE_NAME
-
-    found_archive = next(TOOLS_DIR.glob("cpython-3.11.*-install_only.tar.gz"), None)
-    if found_archive:
-        archive_path = found_archive
-        print(f"Found pre-downloaded archive: {archive_path.name}")
-    elif not archive_path.exists():
-        if not download_file(PYTHON_URL, archive_path):
-            return None
-
-    if not extract_tar_gz(archive_path, TOOLS_DIR):
-        return None
-
-    if not py_exe.exists():
-        found_py = list(TOOLS_DIR.rglob("python.exe"))
-        if found_py:
-            py_root = found_py[0].parent
-            if py_root != PYTHON_DIR:
-                print(f"Moving {py_root} -> {PYTHON_DIR}")
-                shutil.move(str(py_root), str(PYTHON_DIR))
-
-    if archive_path.name == PYTHON_ARCHIVE_NAME and archive_path.exists():
-        try:
-            archive_path.unlink()
-        except Exception:
-            pass
-
     if _python_ok(py_exe):
-        print("?댁옣 ?뚯씠??以鍮??꾨즺.")
+        print(f"Using embedded Python: {py_exe}")
         return py_exe
 
-    print("[ERROR] Embedded Python validation failed (tkinter required).")
+    print("[ERROR] Embedded Python not found or invalid (tkinter required).")
+    print("Please use the full package that includes ContextUp/tools/python.")
     return None
 
 
@@ -414,7 +378,7 @@ def apply_category_defaults_to_overrides(categories: dict[str, bool]):
         # Collect ids by category
         import glob
         import json as js
-        config_dir = ROOT_DIR / "config" / "menu" / "categories"
+        config_dir = ROOT_DIR / "config" / "categories"
         all_ids = []
         for fp in glob.glob(str(config_dir / "*.json")):
             try:
@@ -555,14 +519,14 @@ def choose_install_tier() -> dict[str, bool]:
     standard = tiers.get("standard", {})
     full = tiers.get("full", {})
     
-    print(f"\n[1] {minimal.get('name', '理쒖냼 ?ㅼ튂')}")
-    print(f"    - {minimal.get('description', '?듭떖 湲곕뒫留?)}")
+    print(f"\n[1] {minimal.get('name', 'Minimal install')}")
+    print(f"    - {minimal.get('description', 'Core features only')}")
     
-    print(f"\n[2] {standard.get('name', '?쒖? ?ㅼ튂')} (沅뚯옣)")
-    print(f"    - {standard.get('description', '?쇰컲 湲곕뒫 ?ы븿')}")
+    print(f"\n[2] {standard.get('name', 'Standard install')} (Recommended)")
+    print(f"    - {standard.get('description', 'General features + media')}")
     
-    print(f"\n[3] {full.get('name', '?꾩껜 ?ㅼ튂')}")
-    print(f"    - {full.get('description', '紐⑤뱺 湲곕뒫 + AI')}")
+    print(f"\n[3] {full.get('name', 'Full install')}")
+    print(f"    - {full.get('description', 'All features + AI')}")
     
     
     choice = input("\n?ㅼ튂 ?좏삎???좏깮?섏꽭??[1-3] (湲곕낯=2): ").strip() or "2"
@@ -585,17 +549,17 @@ def choose_install_tier() -> dict[str, bool]:
             categories["AI_Heavy"] = True
     
     if choice == "1":
-        print("\n>>> 理쒖냼 ?ㅼ튂 ?좏깮??)
+        print("\n>>> Selected: Minimal install")
         apply_tier("minimal")
         return categories
     
     elif choice == "2":
-        print("\n>>> ?쒖? ?ㅼ튂 ?좏깮??)
+        print("\n>>> Selected: Standard install")
         apply_tier("standard")
         return categories
     
     elif choice == "3":
-        print("\n>>> ?꾩껜 ?ㅼ튂 ?좏깮??)
+        print("\n>>> Selected: Full install")
         apply_tier("full")
         return categories
     
@@ -616,7 +580,7 @@ def print_summary(categories: dict, tools_res: dict, models_ok: bool, pkg_ok: bo
     print("\n[?몃? ?꾧뎄]")
     if tools_res:
         for tool, success in tools_res.items():
-            status = "?ㅼ튂?? if success else "?ㅽ뙣"
+            status = "OK" if success else "FAIL"
             print(f"  - {tool}: {status}")
     else:
         print("  (?ㅼ튂 嫄대꼫?)")
@@ -661,35 +625,8 @@ def main():
         return
 
     categories = choose_install_tier()
-
-    # Setup external tools (required by selected categories)
+    # External tools are not auto-installed (manual setup for advanced users).
     tools_results = {}
-    required_tools = []
-    if categories.get("Video") or categories.get("Audio") or categories.get("Sequence"):
-        required_tools.append("ffmpeg")
-    if categories.get("AI_Heavy"):
-        required_tools.extend(["realesrgan"])
-
-    if required_tools:
-        try:
-            print("\n--- ?몃? ?꾧뎄 ?ㅼ젙 以?---")
-            setup_tools_script = ROOT_DIR / "dev" / "scripts" / "setup_tools.py"
-            if setup_tools_script.exists():
-                tool_args = []
-                tool_flag_map = {
-                    "ffmpeg": "--ffmpeg",
-                    "realesrgan": "--realesrgan",
-                }
-                for tool in required_tools:
-                    flag = tool_flag_map.get(tool)
-                    if flag:
-                        tool_args.append(flag)
-                ret = subprocess.call([str(chosen_python), str(setup_tools_script), *tool_args])
-                tools_results = {tool: (ret == 0) for tool in required_tools}
-            else:
-                print(f"[寃쎄퀬] setup_tools.py瑜?李얠쓣 ???놁뒿?덈떎: {setup_tools_script}")
-        except Exception as e:
-            print(f"[寃쎄퀬] ?몃? ?꾧뎄 ?ㅼ젙 ?ㅽ뙣: {e}")
 
     pkg_ok = install_packages(chosen_python, categories)
 

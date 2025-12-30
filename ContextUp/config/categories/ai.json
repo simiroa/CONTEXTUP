@@ -32,11 +32,15 @@
         "environment": "embedded",
         "dependencies": [
             "Pillow",
-            "customtkinter"
+            "customtkinter",
+            "opencv-python",
+            "numpy",
+            "torch",
+            "realesrgan",
+            "gfpgan",
+            "basicsr"
         ],
-        "external_tools": [
-            "realesrgan-ncnn-vulkan"
-        ],
+        "external_tools": [],
         "is_extension": true,
         "order": 603,
         "gui": false

@@ -17,10 +17,10 @@
 | AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), **Creative Studio (Z/Advanced)** |
 | 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈 |
 | 시퀀스 | 렌더링 시퀀스 정렬, 누락 프레임 탐색, 영상 변환, 분석 및 리넘버링 |
-| 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(RIFE), 유튜브 다운로더 |
+| 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(30fps), 오디오 추출/제거, 유튜브 다운로더 |
 | 오디오 | 포맷 변환, 보컬/배경 분리, 볼륨 정규화 |
 | 3D | Auto LOD, CAD→OBJ, 메시 변환, 텍스처 추출, Blender 연동 |
-| 시스템 | 배치 리네임, 내 정보 복사, UNC 경로 복사, 심볼릭 링크, 파일 찾기 |
+| 시스템 | 배치 리네임, 내 정보 복사, UNC 경로 복사, 심볼릭 링크, 휴가 관리(Vacance), 파일 찾기 |
 
 ---
 
@@ -148,4 +148,4 @@ ContextUp/tools/
 
 ## 감사한 오픈소스
 
-Real-ESRGAN, rembg, Marigold, RIFE, Faster-Whisper, Spleeter, Google Gemini, FFmpeg, Blender, Mayo, PyMeshLab, yt-dlp, CustomTkinter, Pillow 등 많은 프로젝트에 감사합니다.
+Real-ESRGAN, rembg, Marigold, Faster-Whisper, Spleeter, Google Gemini, FFmpeg, Blender, Mayo, PyMeshLab, yt-dlp, CustomTkinter, Pillow 등 많은 프로젝트에 감사합니다.

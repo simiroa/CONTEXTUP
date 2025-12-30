@@ -1,6 +1,6 @@
 """
 Video Frame Interpolation GUI
-Unified interface for FFmpeg (CPU) and RIFE (AI) interpolation.
+Interface for FFmpeg-based frame interpolation.
 """
 import os
 import sys
