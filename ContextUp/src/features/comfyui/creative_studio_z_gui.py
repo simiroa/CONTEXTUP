@@ -18,6 +18,7 @@ if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
 from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui.core.wrappers import registry
 from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget
 from utils.ai_helper import refine_text_ai
@@ -101,7 +102,8 @@ class CreativeStudioGUI(PremiumComfyWindow):
         row1 = ctk.CTkFrame(parent, fg_color="transparent")
         row1.pack(fill="x", pady=2)
         PremiumLabel(row1, text="Resolution", style="small").pack(side="left")
-        self.combo_res = ctk.CTkComboBox(row1, values=["1024x1024", "896x1152", "1152x896", "768x768"], width=180)
+        self.combo_res = ctk.CTkComboBox(row1, values=["1024x1024", "896x1152", "1152x896", "768x768"], width=180,
+                                         fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_res.pack(side="right")
         
         # Sliders

@@ -186,11 +186,11 @@ class ContextUpManager(ctk.CTk):
         self.tray_frame.pack(fill="x", pady=(0, 15))
         
         ctk.CTkLabel(self.tray_frame, text=self.tr("manager.sidebar.tray_agent"), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60").pack(side="left")
-        self.lbl_status = ctk.CTkLabel(self.tray_frame, text="● ...", text_color="gray40", width=30)
+        self.lbl_status = ctk.CTkLabel(self.tray_frame, text="● ...", text_color=Theme.TEXT_DIM, width=50, anchor="w")
         self.lbl_status.pack(side="left", padx=5)
-        self.btn_tray = ctk.CTkButton(self.tray_frame, text="Start", width=50, height=20, 
+        self.btn_tray = ctk.CTkButton(self.tray_frame, text="Start", width=50, height=22, 
                                      fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
-                                     font=ctk.CTkFont(size=10), command=self.toggle_tray_agent)
+                                     font=ctk.CTkFont(size=11, weight="bold"), command=self.toggle_tray_agent)
         self.btn_tray.pack(side="right")
 
         # GLOBAL APPLY BUTTON
@@ -228,7 +228,7 @@ class ContextUpManager(ctk.CTk):
         btn_frame.grid_columnconfigure(0, weight=1)
         
         btn = ctk.CTkButton(btn_frame, text=text, height=40, border_spacing=10, fg_color="transparent", 
-                          text_color=("gray10", "gray70"), hover_color=("gray70", "#1a1a1a"), anchor="w",
+                          text_color=Theme.TEXT_MAIN, hover_color=Theme.STANDARD_HOVER, anchor="w",
                           command=lambda n=name: self.show_frame(n))
         btn.grid(row=0, column=0, sticky="ew")
         self.nav_buttons[name] = btn
@@ -358,11 +358,11 @@ class ContextUpManager(ctk.CTk):
     def _update_tray_ui(self):
         running = self.process_manager.is_running()
         if running:
-            self.lbl_status.configure(text="● On", text_color=Theme.TEXT_SUCCESS)
+            self.lbl_status.configure(text="● Online", text_color=Theme.TEXT_SUCCESS)
             self.btn_tray.configure(text="Stop", fg_color=Theme.DANGER, hover_color=Theme.DANGER_HOVER)
         else:
-            self.lbl_status.configure(text="● Off", text_color=Theme.TEXT_DIM[1])
-            self.btn_tray.configure(text="Start", fg_color=Theme.SUCCESS, hover_color=Theme.SUCCESS_HOVER)
+            self.lbl_status.configure(text="● Offline", text_color=Theme.TEXT_DANGER)
+            self.btn_tray.configure(text="Start", fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER)
 
     def _sync_categories(self):
         """Ensure all categories found in config are present in settings with a color and order."""

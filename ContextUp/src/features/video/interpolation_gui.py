@@ -27,8 +27,7 @@ def _bootstrap():
 _bootstrap()
 # -----------------
 
-from utils.gui_lib import BaseWindow
-from utils.ai_runner import run_ai_script
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.i18n import t
 from core.logger import setup_logger
 
@@ -36,7 +35,7 @@ logger = setup_logger("video_interp_gui")
 
 class VideoInterpApp(BaseWindow):
     def __init__(self):
-        super().__init__(title=t("video_interp_gui.title"), width=600, height=500, icon_name="video_frame_interp")
+        super().__init__(title=t("video_interp_gui.title"), width=500, height=500, icon_name="video_frame_interp")
         
         # State
         self.input_path = None
@@ -47,7 +46,7 @@ class VideoInterpApp(BaseWindow):
         
     def create_widgets(self):
         # --- Input Section ---
-        input_frame = ctk.CTkFrame(self.main_frame)
+        input_frame = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         input_frame.pack(fill="x", padx=10, pady=10)
         
         ctk.CTkLabel(input_frame, text=t("video_interp_gui.input_video")).pack(anchor="w", padx=10, pady=(5,0))
@@ -58,30 +57,14 @@ class VideoInterpApp(BaseWindow):
         self.entry_input = ctk.CTkEntry(file_row, placeholder_text="Select video file...")
         self.entry_input.pack(side="left", fill="x", expand=True, padx=(5,5))
         
-        ctk.CTkButton(file_row, text=t("common.browse"), width=80, command=self.browse_input).pack(side="right", padx=5)
+        ctk.CTkButton(file_row, text=t("common.browse"), width=80, 
+                     fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
+                     command=self.browse_input).pack(side="right", padx=5)
 
-        # --- Method Selection ---
-        method_frame = ctk.CTkFrame(self.main_frame)
-        method_frame.pack(fill="x", padx=10, pady=5)
-        
-        ctk.CTkLabel(method_frame, text=t("video_interp_gui.method")).pack(anchor="w", padx=10, pady=(5,0))
-        
-        self.method_var = ctk.StringVar(value="ai")
-        
-        # FFmpeg Option
-        rb_ffmpeg = ctk.CTkRadioButton(method_frame, text="FFmpeg (CPU / Standard)", 
-                                     variable=self.method_var, value="ffmpeg",
-                                     command=self.update_options)
-        rb_ffmpeg.pack(anchor="w", padx=20, pady=5)
-        
-        # AI Option
-        rb_ai = ctk.CTkRadioButton(method_frame, text="AI (RIFE / GPU Recommended)", 
-                                 variable=self.method_var, value="ai",
-                                 command=self.update_options)
-        rb_ai.pack(anchor="w", padx=20, pady=5)
+        self.method_var = ctk.StringVar(value="ffmpeg")
 
         # --- Options Section ---
-        self.opts_frame = ctk.CTkFrame(self.main_frame)
+        self.opts_frame = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         self.opts_frame.pack(fill="x", padx=10, pady=10)
         
         # Multiplier
@@ -117,7 +100,9 @@ class VideoInterpApp(BaseWindow):
         btn_frame.pack(fill="x", padx=10, pady=10)
         
         self.btn_run = ctk.CTkButton(btn_frame, text=t("video_interp_gui.start"), height=40, 
-                                   font=("", 14, "bold"), command=self.start_processing)
+                                   font=("", 14, "bold"), 
+                                   fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
+                                   command=self.start_processing)
         self.btn_run.pack(fill="x", padx=5)
 
     def browse_input(self):
@@ -128,15 +113,9 @@ class VideoInterpApp(BaseWindow):
             self.entry_input.insert(0, path)
 
     def update_options(self):
-        method = self.method_var.get()
-        if method == "ffmpeg":
-            self.lbl_quality.grid()
-            self.opt_quality.grid()
-            self.opt_mult.configure(values=["2x", "4x", "Target 30fps", "Target 60fps"])
-        else:
-            self.lbl_quality.grid_remove()
-            self.opt_quality.grid_remove()
-            self.opt_mult.configure(values=["2x", "4x"]) # RIFE usually does multipliers
+        self.lbl_quality.grid()
+        self.opt_quality.grid()
+        self.opt_mult.configure(values=["2x", "4x", "Target 30fps", "Target 60fps"])
 
     def start_processing(self):
         if self.is_processing: return
@@ -175,26 +154,6 @@ class VideoInterpApp(BaseWindow):
                        "--method", quality] + target_arg.split()
                 
                 self.run_process(cmd)
-                
-            else:
-                # AI (RIFE)
-                script = "rife_inference.py"
-                # Check if script exists
-                if not (src_dir / "scripts" / "ai_standalone" / script).exists():
-                    self.update_status("Error: RIFE script not found (Not implemented yet)")
-                    return
-
-                # Run via ai_runner
-                # This is complex because we need to stream output from ai_runner
-                # For now, basic run
-                self.update_status("Running AI Inference (Check console)...")
-                success, output = run_ai_script(script, input_path, *target_arg.split())
-                
-                if success:
-                    self.update_status("Success!")
-                    self.progress.set(1.0)
-                else:
-                    self.update_status(f"Error: {output[:50]}...")
 
         except Exception as e:
             self.update_status(f"Error: {e}")

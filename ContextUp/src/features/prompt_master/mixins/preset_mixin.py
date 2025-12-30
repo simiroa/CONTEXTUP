@@ -4,7 +4,7 @@ import subprocess
 import customtkinter as ctk
 from tkinter import messagebox
 from ..constants import PRESETS_DIR, ENGINE_COLORS
-from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER
+from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 
 class PresetMixin:
     def load_engines(self):
@@ -129,8 +129,8 @@ class PresetMixin:
                 command=lambda f=filename: self.load_preset_file(f),
                 anchor="w",
                 height=26,
-                fg_color="#0a0a0a",
-                hover_color="#1a1a1a",
+                fg_color=THEME_BG,
+                hover_color=THEME_DROPDOWN_HOVER,
                 border_width=1,
                 border_color=THEME_BORDER
             )

@@ -7,7 +7,7 @@ from ..theme import Theme
 
 class CategoriesFrame(ctk.CTkFrame):
     def __init__(self, parent, settings_manager, config_manager):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="transparent")
         self.settings = settings_manager # dict
         self.config = config_manager     # Manager instance
         

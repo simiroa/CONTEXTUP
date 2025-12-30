@@ -46,7 +46,7 @@ def load_settings():
     # Load main settings
     if SETTINGS_FILE.exists():
         try:
-            with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
+            with open(SETTINGS_FILE, 'r', encoding='utf-8-sig', errors='replace') as f:
                 data = json.load(f)
                 settings.update(data)
         except Exception as e:
@@ -55,7 +55,7 @@ def load_settings():
     # Load secrets (overrides main settings if present)
     if SECRETS_FILE.exists():
         try:
-            with open(SECRETS_FILE, 'r', encoding='utf-8') as f:
+            with open(SECRETS_FILE, 'r', encoding='utf-8-sig', errors='replace') as f:
                 secrets = json.load(f)
                 for key in SENSITIVE_KEYS:
                     if key in secrets:
@@ -95,7 +95,7 @@ def save_settings(new_settings):
                 
         # Save main settings
         SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
+        with open(SETTINGS_FILE, 'w', encoding='utf-8-sig') as f:
             json.dump(settings_to_save, f, indent=4, ensure_ascii=False)
             
         # Save secrets if there are any to update
@@ -110,7 +110,7 @@ def save_settings(new_settings):
             
             existing_secrets.update(secrets_to_save)
             
-            with open(SECRETS_FILE, 'w', encoding='utf-8') as f:
+            with open(SECRETS_FILE, 'w', encoding='utf-8-sig') as f:
                 json.dump(existing_secrets, f, indent=4, ensure_ascii=False)
                 
         return True

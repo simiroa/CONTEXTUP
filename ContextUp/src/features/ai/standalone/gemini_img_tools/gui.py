@@ -15,6 +15,7 @@ import traceback
 
 import customtkinter as ctk
 from PIL import Image, ImageGrab
+from utils.gui_lib import THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 
 # Package imports
 from .core import (
@@ -54,7 +55,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent.parent
 sys.path.insert(0, str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER
 from utils.image_utils import scan_for_images
 
 
@@ -130,11 +131,11 @@ class GeminiImageToolsGUI(BaseWindow):
         self.content_frame.grid_rowconfigure(0, weight=1)
         
         # Left Panel
-        self.left_panel = ctk.CTkFrame(self.content_frame, width=350)
+        self.left_panel = ctk.CTkFrame(self.content_frame, width=350, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         self.left_panel.grid(row=0, column=0, sticky="ns", padx=(0, 5), pady=0)
         
         # Right Panel
-        self.right_panel = ctk.CTkFrame(self.content_frame)
+        self.right_panel = ctk.CTkFrame(self.content_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         self.right_panel.grid(row=0, column=1, sticky="nsew", padx=(5, 0), pady=0)
         
         # Info Header
@@ -159,7 +160,14 @@ class GeminiImageToolsGUI(BaseWindow):
                         command=self.update_prompt_from_ui).pack(fill="x", padx=10, pady=(0, 10))
         
         # Tabs
-        self.tab_view = ctk.CTkTabview(self.left_panel, command=self.on_tab_change)
+        self.tab_view = ctk.CTkTabview(self.left_panel, command=self.on_tab_change,
+                                        fg_color=THEME_CARD,
+                                        segmented_button_selected_color=THEME_BTN_PRIMARY,
+                                        segmented_button_selected_hover_color=THEME_BTN_HOVER,
+                                        segmented_button_unselected_color=THEME_DROPDOWN_FG,
+                                        segmented_button_unselected_hover_color=THEME_DROPDOWN_BTN,
+                                        border_width=1, border_color=THEME_BORDER,
+                                        text_color="#E0E0E0")
         self.tab_view.pack(fill="both", expand=True, padx=5, pady=5)
         
         self.tab_style = self.tab_view.add("Style")
@@ -235,7 +243,7 @@ class GeminiImageToolsGUI(BaseWindow):
         btn_frame.pack(fill="x", padx=10, pady=5)
         
         ctk.CTkButton(btn_frame, text="Generate (Gemini 2.5)", command=self.run_ai_request, 
-                      fg_color="#1f6aa5", width=150).pack(side="left", padx=5)
+                      fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER, width=150).pack(side="left", padx=5)
         ctk.CTkButton(btn_frame, text="Reset to Original", command=self.reset_image, 
                       fg_color="gray", width=120).pack(side="left", padx=5)
         
@@ -694,3 +702,15 @@ class GeminiImageToolsGUI(BaseWindow):
         self.viewer.load_image(res)
         self.processed_img = res
         self.status_label.configure(text="Applied Offset", text_color="green")
+
+
+def run_gui(target_path=None, start_tab="Style"):
+    """Entry point for running the Gemini Image Tools GUI."""
+    app = GeminiImageToolsGUI(target_path=target_path, start_tab=start_tab)
+    app.mainloop()
+
+
+if __name__ == "__main__":
+    import sys
+    target = sys.argv[1] if len(sys.argv) > 1 else None
+    run_gui(target)

@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 import traceback
 from pathlib import Path
@@ -131,14 +131,13 @@ def build_handler_map():
         "image_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "convert_gui.py"), str(p)]),
         "merge_to_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "merge_exr.py"), str(p)]),
         "resize_power_of_2": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "resize_gui.py"), str(p)]),
-        "split_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "split_exr.py"), str(p)]),
+        "split_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "split_image.py"), str(p)]),
         "texture_packer_orm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "packer_gui.py"), str(p)]),
         "normal_flip_green": _lazy("features.image.normal", "flip_normal_green"),
         "simple_normal_roughness": _lazy("features.image.normal", "generate_simple_normal_roughness"),
         "image_compare": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "compare_gui.py"), *( [str(i) for i in s] if s else [str(p)] )]),
 
         # === AI ===
-        "rife_interpolation": _lazy("features.ai.frame_interp", "interpolate_frames"),
         "whisper_subtitle": _lazy("features.ai.subtitle", "generate_subtitles"),
         "esrgan_upscale": _lazy("features.image.upscale", "upscale_image"),
         "rmbg_background": _lazy("features.ai.tools", "remove_background"),

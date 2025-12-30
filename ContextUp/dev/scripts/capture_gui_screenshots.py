@@ -119,6 +119,10 @@ GUI_LIST = [
     ("split_exr", "features/image/split_exr.py", (["EXR", "Split"], ["EXR", "Split"]), "exr", []),
     ("resize", "features/image/resize_gui.py", (["Resize", "Image"], ["Resize", "Image", "이미지"]), "image", []),
     ("packer", "features/image/packer_gui.py", (["Packer", "Texture", "ORM"], ["Packer", "ORM", "텍스처"]), "folder", ["--demo"]),
+    ("image_split", "features/image/split_image.py", (["Split", "Channel"], ["Split", "Channel"]), "image", []),
+    ("normal_roughness", "features/image/normal.py", (["Normal", "Roughness"], ["Normal", "Roughness"]), "image", []),
+    ("texture_tools", "features/image/texture.py", (["Texture", "Tools"], ["Texture", "Tools"]), "image", []),
+    ("upscale", "features/image/upscale.py", (["Upscale", "Image"], ["Upscale", "Image"]), "image", []),
     
     # Video
     ("video_convert", "features/video/convert_gui.py", (["Video", "Convert"], ["Video", "Convert", "영상"]), "video", []),
@@ -136,29 +140,39 @@ GUI_LIST = [
     # AI / ComfyUI
     ("marigold", "features/ai/marigold_gui.py", (["PBR", "Marigold"], ["PBR", "Marigold"]), "image", []),
     ("gemini_tools", "features/ai/standalone/gemini_img_tools/gui.py", (["Gemini", "AI"], ["Gemini", "AI"]), "image", []),
-
     ("creative_studio_z", "features/comfyui/creative_studio_z_gui.py", (["Creative", "Studio"], ["Creative", "Studio"]), "none", []),
     ("creative_studio_adv", "features/comfyui/creative_studio_advanced_gui.py", (["Creative", "Advanced"], ["Creative", "Advanced"]), "none", []),
-
     ("seedvr2", "features/comfyui/seedvr2_gui.py", (["SeedVR2"], ["SeedVR2"]), "none", []),
     ("ace_audio", "features/comfyui/ace_audio_edit_gui.py", (["ACE", "Audio"], ["ACE", "Audio"]), "none", []),
+    ("icon_gen", "features/comfyui/icon_gen_gui.py", (["Icon", "Gen"], ["Icon", "Gen"]), "none", []),
+    ("z_image_turbo", "features/comfyui/z_image_turbo_gui.py", (["Image", "Turbo"], ["Image", "Turbo"]), "none", []),
     
     # Mesh
     ("mesh_lod", "features/mesh/lod_gui.py", (["LOD", "Auto"], ["LOD", "Auto"]), "none", ["--demo"]),
     ("blender_bake", "features/mesh/bake_gui.py", (["Remesh", "Bake"], ["Remesh", "Bake", "리메쉬"]), "mesh", []),
+    ("mesh_convert", "features/mesh/blender.py", (["Mesh", "Convert"], ["Mesh", "Convert"]), "mesh", ["convert"]),
+    ("mesh_optimize", "features/mesh/blender.py", (["Mesh", "Optimize"], ["Mesh", "Optimize"]), "mesh", ["optimize"]),
+    ("cad_convert", "features/mesh/mayo.py", (["CAD", "Mayo"], ["CAD", "Mayo"]), "mesh", []),
     
     # Document
-    ("doc_convert", "features/document/convert_gui.py", (["Document", "Converter"], ["Document", "Converter", "문서"]), "pdf", []),
+    ("doc_convert", "features/document/convert_gui.py", (["Document", "Converter"], ["Document", "Converter", "문서"]), "pdf", ["--dev"]),
     
     # System
     ("rename", "features/system/rename.py", (["Rename", "Batch"], ["이름 바꾸기", "Rename"]), "folder", ["rename"]),
-
+    ("renumber", "features/system/rename.py", (["Renumber", "Sequence"], ["Renumber", "Sequence"]), "folder", ["renumber"]),
     ("unwrap", "features/system/unwrap_folder_gui.py", (["Unwrap", "Folder"], ["폴더 풀기", "Unwrap"]), "folder", []),
+    ("open_recent", "features/system/open_recent.py", (["Recent", "Open"], ["Recent", "Open"]), "none", []),
+    ("metadata_tag", "features/system/metadata.py", (["Tagging", "Metadata"], ["Tagging", "Metadata"]), "image", []),
     
-    # Finder / Prompt Master  
+    # Finder / Prompt Master / AI Tools
     ("finder", "features/finder/ui.py", (["Finder", "Search"], ["Finder", "파인더"]), "folder", []),
     ("prompt_master", "features/prompt_master/main.py", (["Prompt", "Master"], ["Prompt", "Master", "프롬프트"]), "none", []),
+    ("ai_text_lab", "features/tools/ai_text_lab.py", (["AI", "Red", "Lab", "Text"], ["AI", "Red", "Lab", "연구소"]), "none", []),
+    
+    # Leave Manager
+    ("leave_manager", "features/leave_manager/gui.py", (["Leave", "Manager", "휴가"], ["Leave", "Manager", "휴가"]), "none", []),
 ]
+
 
 # Resize map for GUIs that need more space (width, height)
 RESIZE_MAP = {
@@ -546,14 +560,24 @@ def create_test_files(logger) -> Dict[str, str]:
     return files
 
 
-def find_window_flexible(title_keywords: List[str], logger, wait_time: float = 15.0) -> Optional[Any]:
-    """Find window matching any of the keywords, with flexible matching."""
+def find_window_flexible(title_keywords: List[str], logger, wait_time: float = 15.0, process_pid: int = None) -> Optional[Any]:
+    """Find window matching any of the keywords, with flexible matching.
+    
+    Also includes fallback detection for BaseWindow-based GUIs that show as 'CTk'
+    due to overrideredirect(True) hiding the title bar.
+    """
     if not HAS_PYGETWINDOW:
         logger.error("WINDOW | pygetwindow not available")
         return None
     
     start = time.time()
     checked_titles = set()
+    
+    # Get initial window list to detect new windows
+    try:
+        initial_windows = set(gw.getAllTitles())
+    except:
+        initial_windows = set()
     
     while time.time() - start < wait_time:
         try:
@@ -579,6 +603,22 @@ def find_window_flexible(title_keywords: List[str], logger, wait_time: float = 1
                                     logger.info(f"WINDOW | Found: '{win_title}' ({win.width}x{win.height})")
                                     checked_titles.add(win_title)
                                 return win
+            
+            # Fallback: Check for 'CTk' windows (BaseWindow with custom title bar)
+            # Only use if keywords didn't match anything after some time
+            if time.time() - start > 3.0:  # After 3 seconds, try CTk fallback
+                for win_title in all_windows:
+                    # Match 'CTk' or windows that weren't in initial list
+                    if win_title == 'CTk' or (win_title not in initial_windows and win_title.strip()):
+                        windows = gw.getWindowsWithTitle(win_title)
+                        if windows:
+                            win = windows[0]
+                            if win.width > 100 and win.height > 100:
+                                if win_title not in checked_titles:
+                                    logger.info(f"WINDOW | Found (CTk fallback): '{win_title}' ({win.width}x{win.height})")
+                                    checked_titles.add(win_title)
+                                return win
+                                
         except Exception as e:
             logger.debug(f"WINDOW | Error during search: {e}")
         
@@ -633,7 +673,8 @@ def run_gui_test(
     output_dir: Path,
     logger: logging.Logger,
     resource_monitor: ResourceMonitor,
-    is_korean: bool = False
+    is_korean: bool = False,
+    dev_mode: bool = False
 ) -> TestResult:
     """Run comprehensive GUI test with detailed logging."""
     
@@ -687,6 +728,19 @@ def run_gui_test(
     env = os.environ.copy()
     env["PYTHONPATH"] = str(SRC_DIR) + os.pathsep + env.get("PYTHONPATH", "")
     env["PYTHONIOENCODING"] = "utf-8"
+    
+    # Developer mode: show all input parameters
+    if dev_mode:
+        logger.info(f"[DEV] GUI ID: {gui_id}")
+        logger.info(f"[DEV] Script: {script_path}")
+        logger.info(f"[DEV] File Type: {file_type}")
+        logger.info(f"[DEV] Extra Args: {extra_args}")
+        logger.info(f"[DEV] Test File: {test_file}")
+        logger.info(f"[DEV] Full Command: {' '.join(cmd)}")
+        logger.info(f"[DEV] CWD: {PROJECT_ROOT}")
+        logger.info(f"[DEV] PYTHONPATH: {env.get('PYTHONPATH', 'N/A')}")
+        if not test_file and file_type != 'none':
+            logger.warning(f"[DEV] ⚠️  No test file for type '{file_type}' - GUI may fail to start!")
 
     # DEBUG: Verify settings.json content before launch
     try:
@@ -932,7 +986,8 @@ def run_test_suite(
     logger: logging.Logger = None,
     checkpoint_mgr: CheckpointManager = None,
     resource_monitor: ResourceMonitor = None,
-    resume: bool = False
+    resume: bool = False,
+    dev_mode: bool = False
 ) -> List[TestResult]:
     """Run the full test suite with a specific configuration."""
     
@@ -972,7 +1027,8 @@ def run_test_suite(
                 gui_id, script_path, title_configs, file_type, extra_args, 
                 test_files, output_dir, logger, resource_monitor,
                 is_korean=(settings_update.get("LANGUAGE") == "ko" or 
-                           (not settings_update.get("LANGUAGE") and _read_current_language() == "ko"))
+                           (not settings_update.get("LANGUAGE") and _read_current_language() == "ko")),
+                dev_mode=dev_mode
             )
             results.append(result)
             
@@ -998,6 +1054,7 @@ def main():
     parser.add_argument("--resume", action="store_true", help="Resume from last checkpoint")
     parser.add_argument("--reset-checkpoint", action="store_true", help="Reset checkpoint and start fresh")
     parser.add_argument("--verbose", action="store_true", help="Verbose console output")
+    parser.add_argument("--dev", action="store_true", help="Developer mode: extra debug output for input/launch failures")
     args = parser.parse_args()
     
     # Check dependencies
@@ -1052,21 +1109,21 @@ def main():
             # Run Dark/English
             results_dark = run_test_suite(
                 "dark_en", {"THEME": "Dark", "LANGUAGE": "en"}, 
-                test_files, args.filter, logger, checkpoint_mgr, resource_monitor, args.resume
+                test_files, args.filter, logger, checkpoint_mgr, resource_monitor, args.resume, args.dev
             )
             all_results.extend(results_dark)
             
             # Run Light/Korean
             results_light = run_test_suite(
                 "light_ko", {"THEME": "Light", "LANGUAGE": "ko"}, 
-                test_files, args.filter, logger, checkpoint_mgr, resource_monitor, args.resume
+                test_files, args.filter, logger, checkpoint_mgr, resource_monitor, args.resume, args.dev
             )
             all_results.extend(results_light)
         else:
             # Default run (current settings)
             results = run_test_suite(
                 "default", {}, test_files, args.filter, 
-                logger, checkpoint_mgr, resource_monitor, args.resume
+                logger, checkpoint_mgr, resource_monitor, args.resume, args.dev
             )
             all_results.extend(results)
         

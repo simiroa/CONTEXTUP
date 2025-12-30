@@ -12,7 +12,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/ai -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow, FileListFrame
+from utils.gui_lib import BaseWindow, FileListFrame, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_BTN_DANGER, THEME_BTN_DANGER_HOVER, THEME_ACCENT, THEME_DROPDOWN_BTN, THEME_DROPDOWN_FG, THEME_DROPDOWN_HOVER
 from utils.ai_runner import run_ai_script
 from utils.config_persistence import load_gui_state, save_gui_state
 from utils.i18n import t
@@ -48,22 +48,25 @@ class CTkToolTip:
 
 class MarigoldGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__(title="ContextUp PBR Generator (Marigold)", width=400, height=860, icon_name="ai_pbr")
+        super().__init__(title="ContextUp PBR Generator (Marigold)", width=350, height=920, icon_name="ai_pbr")
         
-        self.target_path = Path(target_path)
-        if not self.target_path.exists():
-            messagebox.showerror(t("common.error"), t("marigold_gui.file_not_found"))
-            self.destroy()
-            return
-            
-        self.files = [self.target_path]
-        
-        # Get input image size
-        try:
-            with Image.open(self.target_path) as img:
-                self.input_width, self.input_height = img.size
-        except:
+        if target_path is None:
+            self.target_path = None
+            self.files = []
             self.input_width, self.input_height = 0, 0
+        else:
+            self.target_path = Path(target_path)
+            if not self.target_path.exists():
+                messagebox.showerror(t("common.error"), t("marigold_gui.file_not_found"))
+                self.destroy()
+                return
+            self.files = [self.target_path]
+            # Get input image size
+            try:
+                with Image.open(self.target_path) as img:
+                    self.input_width, self.input_height = img.size
+            except:
+                self.input_width, self.input_height = 0, 0
         
         # UI State - Map Toggles
         self.var_albedo = ctk.BooleanVar(value=False)
@@ -116,7 +119,7 @@ class MarigoldGUI(BaseWindow):
         ctk.CTkLabel(title_frame, text="PBR Material Generator", font=("Arial", 18, "bold")).pack(side="left")
 
         # Model Check Button (Right)
-        ctk.CTkButton(title_frame, text=t("marigold_gui.check_models"), width=90, height=24, fg_color="#555555", 
+        ctk.CTkButton(title_frame, text=t("marigold_gui.check_models"), width=90, height=24, fg_color=THEME_DROPDOWN_BTN, 
                       font=("Arial", 11), command=self.check_models).pack(side="right")
         
         # 1. Preview Carousel (New)
@@ -146,7 +149,7 @@ class MarigoldGUI(BaseWindow):
         content.pack(fill="both", expand=True, padx=10, pady=(0, 5))
         
         # === SECTION 1: Material Maps ===
-        mat_frame = ctk.CTkFrame(content)
+        mat_frame = ctk.CTkFrame(content, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         mat_frame.pack(fill="x", pady=(2, 3))
         
         mat_header = ctk.CTkFrame(mat_frame, fg_color="transparent")
@@ -162,7 +165,7 @@ class MarigoldGUI(BaseWindow):
         ctk.CTkCheckBox(mat_inner, text=t("marigold_gui.metallic"), variable=self.var_metallicity, width=80).pack(side="left", padx=8)
         
         # === SECTION 2: Geometry Maps ===
-        geo_frame = ctk.CTkFrame(content)
+        geo_frame = ctk.CTkFrame(content, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         geo_frame.pack(fill="x", pady=3)
         
         geo_header = ctk.CTkFrame(geo_frame, fg_color="transparent")
@@ -177,7 +180,7 @@ class MarigoldGUI(BaseWindow):
         ctk.CTkCheckBox(geo_inner, text=t("marigold_gui.normal"), variable=self.var_normal, width=80).pack(side="left", padx=8)
         
         # === SECTION 3: Quality Settings ===
-        qual_frame = ctk.CTkFrame(content)
+        qual_frame = ctk.CTkFrame(content, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         qual_frame.pack(fill="x", pady=2)
         
         # Presets
@@ -187,7 +190,7 @@ class MarigoldGUI(BaseWindow):
         ctk.CTkLabel(h_frame, text=t("marigold_gui.quality_label"), font=("Arial", 10, "bold")).pack(side="left", padx=5)
         
         def create_preset_btn(name, mode, tip):
-            btn = ctk.CTkButton(h_frame, text=name, width=55, height=20, fg_color="#4a4a4a", font=("Arial", 10), command=lambda: self.set_preset(mode))
+            btn = ctk.CTkButton(h_frame, text=name, width=55, height=20, fg_color=THEME_DROPDOWN_BTN, font=("Arial", 10), command=lambda: self.set_preset(mode))
             btn.pack(side="left", padx=2)
             CTkToolTip(btn, tip)
             
@@ -196,7 +199,7 @@ class MarigoldGUI(BaseWindow):
         create_preset_btn(t("marigold_gui.preset_quality"), "quality", "50 Steps, Native")
 
         # Sliders
-        slider_frame = ctk.CTkFrame(qual_frame, fg_color=("gray90", "gray16"))
+        slider_frame = ctk.CTkFrame(qual_frame, fg_color=THEME_CARD)
         slider_frame.pack(fill="x", padx=10, pady=4)
         
         # Steps
@@ -218,7 +221,7 @@ class MarigoldGUI(BaseWindow):
         self.var_ensemble.trace("w", lambda *a: lbl_e_val.configure(text=str(int(self.var_ensemble.get()))))
 
         # === SECTION 4: Export Options ===
-        export_frame = ctk.CTkFrame(content)
+        export_frame = ctk.CTkFrame(content, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         export_frame.pack(fill="x", pady=(2, 2))
         
         ctk.CTkLabel(export_frame, text=t("marigold_gui.export_options"), font=("Arial", 11, "bold")).pack(anchor="w", padx=10, pady=(6, 4))
@@ -272,19 +275,20 @@ class MarigoldGUI(BaseWindow):
         btn_row.pack(fill="x")
         
         self.btn_run = ctk.CTkButton(btn_row, text=t("marigold_gui.generate_pbr"), height=40, 
-                                     fg_color="#3498db", hover_color="#2980b9",
-                                     font=("Arial", 13, "bold"), command=self.start_generation)
+                                     font=("Arial", 13, "bold"), 
+                                     fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
+                                     command=self.start_generation)
         self.btn_run.pack(side="left", fill="x", expand=True, padx=(0, 5))
         
         self.btn_cancel = ctk.CTkButton(btn_row, text=t("common.cancel"), height=40, width=70, 
-                                        fg_color="transparent", border_width=1, border_color="gray",
+                                        fg_color="transparent", border_width=1, border_color=THEME_BORDER,
                                         command=self.cancel_or_close)
         self.btn_cancel.pack(side="right")
 
     # --- Model Check Logic ---
     def check_models(self):
         """Run a dummy script to verify/download models."""
-        self.lbl_status.configure(text=t("marigold_gui.verifying_models"), text_color="#3498db")
+        self.lbl_status.configure(text=t("marigold_gui.verifying_models"), text_color=THEME_ACCENT)
         self.btn_run.configure(state="disabled")
         threading.Thread(target=self._run_model_check, daemon=True).start()
         
@@ -400,7 +404,7 @@ class MarigoldGUI(BaseWindow):
         self.cancel_flag = False
             
         self.btn_run.configure(state="disabled", text=t("common.processing"))
-        self.btn_cancel.configure(fg_color="#C0392B", hover_color="#E74C3C", text_color="white")
+        self.btn_cancel.configure(fg_color=THEME_BTN_DANGER, hover_color=THEME_BTN_DANGER_HOVER, text_color="white")
         self.progress.configure(mode="indeterminate")
         self.progress.start()
         
@@ -567,7 +571,9 @@ def run_marigold_gui(target_path):
     app.mainloop()
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    if "--demo" in sys.argv or "--test-screenshot" in sys.argv:
+        run_marigold_gui(None)
+    elif len(sys.argv) > 1:
         from utils.batch_runner import collect_batch_context
         
         batch_files = collect_batch_context("marigold_pbr", sys.argv[1], timeout=0.3)
@@ -577,4 +583,5 @@ if __name__ == "__main__":
         
         run_marigold_gui(str(batch_files[0]))
     else:
+        # Default or debug
         pass

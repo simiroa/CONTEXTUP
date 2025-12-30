@@ -34,7 +34,7 @@ class MenuConfig:
         
         for json_file in files:
             try:
-                with open(json_file, 'r', encoding='utf-8') as f:
+                with open(json_file, 'r', encoding='utf-8-sig', errors='replace') as f:
                     data = json.load(f)
                     if isinstance(data, list):
                         self._base_items.extend(data)

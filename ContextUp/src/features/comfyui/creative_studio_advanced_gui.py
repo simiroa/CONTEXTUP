@@ -18,6 +18,7 @@ if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
 from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui.workflow_wrappers import WorkflowRegistry
 from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget, ComboboxWidget, CheckboxWidget, LoraStackWidget, ImageParamWidget, SketchPadWidget, TextInputWidget, SeedWidget, AspectRatioWidget
 
@@ -47,7 +48,8 @@ class CreativeStudioAdvancedGUI(PremiumComfyWindow):
         # 1. Preset Selector
         con = self._add_section_header(self.scroll, "WORKFLOW ENGINE", is_highlight=True)
         names = self.registry.get_all_names()
-        self.combo_preset = ctk.CTkComboBox(con, values=names, height=35, command=self._on_wrapper_selected)
+        self.combo_preset = ctk.CTkComboBox(con, values=names, height=35, command=self._on_wrapper_selected,
+                                              fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_preset.pack(fill="x", padx=10, pady=10)
         
         # 2. Dynamic Params Area

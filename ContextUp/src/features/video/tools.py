@@ -25,8 +25,8 @@ def create_proxy(target_path: str):
     convert_gui.run_gui(target_path)
 
 def seq_to_video(target_path: str):
-    from . import seq_gui
-    seq_gui.run_gui(target_path)
+    from features.sequence import to_video_gui
+    to_video_gui.run_gui(target_path)
 
 def frame_interp_30fps(target_path: str):
     """

@@ -17,7 +17,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 from utils.batch_runner import collect_batch_context
 from utils.files import get_safe_path
 from core.logger import setup_logger
@@ -208,23 +208,35 @@ class SequenceAnalyzeGUI(BaseWindow):
         tree_frame.pack(side="top", fill="both", expand=True, padx=20, pady=5)
         
         # Style for dark theme
+        # Style for dark theme (Unified)
         style = ttk.Style()
         style.theme_use("clam")
+        
+        # Theme constants applied directly
+        tree_bg = THEME_CARD
+        tree_fg = "#E0E0E0"
+        field_bg = THEME_CARD
+        head_bg = THEME_DROPDOWN_FG
+        head_fg = "#E0E0E0"
+        head_active = THEME_DROPDOWN_BTN
+        selected_bg = THEME_BTN_PRIMARY
+
         style.configure("Treeview", 
-                       background="#111111", 
-                       foreground="#E0E0E0", 
-                       fieldbackground="#111111",
-                       bordercolor="#111111",
-                       lightcolor="#111111",
-                       darkcolor="#111111",
+                       background=tree_bg, 
+                       foreground=tree_fg, 
+                       fieldbackground=field_bg,
+                       bordercolor=tree_bg,
+                       lightcolor=tree_bg,
+                       darkcolor=tree_bg,
                        rowheight=24,
                        font=("Segoe UI", 10))
         style.configure("Treeview.Heading", 
-                       background="#1F1F1F", 
-                       foreground="#E0E0E0",
-                       bordercolor="#333333",
+                       background=head_bg, 
+                       foreground=head_fg,
+                       bordercolor=THEME_BORDER,
                        font=("Segoe UI", 10, "bold"))
-        style.map("Treeview", background=[("selected", "#1f538d")])
+        style.map("Treeview", background=[("selected", selected_bg)])
+        style.map("Treeview.Heading", background=[("active", head_active)])
 
         
         columns = ("name", "frames", "missing", "issues", "status")
@@ -484,6 +496,11 @@ if __name__ == "__main__":
             if seq['missing']: print(f"  MISSING: {len(seq['missing'])}")
         sys.exit(0)
 
+    if "--demo" in sys.argv or "--test-screenshot" in sys.argv:
+        app = SequenceAnalyzeGUI([])
+        app.mainloop()
+        sys.exit(0)
+
     if len(sys.argv) > 1:
         anchor = sys.argv[1]
         paths = collect_batch_context("sequence_analyze", anchor)
@@ -494,3 +511,6 @@ if __name__ == "__main__":
         else:
             logger.debug(f"Follower exiting for {anchor}")
             sys.exit(0)
+    else:
+        app = SequenceAnalyzeGUI([])
+        app.mainloop()

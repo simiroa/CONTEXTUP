@@ -16,7 +16,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/image -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.files import get_safe_path
 from utils.image_utils import scan_for_images
 
@@ -190,7 +190,6 @@ class ExrChannelPackerGUI(BaseWindow):
         
         self.btn_export = ctk.CTkButton(self.footer, text="Export Multi-Layer EXR", 
                                         height=45, font=("", 15, "bold"), 
-                                        fg_color="#2ecc71", hover_color="#27ae60",
                                         command=self.start_export)
         self.btn_export.pack(fill="x")
         

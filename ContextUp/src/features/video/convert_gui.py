@@ -14,7 +14,7 @@ sys.path.append(str(src_dir))
 from utils.external_tools import get_ffmpeg
 from utils.explorer import get_selection_from_explorer
 from utils.files import get_safe_path
-from utils.gui_lib import BaseWindow, FileListFrame
+from utils.gui_lib import BaseWindow, FileListFrame, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_BTN_DANGER, THEME_BTN_DANGER_HOVER, THEME_TEXT_DIM, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.i18n import t
 from core.config import MenuConfig
 
@@ -124,7 +124,7 @@ class VideoConvertGUI(BaseWindow):
         self.lbl_crf_val = ctk.CTkLabel(range_frame, text="23", width=30)
         self.lbl_crf_val.pack(side="right")
         
-        ctk.CTkLabel(right_frame, text=t("video_convert_gui.quality_hint"), text_color="gray", font=ctk.CTkFont(size=11)).pack(anchor="w", pady=(2, 0))
+        ctk.CTkLabel(right_frame, text=t("video_convert_gui.quality_hint"), text_color=THEME_TEXT_DIM, font=ctk.CTkFont(size=11)).pack(anchor="w", pady=(2, 0))
 
         # 4. Footer
         footer_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
@@ -140,19 +140,23 @@ class VideoConvertGUI(BaseWindow):
         
         ctk.CTkCheckBox(opt_row, text=t("video_convert_gui.save_to_folder"), variable=self.var_new_folder).pack(side="left", padx=(0, 20))
         self.var_delete_org = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(opt_row, text=t("image_convert_gui.delete_original"), variable=self.var_delete_org, text_color="#E74C3C").pack(side="left")
+        ctk.CTkCheckBox(opt_row, text=t("image_convert_gui.delete_original"), variable=self.var_delete_org, 
+                       text_color=THEME_BTN_DANGER_HOVER).pack(side="left")
 
         # Buttons
         btn_row = ctk.CTkFrame(footer_frame, fg_color="transparent")
         btn_row.pack(fill="x")
         
-        self.btn_cancel = ctk.CTkButton(btn_row, text=t("common.cancel"), height=45, fg_color="transparent", border_width=1, border_color="gray", text_color=("gray10", "gray90"), command=self.cancel_or_close)
+        self.btn_cancel = ctk.CTkButton(btn_row, text=t("common.cancel"), height=45, fg_color="transparent", 
+                                        border_width=1, border_color=THEME_BORDER, text_color=("gray10", "gray90"), command=self.cancel_or_close)
         self.btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 10))
         
-        self.btn_convert = ctk.CTkButton(btn_row, text=t("video_convert_gui.start_conversion"), height=45, font=ctk.CTkFont(size=14, weight="bold"), command=self.start_convert)
+        self.btn_convert = ctk.CTkButton(btn_row, text=t("video_convert_gui.start_conversion"), height=45, 
+                                        font=ctk.CTkFont(size=14, weight="bold"), 
+                                        command=self.start_convert)
         self.btn_convert.pack(side="left", fill="x", expand=True, padx=(0, 0))
         
-        self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("video_convert_gui.ready_to_convert"), text_color="gray", font=("", 11))
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("video_convert_gui.ready_to_convert"), text_color=THEME_TEXT_DIM, font=("", 11))
         self.lbl_status.pack(pady=(0, 5))
 
     def update_crf_label(self, value):
@@ -206,7 +210,7 @@ class VideoConvertGUI(BaseWindow):
         self.current_process = None
         
         self.btn_convert.configure(state="disabled", text=t("video_convert_gui.converting"))
-        self.btn_cancel.configure(fg_color="#C0392B", hover_color="#E74C3C", text_color="white")
+        self.btn_cancel.configure(fg_color=THEME_BTN_DANGER, hover_color=THEME_BTN_DANGER_HOVER, text_color="white")
         threading.Thread(target=self.run_conversion, daemon=True).start()
 
     def run_conversion(self):
@@ -344,7 +348,7 @@ class VideoConvertGUI(BaseWindow):
                 
         self.progress.set(1.0)
         self.btn_convert.configure(state="normal", text=t("video_convert_gui.start_conversion"))
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color="gray")
+        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color=THEME_TEXT_DIM)
         
         if self.cancel_flag:
             self.lbl_status.configure(text=t("common.cancelled"))

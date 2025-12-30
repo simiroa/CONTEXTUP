@@ -23,7 +23,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/image -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_BTN_DANGER, THEME_BTN_DANGER_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.explorer import get_selection_from_explorer
 from utils.i18n import t
 from core.logger import setup_logger
@@ -98,11 +98,12 @@ class TexturePackerGUI(BaseWindow):
         ctk.CTkLabel(preset_frame, text="Preset:", font=("", 12)).pack(side="left", padx=5)
         self.combo_preset = ctk.CTkComboBox(preset_frame, values=list(PRESETS.keys()), 
                                             variable=self.current_preset,
-                                            command=self.apply_preset, width=120)
+                                            command=self.apply_preset, width=120,
+                                            fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_BORDER)
         self.combo_preset.pack(side="left")
         
         # --- Slots Frame ---
-        slots_frame = ctk.CTkFrame(self.main_frame)
+        slots_frame = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         slots_frame.pack(fill="both", expand=True, padx=20, pady=10)
         
         # Configure grid for 4 columns
@@ -131,7 +132,7 @@ class TexturePackerGUI(BaseWindow):
             entry_lbl.bind("<KeyRelease>", lambda e: self.check_custom_preset())
             
             # 3. Preview Frame
-            preview_frame = ctk.CTkFrame(slots_frame, fg_color=("gray85", "gray20")) 
+            preview_frame = ctk.CTkFrame(slots_frame, fg_color=THEME_CARD) 
             preview_frame.grid(row=2, column=col, padx=10, pady=5, sticky="nsew")
             preview_frame.grid_propagate(False)
             
@@ -154,9 +155,10 @@ class TexturePackerGUI(BaseWindow):
             btn_frame.grid(row=4, column=col, pady=(5, 10))
             
             ctk.CTkButton(btn_frame, text="Load", width=60, height=24, font=ctk.CTkFont(size=11),
+                         fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
                          command=lambda k=key: self.load_texture(k)).pack(side="left", padx=2)
             
-            ctk.CTkButton(btn_frame, text="X", width=24, height=24, fg_color="#E74C3C", hover_color="#C0392B",
+            ctk.CTkButton(btn_frame, text="X", width=24, height=24, fg_color=THEME_BTN_DANGER_HOVER, hover_color=THEME_BTN_DANGER,
                          command=lambda k=key: self.clear_slot(k)).pack(side="left", padx=2)
 
         # --- Output Settings ---
@@ -192,13 +194,14 @@ class TexturePackerGUI(BaseWindow):
         btn_frame.pack(fill="x", padx=20, pady=(5, 20))
         
         ctk.CTkButton(btn_frame, text="Pack Textures", command=self.pack_textures, 
-                      fg_color="#28a745", hover_color="#218838", width=140, height=36, font=("", 13, "bold")).pack(side="right", padx=5)
+                      width=140, height=36, font=("", 13, "bold"),
+                      fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER).pack(side="right", padx=5)
         
         ctk.CTkButton(btn_frame, text="Clear All", command=self.clear_all,
-                      fg_color="transparent", border_width=1, text_color="gray", width=100).pack(side="right", padx=5)
+                      fg_color="transparent", border_width=1, border_color=THEME_BORDER, text_color="gray", width=100).pack(side="right", padx=5)
         
-        ctk.CTkButton(btn_frame, text="Auto-Parse", command=self.auto_parse_textures,
-                      fg_color="#6c757d", width=100).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Auto-Parse", command=self.auto_parse_textures, width=100,
+                      fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER).pack(side="right", padx=5)
 
     def toggle_resize_options(self):
         """Enable/Disable resize dropdown."""

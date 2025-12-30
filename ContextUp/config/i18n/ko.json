@@ -63,7 +63,6 @@
       "sequence_to_video": "시퀀스를 영상으로"
     },
     "ai": {
-      "rife_interpolation": "RIFE 프레임 보간",
       "whisper_subtitle": "Whisper 자막 AI",
       "esrgan_upscale": "ESRGAN 업스케일",
       "rmbg_background": "RMBG 배경 제거",

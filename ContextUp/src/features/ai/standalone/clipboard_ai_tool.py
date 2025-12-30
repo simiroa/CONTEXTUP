@@ -20,7 +20,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent.parent
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_BTN_PRIMARY, THEME_BTN_HOVER
 from core.settings import load_settings
 
 # Try to import google.genai
@@ -81,7 +81,8 @@ class ClipboardAIGUI(BaseWindow):
         action_frame.pack(fill="x", padx=10, pady=10)
         
         self.btn_analyze = ctk.CTkButton(action_frame, text="Analyze with Gemini", command=self.start_analysis, 
-                                       font=ctk.CTkFont(size=14, weight="bold"), height=40, fg_color="#1f6aa5")
+                                       font=ctk.CTkFont(size=14, weight="bold"), height=40, 
+                                       fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER)
         self.btn_analyze.pack(fill="x")
         
         # Auto-Analyze Option

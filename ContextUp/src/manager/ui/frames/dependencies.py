@@ -92,7 +92,7 @@ class ToolRow(ctk.CTkFrame):
 
 class DependenciesFrame(ctk.CTkFrame):
     def __init__(self, parent, settings_manager, package_manager, config_manager=None, translator=None, root_dir=None):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="transparent")
         self.settings = settings_manager
         self.package_manager = package_manager
         self.config_manager = config_manager

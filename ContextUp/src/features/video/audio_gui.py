@@ -13,11 +13,11 @@ sys.path.append(str(src_dir))
 
 from utils.external_tools import get_ffmpeg
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow, FileListFrame
+from utils.gui_lib import BaseWindow, FileListFrame, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 
 class VideoAudioGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__(title="ContextUp Audio Tools", width=600, height=850, icon_name="video_audio_tools")
+        super().__init__(title="ContextUp Audio Tools", width=500, height=600, icon_name="video_audio_tools")
         
         self.target_path = target_path
         self.selection = get_selection_from_explorer(target_path)
@@ -25,7 +25,7 @@ class VideoAudioGUI(BaseWindow):
         
         self.files = [Path(p) for p in self.selection]
         
-        self.var_new_folder = ctk.BooleanVar(value=True) # Default ON
+        self.var_new_folder = ctk.BooleanVar(value=True)
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -33,56 +33,94 @@ class VideoAudioGUI(BaseWindow):
         # 1. Header & File List
         self.add_header(f"Selected Files ({len(self.files)})")
         
-        self.file_scroll = FileListFrame(self.main_frame, self.files)
+        self.file_scroll = FileListFrame(self.main_frame, self.files, height=120)
         self.file_scroll.pack(fill="x", padx=20, pady=5)
 
-        # 2. Tabs
-        self.tab_view = ctk.CTkTabview(self.main_frame)
-        self.tab_view.pack(fill="both", expand=True, padx=20, pady=20)
+        # 2. Tabs (Compact)
+        self.tab_view = ctk.CTkTabview(self.main_frame, fg_color=THEME_CARD, 
+                                        segmented_button_selected_color=THEME_BTN_PRIMARY,
+                                        segmented_button_selected_hover_color=THEME_BTN_HOVER,
+                                        segmented_button_unselected_color=THEME_DROPDOWN_FG,
+                                        segmented_button_unselected_hover_color=THEME_DROPDOWN_BTN,
+                                        border_width=1, border_color=THEME_BORDER, height=180)
+        self.tab_view.pack(fill="x", padx=20, pady=(10, 10))
         
         self.tab_extract = self.tab_view.add("Extract Audio")
         self.tab_remove = self.tab_view.add("Remove Audio")
         self.tab_separate = self.tab_view.add("Separate (Voice/BGM)")
         
         # --- Extract Tab ---
-        ctk.CTkLabel(self.tab_extract, text="Select Output Format:", font=ctk.CTkFont(weight="bold")).pack(pady=(20, 10))
+        ctk.CTkLabel(self.tab_extract, text="Select Output Format:", font=ctk.CTkFont(weight="bold")).pack(pady=(15, 8))
         self.ext_fmt = ctk.StringVar(value="MP3")
         
         radio_frame = ctk.CTkFrame(self.tab_extract, fg_color="transparent")
-        radio_frame.pack(pady=10)
-        ctk.CTkRadioButton(radio_frame, text="MP3 (Compressed)", variable=self.ext_fmt, value="MP3").pack(side="left", padx=20)
-        ctk.CTkRadioButton(radio_frame, text="WAV (Lossless)", variable=self.ext_fmt, value="WAV").pack(side="left", padx=20)
-        
-        ctk.CTkButton(self.tab_extract, text="Extract Audio", height=40, command=self.run_extract).pack(pady=30)
+        radio_frame.pack(pady=8)
+        ctk.CTkRadioButton(radio_frame, text="MP3 (Compressed)", variable=self.ext_fmt, value="MP3").pack(side="left", padx=15)
+        ctk.CTkRadioButton(radio_frame, text="WAV (Lossless)", variable=self.ext_fmt, value="WAV").pack(side="left", padx=15)
 
         # --- Remove Tab ---
-        ctk.CTkLabel(self.tab_remove, text="Remove audio track from video files.", font=ctk.CTkFont(size=14)).pack(pady=(40, 20))
-        ctk.CTkButton(self.tab_remove, text="Remove Audio Track", height=40, fg_color="#C0392B", hover_color="#E74C3C", command=self.run_remove).pack(pady=10)
+        ctk.CTkLabel(self.tab_remove, text="Remove audio track from video files", text_color="gray").pack(pady=(30, 8))
+        ctk.CTkLabel(self.tab_remove, text="Video codec will be copied (fast)", text_color="gray", font=("", 11)).pack(pady=5)
 
         # --- Separate Tab ---
-        ctk.CTkLabel(self.tab_separate, text="Separate Voice and BGM (Experimental)", font=ctk.CTkFont(weight="bold")).pack(pady=(20, 10))
-        ctk.CTkLabel(self.tab_separate, text="Uses simple frequency filtering.", text_color="gray").pack(pady=5)
+        ctk.CTkLabel(self.tab_separate, text="Separate Voice and BGM", font=ctk.CTkFont(weight="bold")).pack(pady=(15, 8))
+        ctk.CTkLabel(self.tab_separate, text="Uses simple frequency filtering", text_color="gray", font=("", 11)).pack(pady=5)
         
         self.sep_mode = ctk.StringVar(value="Voice")
         sep_frame = ctk.CTkFrame(self.tab_separate, fg_color="transparent")
-        sep_frame.pack(pady=20)
-        ctk.CTkRadioButton(sep_frame, text="Extract Voice", variable=self.sep_mode, value="Voice").pack(side="left", padx=20)
-        ctk.CTkRadioButton(sep_frame, text="Extract BGM", variable=self.sep_mode, value="BGM").pack(side="left", padx=20)
+        sep_frame.pack(pady=15)
+        ctk.CTkRadioButton(sep_frame, text="Extract Voice", variable=self.sep_mode, value="Voice").pack(side="left", padx=15)
+        ctk.CTkRadioButton(sep_frame, text="Extract BGM", variable=self.sep_mode, value="BGM").pack(side="left", padx=15)
+
+        # 3. Footer (Outside Tabs)
+        footer = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        footer.pack(fill="x", padx=20, pady=(5, 15))
         
-        ctk.CTkButton(self.tab_separate, text="Process Separation", height=40, command=self.run_separate).pack(pady=20)
-
+        # Options
+        ctk.CTkCheckBox(footer, text="Save to new folder", variable=self.var_new_folder).pack(anchor="w", pady=(0, 10))
+        
         # Progress
-        # Output Option
-        out_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        out_frame.pack(fill="x", padx=40, pady=(0, 5))
-        ctk.CTkCheckBox(out_frame, text="Save to new folder", variable=self.var_new_folder).pack(side="left")
-
-        self.progress = ctk.CTkProgressBar(self.main_frame)
-        self.progress.pack(fill="x", padx=40, pady=(10, 5))
+        self.progress = ctk.CTkProgressBar(footer, height=8)
+        self.progress.pack(fill="x", pady=(0, 10))
         self.progress.set(0)
         
+        # Dynamic Action Button
+        btn_container = ctk.CTkFrame(footer, fg_color="transparent")
+        btn_container.pack(fill="x")
+        
+        ctk.CTkButton(btn_container, text="Cancel", fg_color="transparent", 
+                     border_width=1, border_color=THEME_BORDER, 
+                     command=self.on_closing, width=100).pack(side="left", padx=(0, 10))
+        
+        self.btn_action = ctk.CTkButton(btn_container, text="Extract Audio", 
+                                       command=self.run_current_action,
+                                       height=40, font=ctk.CTkFont(size=14, weight="bold"))
+        self.btn_action.pack(side="left", fill="x", expand=True)
+        
+        # Status
         self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray")
-        self.lbl_status.pack(pady=(0, 20))
+        self.lbl_status.pack(pady=(5, 10))
+        
+        # Tab change handler
+        self.tab_view.configure(command=self.on_tab_change)
+    
+    def on_tab_change(self):
+        current_tab = self.tab_view.get()
+        if current_tab == "Extract Audio":
+            self.btn_action.configure(text="Extract Audio", fg_color=THEME_BTN_PRIMARY)
+        elif current_tab == "Remove Audio":
+            self.btn_action.configure(text="Remove Audio", fg_color="#C0392B")
+        elif current_tab == "Separate (Voice/BGM)":
+            self.btn_action.configure(text="Process Separation", fg_color=THEME_BTN_PRIMARY)
+    
+    def run_current_action(self):
+        current_tab = self.tab_view.get()
+        if current_tab == "Extract Audio":
+            self.run_extract()
+        elif current_tab == "Remove Audio":
+            self.run_remove()
+        elif current_tab == "Separate (Voice/BGM)":
+            self.run_separate()
 
     def run_extract(self):
         self.start_thread("extract")
@@ -93,81 +131,56 @@ class VideoAudioGUI(BaseWindow):
     def run_separate(self):
         self.start_thread("separate")
 
-    def start_thread(self, action):
-        # Disable tabs during processing? For now just run
-        threading.Thread(target=self.process_files, args=(action,), daemon=True).start()
+    def start_thread(self, mode):
+        self.btn_action.configure(state="disabled")
+        threading.Thread(target=lambda: self.process_files(mode), daemon=True).start()
 
-    def process_files(self, action):
+    def process_files(self, mode):
         ffmpeg = get_ffmpeg()
-        count = 0
-        errors = []
+        if not ffmpeg or not Path(ffmpeg).exists():
+            messagebox.showerror("Error", "FFmpeg not found!")
+            self.btn_action.configure(state="normal")
+            return
+
         total = len(self.files)
-        
-        # Determine output folder name
-        folder_map = {
-            "extract": "Extracted_Audio",
-            "remove": "Muted_Video",
-            "separate": "Separated_Audio"
-        }
-        out_folder_name = folder_map.get(action, "Output")
-        
-        for i, path in enumerate(self.files):
-            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {path.name}")
-            self.progress.set(i / total)
+        for i, file in enumerate(self.files):
+            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {file.name}")
+            self.progress.set((i+1) / total)
+            
+            out_dir = file.parent
+            if self.var_new_folder.get():
+                out_dir = file.parent / "Audio_Output"
+                out_dir.mkdir(exist_ok=True)
             
             try:
-                # Determine output directory
-                if self.var_new_folder.get():
-                    out_dir = path.parent / out_folder_name
-                    out_dir.mkdir(exist_ok=True)
-                else:
-                    out_dir = path.parent
-                
-                cmd = []
-                if action == "extract":
-                    fmt = self.ext_fmt.get().lower()
-                    out_path = out_dir / path.with_suffix(f".{fmt}").name
-                    cmd = [ffmpeg, "-i", str(path), "-vn", "-y", str(out_path)]
-                    if fmt == "mp3":
-                        cmd.extend(["-acodec", "libmp3lame", "-q:a", "2"])
+                if mode == "extract":
+                    ext = self.ext_fmt.get().lower()
+                    out_file = out_dir / f"{file.stem}.{ext}"
+                    cmd = [ffmpeg, "-i", str(file), "-vn", "-acodec", "copy" if ext == "wav" else "libmp3lame", str(out_file)]
+                    subprocess.run(cmd, check=True, capture_output=True)
+                    
+                elif mode == "remove":
+                    out_file = out_dir / f"{file.stem}_no_audio{file.suffix}"
+                    cmd = [ffmpeg, "-i", str(file), "-an", "-vcodec", "copy", str(out_file)]
+                    subprocess.run(cmd, check=True, capture_output=True)
+                    
+                elif mode == "separate":
+                    voice_file = out_dir / f"{file.stem}_voice.wav"
+                    bgm_file = out_dir / f"{file.stem}_bgm.wav"
+                    # Simple bandpass for voice (300-3400 Hz) and inverse for BGM
+                    if self.sep_mode.get() == "Voice":
+                        cmd = [ffmpeg, "-i", str(file), "-af", "bandpass=f=1850:width_type=h:width=3100", str(voice_file)]
                     else:
-                        cmd.extend(["-acodec", "pcm_s16le"])
+                        cmd = [ffmpeg, "-i", str(file), "-af", "bandreject=f=1850:width_type=h:width=3100", str(bgm_file)]
+                    subprocess.run(cmd, check=True, capture_output=True)
                     
-                elif action == "remove":
-                    out_path = out_dir / path.with_name(f"{path.stem}_noaudio{path.suffix}").name
-                    cmd = [ffmpeg, "-i", str(path), "-c", "copy", "-an", "-y", str(out_path)]
-                    
-                elif action == "separate":
-                    mode = self.sep_mode.get()
-                    out_path = out_dir / path.with_name(f"{path.stem}_{mode.lower()}.wav").name
-                    cmd = [ffmpeg, "-i", str(path), "-vn", "-y", str(out_path)]
-                    if mode == "Voice":
-                        # Simple voice filter
-                        cmd.extend(["-af", "highpass=f=200,lowpass=f=3000"])
-                    else:
-                        # Simple BGM filter (remove voice range)
-                        cmd.extend(["-af", "bandreject=f=1000:width_type=h:width=2000"])
-                
-                if cmd:
-                    # Run without startupinfo to avoid 0xC0000135
-                    subprocess.run(cmd, check=True, capture_output=True, text=True)
-                    count += 1
-                    
-            except subprocess.CalledProcessError as e:
-                errors.append(f"{path.name}: {e.stderr}")
             except Exception as e:
-                errors.append(f"{path.name}: {str(e)}")
-        
+                messagebox.showerror("Error", f"Failed to process {file.name}: {e}")
+                
+        self.lbl_status.configure(text="Complete")
         self.progress.set(1.0)
-        self.lbl_status.configure(text="Done")
-        
-        msg = f"Processed {count}/{total} files."
-        if errors:
-            msg += "\n\nErrors:\n" + "\n".join(errors[:5])
-            messagebox.showwarning("Result", msg)
-        else:
-            messagebox.showinfo("Success", msg)
-            self.destroy()
+        self.btn_action.configure(state="normal")
+        messagebox.showinfo("Done", f"Processed {total} files")
 
     def on_closing(self):
         self.destroy()
@@ -177,8 +190,8 @@ def run_gui(target_path):
     app.mainloop()
 
 if __name__ == "__main__":
+    import sys
     if len(sys.argv) > 1:
         run_gui(sys.argv[1])
     else:
-        # Debug
-        run_gui(str(Path.home() / "Videos"))
+        print("Usage: audio_gui.py <target_path>")

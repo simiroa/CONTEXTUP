@@ -52,7 +52,7 @@ class UserOverrideManager:
             return default
         
         try:
-            with open(self.override_file, 'r', encoding='utf-8') as f:
+            with open(self.override_file, 'r', encoding='utf-8-sig', errors='replace') as f:
                 data = json.load(f)
             
             # Ensure all required keys exist
@@ -90,7 +90,7 @@ class UserOverrideManager:
                     if v  # Remove empty override dicts
                 }
             
-            with open(self.override_file, 'w', encoding='utf-8') as f:
+            with open(self.override_file, 'w', encoding='utf-8-sig') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             
             self._cache = data

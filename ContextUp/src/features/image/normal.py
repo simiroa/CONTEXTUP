@@ -13,7 +13,7 @@ sys.path.append(str(src_dir))
 
 from core.logger import setup_logger
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 import customtkinter as ctk
 from PIL import Image
 
@@ -95,7 +95,7 @@ class NormalStrengthGUI(BaseWindow):
         header.pack_configure(pady=(5, 15))
         
         # 1. Preview Area (Enlarged)
-        self.preview_frame = ctk.CTkFrame(self.main_frame, height=380, fg_color="#1a1a1a")
+        self.preview_frame = ctk.CTkFrame(self.main_frame, height=380, fg_color=THEME_BORDER)
         self.preview_frame.pack(fill="both", expand=True, padx=5, pady=5)
         self.preview_frame.pack_propagate(False)
         
@@ -118,7 +118,13 @@ class NormalStrengthGUI(BaseWindow):
                 self.lbl_preview.configure(text=f"Preview Fail: {e}")
 
         # 2. Preview Mode Selector
-        self.tabview = ctk.CTkTabview(self.main_frame, height=50)
+        self.tabview = ctk.CTkTabview(self.main_frame, height=50, fg_color=THEME_CARD,
+                                      segmented_button_selected_color=THEME_BTN_PRIMARY,
+                                      segmented_button_selected_hover_color=THEME_BTN_HOVER,
+                                      segmented_button_unselected_color=THEME_DROPDOWN_FG,
+                                      segmented_button_unselected_hover_color=THEME_DROPDOWN_BTN,
+                                      border_width=1, border_color=THEME_BORDER,
+                                      text_color=THEME_TEXT_MAIN)
         self.tabview.pack(fill="x", padx=5, pady=(5, 0))
         self.tabview.add("Original")
         self.tabview.add("Normal")
@@ -131,7 +137,7 @@ class NormalStrengthGUI(BaseWindow):
         self.ctrl_panel.pack(fill="x", padx=10, pady=10)
 
         # Normal Controls
-        self.frame_n_ctrl = ctk.CTkFrame(self.ctrl_panel, fg_color=("gray90", "gray20"))
+        self.frame_n_ctrl = ctk.CTkFrame(self.ctrl_panel, fg_color=THEME_CARD)
         ctk.CTkLabel(self.frame_n_ctrl, text="Strength:", font=("", 11, "bold")).pack(side="left", padx=(10, 5))
         self.slider_normal = ctk.CTkSlider(self.frame_n_ctrl, from_=0.1, to=5.0, height=16, command=self.update_preview)
         self.slider_normal.pack(side="left", fill="x", expand=True, padx=5)
@@ -142,7 +148,7 @@ class NormalStrengthGUI(BaseWindow):
         self.check_n_flip.pack(side="left", padx=5)
 
         # Roughness Controls
-        self.frame_r_ctrl = ctk.CTkFrame(self.ctrl_panel, fg_color=("gray90", "gray20"))
+        self.frame_r_ctrl = ctk.CTkFrame(self.ctrl_panel, fg_color=THEME_CARD)
         ctk.CTkLabel(self.frame_r_ctrl, text="Contrast:", font=("", 11, "bold")).pack(side="left", padx=(10, 5))
         self.slider_rough = ctk.CTkSlider(self.frame_r_ctrl, from_=0.1, to=3.0, height=16, command=self.update_preview)
         self.slider_rough.pack(side="left", fill="x", expand=True, padx=5)
@@ -154,11 +160,11 @@ class NormalStrengthGUI(BaseWindow):
 
         # 4. Info & Action
         self.lbl_info = ctk.CTkLabel(self.main_frame, text="Preview showing Normal", 
-                                     text_color="gray", font=("", 10))
+                                     text_color=THEME_TEXT_DIM, font=("", 10))
         self.lbl_info.pack(pady=(0, 5))
         
         self.btn_run = ctk.CTkButton(self.main_frame, text="Save Normal Map(s)", height=35, 
-                                     fg_color="#00b894", hover_color="#00cec9",
+                                     fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
                                      font=("", 13, "bold"), command=self.start_gen)
         self.btn_run.pack(fill="x", padx=20, pady=(5, 15))
         

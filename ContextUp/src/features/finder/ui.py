@@ -9,7 +9,7 @@ from tkinter import filedialog, messagebox
 from .models import FinderGroup, FinderItem
 from .scanner import scan_worker
 from core.logger import setup_logger
-from utils.gui_lib import setup_theme, BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_ACCENT
+from utils.gui_lib import setup_theme, BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_ACCENT, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 
 # PIP: send2trash
 try:
@@ -60,7 +60,12 @@ class FinderApp(BaseWindow):
         self.lbl_path.pack(pady=5, padx=8)
         
         # 2. Mode (Tab view)
-        self.tab_mode = ctk.CTkTabview(self.frm_sidebar, height=140, fg_color=THEME_BG, segmented_button_selected_color=THEME_ACCENT)
+        self.tab_mode = ctk.CTkTabview(self.frm_sidebar, height=140, fg_color=THEME_BG, 
+                                       segmented_button_selected_color=THEME_ACCENT,
+                                       segmented_button_selected_hover_color=THEME_BTN_HOVER,
+                                       segmented_button_unselected_color=THEME_DROPDOWN_FG,
+                                       segmented_button_unselected_hover_color=THEME_DROPDOWN_BTN,
+                                       text_color="#E0E0E0")
         self.tab_mode.pack(pady=10, padx=8, fill="x")
         
         tab_simple = self.tab_mode.add("Simple")

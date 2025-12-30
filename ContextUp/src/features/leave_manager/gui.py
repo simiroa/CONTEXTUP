@@ -17,6 +17,7 @@ _bootstrap()
 # -----------------
 
 from utils.i18n import t
+from utils.gui_lib import THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 
 try:
     # Absolute imports (works if src is in path)
@@ -323,7 +324,13 @@ class LeaveManagerGUI(ctk.CTk):
         self.yearly_card.pack(fill="x", padx=15, pady=(5, 5))
 
         # 3. Main Action Tabs
-        self.tabview = ctk.CTkTabview(self, height=220)
+        self.tabview = ctk.CTkTabview(self, height=220, fg_color=THEME_CARD,
+                                      segmented_button_selected_color=THEME_BTN_PRIMARY,
+                                      segmented_button_selected_hover_color=THEME_BTN_HOVER,
+                                      segmented_button_unselected_color=THEME_DROPDOWN_FG,
+                                      segmented_button_unselected_hover_color=THEME_DROPDOWN_BTN,
+                                      border_width=1, border_color=THEME_BORDER,
+                                      text_color="#E0E0E0")
         self.tabview.pack(fill="x", padx=15, pady=(0, 3))
         
         self.tab_use = self.tabview.add(t("leave_manager_gui.use_leave_tab"))

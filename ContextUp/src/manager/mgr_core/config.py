@@ -34,8 +34,10 @@ class ConfigManager:
         Load menu configuration from menu/categories/*.json files
         with user overrides applied.
         """
-        if self._cache is not None and not force_reload:
-            return self._cache
+        if not force_reload and self._cache is not None:
+            # Check if files actually changed on disk
+            if not self.is_cache_stale():
+                return self._cache
 
         items = []
         base_items = []

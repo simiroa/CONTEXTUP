@@ -1,4 +1,4 @@
-"""
+﻿"""
 Helper utilities for locating external tools.
 """
 import os
@@ -82,13 +82,13 @@ def get_blender():
         return blender_in_path
     
     raise FileNotFoundError(
-        "Blender가 설치되어 있지 않습니다.\n\n"
-        "다음 경로에서 Blender를 찾을 수 없습니다:\n"
-        "- tools/blender 폴더\n"
+        "Blender媛 ?ㅼ튂?섏뼱 ?덉? ?딆뒿?덈떎.\n\n"
+        "?ㅼ쓬 寃쎈줈?먯꽌 Blender瑜?李얠쓣 ???놁뒿?덈떎:\n"
+        "- tools/blender ?대뜑\n"
         "- Program Files\n"
         "- Steam\n"
         "- Microsoft Store\n\n"
-        "blender.org 에서 Blender를 다운로드하세요."
+        "blender.org ?먯꽌 Blender瑜??ㅼ슫濡쒕뱶?섏꽭??"
     )
 
 def get_quadwild():
@@ -102,8 +102,6 @@ def get_realesrgan():
     """Get path to realesrgan-ncnn-vulkan.exe."""
     # Check resources/bin first (AI binaries)
     ai_bin_path = Path(__file__).parent.parent.parent / "resources" / "bin" / "realesrgan" / "realesrgan-ncnn-vulkan.exe"
-    if ai_bin_path.exists():
-        return str(ai_bin_path)
     
     # Fallback to tools folder
     realesrgan_path = _get_tools_root() / "realesrgan" / "realesrgan-ncnn-vulkan.exe"
@@ -151,17 +149,3 @@ def get_comfyui():
             
     return None
 
-def get_rife():
-    """Get path to rife-ncnn-vulkan.exe."""
-    # Check resources/bin first (AI binaries)
-    ai_bin_path = Path(__file__).parent.parent.parent / "resources" / "bin" / "rife" / "rife-ncnn-vulkan.exe"
-    if ai_bin_path.exists():
-        return str(ai_bin_path)
-
-    # Fallback to tools folder
-    rife_path = _get_tools_root() / "rife" / "rife-ncnn-vulkan.exe"
-    if rife_path.exists():
-        return str(rife_path)
-    
-    # Generic check in PATH
-    return shutil.which("rife-ncnn-vulkan")

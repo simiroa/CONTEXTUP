@@ -1,28 +1,6 @@
 [
     {
         "category": "AI",
-        "id": "rife_interpolation",
-        "name": "RIFE Frame Interpolation",
-        "icon": "assets/icons/icon_video_frame_interp.ico",
-        "types": ".mp4;.mov;.avi;.mkv",
-        "scope": "file",
-        "enabled": true,
-        "submenu": "ContextUp",
-        "show_in_tray": false,
-        "environment": "embedded",
-        "dependencies": [
-            "torch",
-            "customtkinter"
-        ],
-        "external_tools": [
-            "rife-ncnn-vulkan"
-        ],
-        "is_extension": true,
-        "order": 601,
-        "gui": true
-    },
-    {
-        "category": "AI",
         "id": "whisper_subtitle",
         "name": "Whisper Subtitle AI",
         "icon": "assets/icons/icon_video_generate_subtitle.ico",

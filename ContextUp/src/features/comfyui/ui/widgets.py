@@ -3,6 +3,7 @@ import customtkinter as ctk
 import os
 from PIL import Image
 from features.comfyui.premium import Colors, PremiumLabel
+from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 
 class BaseParamWidget(ctk.CTkFrame):
     def __init__(self, parent, label, **kwargs):
@@ -350,7 +351,8 @@ class ComboboxWidget(BaseParamWidget):
         super().__init__(parent, label)
         self.values = values
         
-        self.combo = ctk.CTkComboBox(self, values=values, height=28, font=("Segoe UI", 12))
+        self.combo = ctk.CTkComboBox(self, values=values, height=28, font=("Segoe UI", 12),
+                                     fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo.pack(fill="x", pady=(2, 0))
         
         if default and default in values:
@@ -419,7 +421,8 @@ class LoraStackWidget(ctk.CTkFrame):
             # Top: LoRA Name Trigger (Dropdown/File) - Simplified as Text for now, ideally Dropdown
             # For this "Advanced" demo, we'll use a placeholder Combobox 
             self.combo = ctk.CTkComboBox(self, values=["None", "LCM Turbo", "Add Details", "Ghibli Style"], 
-                                        height=24, font=("Segoe UI", 11))
+                                        height=24, font=("Segoe UI", 11),
+                                        fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
             self.combo.pack(fill="x", padx=5, pady=5)
             self.combo.set("None")
             

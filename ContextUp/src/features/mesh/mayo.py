@@ -63,15 +63,21 @@ def _show_mayo_install_guide():
         webbrowser.open("https://github.com/fougue/mayo/releases")
 
 class CadConvertGUI(BaseWindow):
-    def __init__(self, target_path):
+    def __init__(self, target_path, demo=False):
         super().__init__(title="ContextUp CAD Converter (Mayo)", width=600, height=400, icon_name="cad_convert_obj")
         self.target_path = target_path
+        self.demo_mode = demo
         self.files_to_convert = []
         
         self.init_files()
         self.create_widgets()
         
     def init_files(self):
+        if self.demo_mode:
+            # Demo mode - use placeholder files for screenshot testing
+            self.files_to_convert = [Path("demo_model.step"), Path("assembly.stp")]
+            return
+            
         selection = get_selection_from_explorer(self.target_path)
         if not selection:
             selection = [self.target_path]
@@ -165,11 +171,14 @@ def convert_cad(target_path: str):
     app.mainloop()
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    # Demo mode for screenshots
+    if "--demo" in sys.argv:
+        app = CadConvertGUI(None, demo=True)
+        app.mainloop()
+    elif len(sys.argv) > 1:
         # Check if we are opening or converting
         # For now, default to convert_cad which launches GUI
         # If we wanted a direct open, we'd need a flag or separate entry point
         # But the menu system calls specific functions or scripts.
         # If called as script, we assume conversion GUI.
         convert_cad(sys.argv[1])
-

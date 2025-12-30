@@ -34,7 +34,7 @@ def main():
     from tkinter import messagebox, filedialog
     import threading
     
-    from utils.gui_lib import BaseWindow
+    from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_TEXT_DIM, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER, THEME_BTN_PRIMARY, THEME_BTN_HOVER
     from utils.image_utils import scan_for_images
     from utils.i18n import t
     from core.config import MenuConfig
@@ -52,7 +52,7 @@ def main():
                  if item: self.tool_name = item.get("name", self.tool_name)
             except: pass
 
-            super().__init__(title=self.tool_name, width=550, height=700, icon_name="image_format_convert")
+            super().__init__(title=self.tool_name, width=450, height=650, icon_name="image_format_convert")
             
             if files_list and len(files_list) > 0:
                 self.selection, _ = scan_for_images(files_list)
@@ -67,7 +67,6 @@ def main():
             self.fmt_var = ctk.StringVar(value="PNG")
             self.resize_enabled = ctk.BooleanVar(value=False)
             self.resize_size = ctk.StringVar(value="1024")
-            self.thread_count = ctk.StringVar(value="0")  # 0 = auto (max cores)
             
             self.create_widgets()
             self.update_preview()
@@ -86,27 +85,26 @@ def main():
             param_frame.pack(fill="x", padx=20, pady=5)
             param_frame.grid_columnconfigure(0, weight=1)
             param_frame.grid_columnconfigure(1, weight=1)
-            
+
             # Left Column (Format)
             left_frame = ctk.CTkFrame(param_frame, fg_color="transparent")
             left_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
             
             ctk.CTkLabel(left_frame, text=t("image_convert_gui.format_label"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 2))
             formats = ["PNG", "JPG", "WEBP", "BMP", "TGA", "TIFF", "ICO", "DDS", "EXR"]
-            ctk.CTkOptionMenu(left_frame, variable=self.fmt_var, values=formats, command=lambda _: self.update_preview()).pack(fill="x", pady=(0, 5))
+            ctk.CTkOptionMenu(left_frame, variable=self.fmt_var, values=formats, command=lambda _: self.update_preview(),
+                              fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER).pack(fill="x", pady=(0, 5))
             
-            self.chk_resize = ctk.CTkCheckBox(left_frame, text="Resize (px):", variable=self.resize_enabled, command=self.on_resize_toggle)
-            self.chk_resize.pack(anchor="w", pady=(10, 2))
-            
-            # Right Column (Settings)
+            # Right Column (Resize)
             right_frame = ctk.CTkFrame(param_frame, fg_color="transparent")
             right_frame.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
             
-            ctk.CTkLabel(right_frame, text=t("image_convert_gui.threads_label"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 2))
-            ctk.CTkComboBox(right_frame, variable=self.thread_count, values=["0", "1", "2", "4", "8", "16"]).pack(fill="x", pady=(0, 5))
+            self.chk_resize = ctk.CTkCheckBox(right_frame, text="Resize (px):", variable=self.resize_enabled, 
+                                              fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER, command=self.on_resize_toggle)
+            self.chk_resize.pack(anchor="w", pady=(5, 2))
             
             self.opt_size = ctk.CTkComboBox(right_frame, variable=self.resize_size, values=["256", "512", "1024", "2048", "4096"], state="disabled")
-            self.opt_size.pack(fill="x", pady=(10, 0)) # Match Align with Resize Checkbox roughly
+            self.opt_size.pack(fill="x", pady=(0, 5))
 
             # 4. Footer
             footer_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
@@ -124,19 +122,23 @@ def main():
             self.var_delete_org = ctk.BooleanVar(value=False)
             
             ctk.CTkCheckBox(opt_row, text=t("image_convert_gui.save_to_folder"), variable=self.var_new_folder).pack(side="left", padx=(0, 20))
-            ctk.CTkCheckBox(opt_row, text=t("image_convert_gui.delete_original"), variable=self.var_delete_org, text_color="#E74C3C").pack(side="left")
+            ctk.CTkCheckBox(opt_row, text=t("image_convert_gui.delete_original"), variable=self.var_delete_org, 
+                           text_color="#E74C3C").pack(side="left")
             
             # Buttons
             btn_row = ctk.CTkFrame(footer_frame, fg_color="transparent")
             btn_row.pack(fill="x")
             
-            self.btn_cancel = ctk.CTkButton(btn_row, text=t("common.cancel"), height=45, fg_color="transparent", border_width=1, border_color="gray", text_color=("gray10", "gray90"), command=self.destroy)
+            self.btn_cancel = ctk.CTkButton(btn_row, text=t("common.cancel"), height=45, fg_color="transparent", 
+                                            border_width=1, border_color=THEME_BORDER, text_color=("gray10", "gray90"), command=self.destroy)
             self.btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 10))
             
-            self.btn_convert = ctk.CTkButton(btn_row, text=t("image_convert_gui.convert_all"), height=45, font=ctk.CTkFont(size=14, weight="bold"), command=self.run_conversion)
+            self.btn_convert = ctk.CTkButton(btn_row, text=t("image_convert_gui.convert_all"), height=45, 
+                                            font=ctk.CTkFont(size=14, weight="bold"), 
+                                            command=self.run_conversion)
             self.btn_convert.pack(side="left", fill="x", expand=True, padx=(0, 0))
             
-            self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("common.ready"), text_color="gray", font=("", 11))
+            self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("common.ready"), text_color=THEME_TEXT_DIM, font=("", 11))
             self.lbl_status.pack(pady=(0, 5))
 
         def add_files(self):
@@ -201,13 +203,8 @@ def main():
                 except:
                     pass
             
-            # Get thread count (0 = auto)
-            try:
-                threads = int(self.thread_count.get())
-                if threads <= 0:
-                    threads = multiprocessing.cpu_count()
-            except:
-                threads = multiprocessing.cpu_count()
+            # Always use max threads
+            threads = multiprocessing.cpu_count()
             
             self.btn_convert.configure(state="disabled", text=f"Converting... ({threads} threads)")
             self.progress.set(0)

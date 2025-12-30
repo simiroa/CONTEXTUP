@@ -133,31 +133,24 @@ class PremiumComfyWindow(ComfyUIFeatureBase):
         # Override Theme
         self.configure(fg_color=Colors.BG_MAIN)
         
-        # Cleanup BaseWindow layout
-        # BaseWindow grids self.main_frame at 0,0. We don't want that default layout.
+        # Cleanup BaseWindow layout - remove default main_frame and status_frame
+        # so we can build our own layout using pack
         if hasattr(self, 'main_frame'):
-            self.main_frame.grid_forget()
+            self.main_frame.pack_forget()
             
-        # Remove old status bar if exists (BaseWindow might have added it? No, BaseWindow doesn't add status bar, ComfyUIFeatureBase does)
-        if hasattr(self, 'status_frame'):
-            self.status_frame.destroy()
+        # Remove old status bar if exists (ComfyUIFeatureBase adds it)
+        if hasattr(self, 'status_frame') and self.status_frame:
+            self.status_frame.pack_forget()
             self.status_frame = None
             self.status_label_widget = None
             
-        # --- Layout Structure (Root Grid) ---
-        # Row 0: Header
-        # Row 1: Content Area
-        
-        self.grid_rowconfigure(0, weight=0) # Header Fixed
-        self.grid_rowconfigure(1, weight=1) # Content Expand
-        self.grid_columnconfigure(0, weight=1) # Single Column Root
-        
+        # --- Layout Structure using PACK (to match BaseWindow's outer_frame) ---
         self._build_header(title)
         self._build_content_area()
         
     def _build_header(self, title_text):
-        self.header = ctk.CTkFrame(self, fg_color="transparent", height=60)
-        self.header.grid(row=0, column=0, sticky="ew", padx=24, pady=(20, 10))
+        self.header = ctk.CTkFrame(self.outer_frame, fg_color="transparent", height=60)
+        self.header.pack(fill="x", padx=24, pady=(20, 10))
         
         # Title
         self.lbl_title = PremiumLabel(self.header, style="display", text=title_text)
@@ -169,9 +162,9 @@ class PremiumComfyWindow(ComfyUIFeatureBase):
         
     def _build_content_area(self):
         # Subclasses should put their content here
-        self.content_area = ctk.CTkFrame(self, fg_color="transparent")
-        self.content_area.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-        # Default grid for content area
+        self.content_area = ctk.CTkFrame(self.outer_frame, fg_color="transparent")
+        self.content_area.pack(fill="both", expand=True, padx=0, pady=0)
+        # Default grid for content area (grid is OK inside content_area since it's a new container)
         self.content_area.grid_columnconfigure(0, weight=1)
         self.content_area.grid_rowconfigure(0, weight=1)
         

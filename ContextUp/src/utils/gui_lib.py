@@ -10,9 +10,26 @@ THEME_COLOR = "blue"
 THEME_BG = "#050505"        # Deep Black Background
 THEME_CARD = "#121212"      # Slightly Brighter Cards (for contrast)
 THEME_BORDER = "#1a1a1a"    # Visible Borders
-THEME_ACCENT = "#3498db"    # Default Blue
+THEME_ACCENT = "#0123B4"    # Unified Royal Blue
 THEME_TEXT_MAIN = "#E0E0E0"
 THEME_TEXT_DIM = "#666666"
+# Unified Button Colors
+THEME_BTN_PRIMARY = "#0123B4"  # Royal Blue - Main action buttons
+THEME_BTN_HOVER = "#012fdf"    # Vibrant blue on hover
+THEME_BTN_DANGER = "#C0392B"   # Red - Cancel/Delete/Destructive actions
+THEME_BTN_DANGER_HOVER = "#E74C3C"  # Bright red on hover
+THEME_BTN_SUCCESS = "#27AE60"  # Green - Confirm/Success actions
+THEME_BTN_SUCCESS_HOVER = "#2ECC71"  # Bright green on hover
+THEME_BTN_WARNING = "#D35400"  # Orange - Warning/Caution actions
+THEME_BTN_WARNING_HOVER = "#E67E22"  # Bright orange on hover
+
+# Unified Dropdown/ComboBox Colors (Toned Down)
+THEME_DROPDOWN_FG = "#1a1a1a"    # Dark gray dropdown background (Subdued)
+THEME_DROPDOWN_BTN = "#2a2a2a"   # Slightly lighter button area
+THEME_DROPDOWN_HOVER = "#3a3a3a" # Hover state
+
+# Global Theme Path
+THEME_JSON = Path(__file__).parent / "theme_contextup.json"
 
 TRANS_KEY = "#000001" # Transparency Key
 
@@ -23,7 +40,33 @@ def setup_theme():
     elif mode.lower() == "dark": ctk.set_appearance_mode("Dark")
     else: ctk.set_appearance_mode("System")
     
-    ctk.set_default_color_theme(THEME_COLOR)
+    if THEME_JSON.exists():
+        ctk.set_default_color_theme(str(THEME_JSON))
+    else:
+        ctk.set_default_color_theme(THEME_COLOR)
+        
+    # Patch for border_spacing KeyError in some ctk versions
+    try:
+        # Ensure CTkScrollableFrame exists in theme (critical for FileListFrame)
+        if "CTkScrollableFrame" not in ctk.ThemeManager.theme:
+            ctk.ThemeManager.theme["CTkScrollableFrame"] = {
+                "fg_color": ["#ffffff", "#121212"],
+                "border_color": ["#e3e6e8", "#1a1a1a"],
+                "border_width": 0,
+                "border_spacing": 3,
+                "corner_radius": 8,
+                "label_fg_color": ["#f0f2f5", "#050505"]
+            }
+        
+        # Global fix: Ensure border_spacing exists for ALL components in the theme
+        for component in ctk.ThemeManager.theme:
+            if isinstance(ctk.ThemeManager.theme[component], dict):
+                if "border_spacing" not in ctk.ThemeManager.theme[component]:
+                    # Scrollable frame usually needs ~3, others 0
+                    default_space = 3 if "Scrollable" in component else 0
+                    ctk.ThemeManager.theme[component]["border_spacing"] = default_space
+    except Exception as e:
+        print(f"Theme patch failed: {e}")
 
 class BaseWindow(ctk.CTk):
     """
@@ -195,7 +238,9 @@ class FileListFrame(ctk.CTkScrollableFrame):
             ctk.CTkLabel(row, text=icon, width=30, text_color=THEME_TEXT_DIM).pack(side="left")
             ctk.CTkLabel(row, text=f.name, anchor="w", text_color=THEME_TEXT_MAIN).pack(side="left", fill="x", expand=True)
             
-            size_str = self.format_size(f.stat().st_size)
+            size_str = "0.0 KB"
+            if f.exists():
+                size_str = self.format_size(f.stat().st_size)
             ctk.CTkLabel(row, text=size_str, text_color=THEME_TEXT_DIM, width=80).pack(side="right")
 
     def format_size(self, size):

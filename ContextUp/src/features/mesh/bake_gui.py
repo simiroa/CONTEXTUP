@@ -17,7 +17,7 @@ src_dir = current_dir.parent.parent  # features/mesh -> src
 sys.path.append(str(src_dir))
 
 import logging
-from utils.gui_lib import BaseWindow, FileListFrame
+from utils.gui_lib import BaseWindow, FileListFrame, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.explorer import get_selection_from_explorer
 from utils.external_tools import get_blender
 from utils.i18n import t
@@ -29,7 +29,7 @@ logging.basicConfig(filename=str(log_file), level=logging.DEBUG,
 
 class BlenderBakeGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__(title="ContextUp Remesh & Bake", width=600, height=850, icon_name="mesh_remesh_bake")
+        super().__init__(title="ContextUp Remesh & Bake", width=550, height=855, icon_name="mesh_remesh_bake")
         
         self.target_path = Path(target_path) if target_path else Path.cwd()
         
@@ -170,10 +170,13 @@ class BlenderBakeGUI(BaseWindow):
         btn_row = ctk.CTkFrame(footer_frame, fg_color="transparent")
         btn_row.pack(fill="x")
         
-        self.btn_cancel = ctk.CTkButton(btn_row, text="Cancel", height=45, fg_color="transparent", border_width=1, border_color="gray", text_color=("gray10", "gray90"), command=self.on_closing)
+        self.btn_cancel = ctk.CTkButton(btn_row, text="Cancel", height=45, fg_color="transparent", 
+                                        border_width=1, border_color=THEME_BORDER, text_color=("gray10", "gray90"), command=self.on_closing)
         self.btn_cancel.pack(side="left", fill="x", expand=True, padx=(0, 10))
         
-        self.btn_run = ctk.CTkButton(btn_row, text="Process & Bake", height=45, font=ctk.CTkFont(size=14, weight="bold"), command=self.start_process)
+        self.btn_run = ctk.CTkButton(btn_row, text="Process & Bake", height=45, 
+                                    font=ctk.CTkFont(size=14, weight="bold"), 
+                                    command=self.start_process)
         self.btn_run.pack(side="left", fill="x", expand=True, padx=(0, 0))
         
         self.lbl_status = ctk.CTkLabel(self.main_frame, text="Ready", text_color="gray", font=("", 11))

@@ -15,6 +15,7 @@ if str(src_path) not in sys.path:
     sys.path.append(str(src_path))
 
 from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui import workflow_utils
 from manager.helpers.comfyui_service import ComfyUIService
 
@@ -54,14 +55,16 @@ class SeedVR2_GUI(PremiumComfyWindow):
         row1 = ctk.CTkFrame(self.settings, fg_color="transparent")
         row1.pack(fill="x", pady=5)
         PremiumLabel(row1, text="Upscale Model", style="body").pack(side="left")
-        self.combo_model = ctk.CTkComboBox(row1, values=["seedvr2_ema_7b_sharp_fp16.safetensors"], width=250)
+        self.combo_model = ctk.CTkComboBox(row1, values=["seedvr2_ema_7b_sharp_fp16.safetensors"], width=250,
+                                           fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_model.pack(side="right")
         
         # Resolution
         row2 = ctk.CTkFrame(self.settings, fg_color="transparent")
         row2.pack(fill="x", pady=5)
         PremiumLabel(row2, text="Target Res", style="body").pack(side="left")
-        self.combo_res = ctk.CTkComboBox(row2, values=["1024", "2048", "3840"], width=250)
+        self.combo_res = ctk.CTkComboBox(row2, values=["1024", "2048", "3840"], width=250,
+                                         fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_res.set("2048")
         self.combo_res.pack(side="right")
         

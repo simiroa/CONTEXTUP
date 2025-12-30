@@ -14,7 +14,7 @@ src_dir = current_dir.parent.parent  # features/mesh -> src
 sys.path.append(str(src_dir))
 
 from utils.external_tools import get_blender
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.explorer import get_selection_from_explorer
 
 def _show_blender_install_guide():
@@ -70,7 +70,8 @@ class ConvertMeshGUI(BaseWindow):
         ctk.CTkLabel(settings_frame, text="Output Format:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(20, 5), pady=10)
         self.format_var = ctk.StringVar(value="OBJ")
         formats = ["OBJ", "FBX", "GLTF", "GLB", "USD"]
-        self.format_combo = ctk.CTkComboBox(settings_frame, variable=self.format_var, values=formats, width=100)
+        self.format_combo = ctk.CTkComboBox(settings_frame, variable=self.format_var, values=formats, width=100,
+                                            fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.format_combo.pack(side="left", padx=5)
         
         # Save to new folder

@@ -14,7 +14,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/system -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_BTN_PRIMARY, THEME_BTN_HOVER
 
 def get_recent_folders():
     """
@@ -97,7 +97,9 @@ class OpenRecentGUI(BaseWindow):
         header_frame.pack(fill="x", padx=20, pady=(20, 10))
         
         ctk.CTkLabel(header_frame, text="Recent Folders (Windows)", font=ctk.CTkFont(size=20, weight="bold")).pack(side="left")
-        ctk.CTkButton(header_frame, text="↻ Refresh", width=80, command=self.refresh_list).pack(side="right")
+        ctk.CTkButton(header_frame, text="↻ Refresh", width=80, 
+                     fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
+                     command=self.refresh_list).pack(side="right")
         
         # Scrollable list container
         self.list_frame = ctk.CTkScrollableFrame(self.main_frame)
@@ -108,7 +110,9 @@ class OpenRecentGUI(BaseWindow):
         btn_frame.pack(fill="x", padx=20, pady=10)
         
         ctk.CTkButton(btn_frame, text="Close", width=100, fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right")
-        self.btn_open_most = ctk.CTkButton(btn_frame, text="Open Most Recent", width=150, command=self.open_most_recent)
+        self.btn_open_most = ctk.CTkButton(btn_frame, text="Open Most Recent", width=150, 
+                                          fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
+                                          command=self.open_most_recent)
         self.btn_open_most.pack(side="left")
         
         self.status_label = ctk.CTkLabel(btn_frame, text="", text_color="gray", font=("", 11))

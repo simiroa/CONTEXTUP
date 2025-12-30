@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 import shutil
 from pathlib import Path
@@ -200,7 +200,6 @@ def download_upscale():
         print(f"Upscale Download Failed: {e}")
         return False
 
-def check_rife():
     print("\n=== Checking RIFE Models (Video Interpolation) ===")
     bin_path = paths.BIN_DIR / "rife"
     exe_path = bin_path / "rife-ncnn-vulkan.exe"
@@ -231,7 +230,6 @@ def main():
         "Upscale": download_upscale(),
         "Whisper": download_whisper(),
         "Demucs": download_demucs(),
-        "RIFE": check_rife(),
     }
     
     print("\n=== Model Download Summary ===")

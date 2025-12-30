@@ -31,6 +31,12 @@ reportlab  # SVG rendering dependency
 pdf2docx  # PDF to Word
 pymupdf  # PDF processing (images, text, tables) - no Poppler needed
 pymupdf4llm  # PDF to Markdown (LLM optimized)
+openpyxl  # PDF to Excel
+python-pptx  # PDF to PowerPoint
+comtypes  # Office to PDF (Windows only)
+markdown  # Markdown processing
+xhtml2pdf  # HTML/Markdown to PDF
+ebooklib  # PDF to EPUB
 
 # --- AI & Processing ---
 numpy<2

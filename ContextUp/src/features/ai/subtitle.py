@@ -15,7 +15,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/ai -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_BTN_DANGER, THEME_BTN_DANGER_HOVER
 from utils.i18n import t
 from core.config import MenuConfig
 
@@ -201,7 +201,7 @@ class SubtitleGUI(BaseWindow):
         self.current_process = None
             
         self.btn_run.configure(state="disabled", text="Processing...")
-        self.btn_cancel.configure(text="Cancel", fg_color="#C0392B", hover_color="#E74C3C", text_color="white")
+        self.btn_cancel.configure(text="Cancel", fg_color=THEME_BTN_DANGER, hover_color=THEME_BTN_DANGER_HOVER, text_color="white")
         self.progress_bar.set(0)
         self.status_label.configure(text="Initializing...")
         self.log_area.delete("1.0", "end")

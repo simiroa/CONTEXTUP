@@ -17,6 +17,7 @@ if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
 from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui.core.wrappers import registry
 from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget, TagSelectorWidget
 from manager.helpers.comfyui_client import ComfyUIManager
@@ -104,7 +105,8 @@ class ACEAudioEditorGUI(PremiumComfyWindow):
         
         self.combo_preset = ctk.CTkComboBox(h_row1, width=220, height=28,
                                            values=["ACE Vocal Song (Gen)", "ACE Instrumental (Gen)", "ACE Audio Repaint (Edit)"],
-                                           command=self._on_preset_change)
+                                           command=self._on_preset_change,
+                                           fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_preset.set(self.wrapper.name)
         self.combo_preset.pack(side="right")
         
@@ -240,7 +242,8 @@ class ACEAudioEditorGUI(PremiumComfyWindow):
                   "EDM: Synthesizer, Bass Drop", "Orchestral: Cinematic, Epic"]
         
         combo = ctk.CTkComboBox(self.genre_row, values=genres, width=280, height=28, 
-                               font=Fonts.BODY, command=self._apply_genre_preset)
+                               font=Fonts.BODY, command=self._apply_genre_preset,
+                               fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         combo.set("⚡ Quick Style Preset...")
         combo.pack(side="left", fill="x", expand=True)
 

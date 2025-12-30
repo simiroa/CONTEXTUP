@@ -39,7 +39,7 @@ LEGACY_HISTORY_FILES = [
 # Appearance mode is now inherited from settings.json
 
 from core.config import MenuConfig
-from utils.gui_lib import setup_theme
+from utils.gui_lib import setup_theme, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 
 class VideoDownloaderGUI(ctk.CTk):
     def __init__(self):
@@ -242,7 +242,7 @@ class VideoDownloaderGUI(ctk.CTk):
         self.var_quality = ctk.StringVar(value="Best Video+Audio")
         self.quality_menu = ctk.CTkOptionMenu(q_row, variable=self.var_quality, height=32,
                           values=["Best Video+Audio", "4K (2160p)", "1080p", "720p", "Audio Only (MP3)", "Audio Only (M4A)"],
-                          fg_color=self.CARD_BG, button_color=self.INNER_CARD, button_hover_color=self.BORDER_DEEP, 
+                          fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, 
                           text_color=self.TEXT_MAIN, corner_radius=6, dropdown_fg_color=self.HEADER_BG, dropdown_hover_color=self.INNER_CARD, dropdown_text_color=self.TEXT_MAIN)
         self.quality_menu.pack(side="left", fill="x", expand=True, padx=(0, 10))
         

@@ -29,7 +29,7 @@ from features.image.compare_core import (
     load_image, get_exr_channels, compute_diff, compute_ssim, 
     array_to_pil, create_side_by_side
 )
-from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.i18n import t
 from core.logger import setup_logger
 
@@ -95,8 +95,7 @@ class ImageCompareGUI(BaseWindow):
         dd_font = ("", 11)
         
         # 1. Add Button (Leftmost)
-        self.btn_add = ctk.CTkButton(center_row, text="+ Add Image", width=90, height=dd_height,
-                                    fg_color=THEME_BORDER, hover_color="#444", font=dd_font,
+        self.btn_add = ctk.CTkButton(center_row, text="+ Add Image", width=90, height=dd_height, font=dd_font,
                                     command=self._add_image)
         self.btn_add.pack(side="left", padx=(0, 15))
 
@@ -120,7 +119,6 @@ class ImageCompareGUI(BaseWindow):
         self.slot_a_var = ctk.StringVar(value="Slot A")
         self.slot_a_menu = ctk.CTkOptionMenu(center_row, variable=self.slot_a_var,
                                              width=180, height=dd_height, font=dd_font,
-                                             fg_color=THEME_CARD, button_color=THEME_BORDER,
                                              anchor="w",
                                              command=lambda v: self._on_slot_selector_change("A", v))
         self.slot_a_menu.pack(side="left", padx=(15, 5))
@@ -129,7 +127,6 @@ class ImageCompareGUI(BaseWindow):
         self.slot_b_var = ctk.StringVar(value="Slot B")
         self.slot_b_menu = ctk.CTkOptionMenu(center_row, variable=self.slot_b_var,
                                              width=180, height=dd_height, font=dd_font,
-                                             fg_color=THEME_CARD, button_color=THEME_BORDER,
                                              anchor="w",
                                              command=lambda v: self._on_slot_selector_change("B", v))
         self.slot_b_menu.pack(side="left", padx=5)

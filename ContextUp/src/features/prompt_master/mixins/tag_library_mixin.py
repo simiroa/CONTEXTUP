@@ -3,7 +3,7 @@ import json
 import customtkinter as ctk
 from ..constants import TAGS_FILE, TAG_CATEGORIES_FILE
 from ..tooltip import Tooltip
-from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER
+from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 
 class TagLibraryMixin:
     def load_tags(self):
@@ -76,8 +76,8 @@ class TagLibraryMixin:
             text="⚙️", 
             width=30,
             command=self.manage_tags,
-            fg_color="#1a1a1a",
-            hover_color="#222",
+            fg_color=THEME_BG,
+            hover_color=THEME_DROPDOWN_HOVER,
             border_width=1,
             border_color=THEME_BORDER,
             border_spacing=0
@@ -91,8 +91,8 @@ class TagLibraryMixin:
             text="🌐", 
             width=30,
             command=self.translate_user_context,
-            fg_color="#1a1a1a",
-            hover_color="#222",
+            fg_color=THEME_BG,
+            hover_color=THEME_DROPDOWN_HOVER,
             border_width=1,
             border_color=THEME_BORDER,
             border_spacing=0
@@ -106,8 +106,8 @@ class TagLibraryMixin:
             text="🔄", 
             width=30,
             command=self.reset_user_context,
-            fg_color="#1a1a1a",
-            hover_color="#222",
+            fg_color=THEME_BG,
+            hover_color=THEME_DROPDOWN_HOVER,
             border_width=1,
             border_color=THEME_BORDER,
             border_spacing=0
@@ -121,10 +121,11 @@ class TagLibraryMixin:
             height=250,
             fg_color=THEME_CARD,
             segmented_button_fg_color=THEME_BG,
-            segmented_button_selected_color=THEME_BORDER,
-            segmented_button_selected_hover_color="#1a1a1a",
-            segmented_button_unselected_color=THEME_BG,
-            segmented_button_unselected_hover_color="#1a1a1a"
+            segmented_button_selected_color=THEME_BTN_PRIMARY,
+            segmented_button_selected_hover_color=THEME_BTN_HOVER,
+            segmented_button_unselected_color=THEME_DROPDOWN_FG,
+            segmented_button_unselected_hover_color=THEME_DROPDOWN_BTN,
+            text_color="#E0E0E0"
         )
         self.tag_tabs.pack(fill="both", expand=True, padx=5, pady=5)
         
@@ -242,7 +243,7 @@ class TagLibraryMixin:
                 fg_color="transparent",
                 border_width=1,
                 border_color=THEME_BORDER,
-                hover_color="#1a1a1a"
+                hover_color=THEME_DROPDOWN_HOVER
             )
             btn.pack(side="left", padx=2)
             

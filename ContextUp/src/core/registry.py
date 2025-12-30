@@ -301,7 +301,7 @@ class RegistryManager:
                     config_path = Path(__file__).parent.parent.parent / "userdata" / "copy_my_info.json"
                     info_items = []
                     try:
-                        with open(config_path, 'r', encoding='utf-8') as f:
+                        with open(config_path, 'r', encoding='utf-8-sig') as f:
                             info_items = json.load(f).get('items', [])
                     except: pass
                     

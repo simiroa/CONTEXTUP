@@ -15,7 +15,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/audio -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER
 from utils.explorer import get_selection_from_explorer
 from utils.i18n import t
 from utils.audio_player import AudioPlayer
@@ -60,14 +60,14 @@ class AudioSeparateGUI(BaseWindow):
         
         # File Selection
         if not self.files:
-            file_frame = ctk.CTkFrame(self.scroll_frame)
+            file_frame = ctk.CTkFrame(self.scroll_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
             file_frame.pack(fill="x", padx=10, pady=10)
             ctk.CTkButton(file_frame, text=t("audio_separate_gui.select_files"), command=self.select_files).pack(pady=10)
             self.lbl_files = ctk.CTkLabel(file_frame, text=t("audio_separate_gui.no_files_selected"))
             self.lbl_files.pack(pady=5)
         
         # === Model Selection ===
-        model_frame = ctk.CTkFrame(self.scroll_frame)
+        model_frame = ctk.CTkFrame(self.scroll_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         model_frame.pack(fill="x", padx=10, pady=10)
         
         ctk.CTkLabel(model_frame, text=t("audio_separate_gui.model"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=15, pady=(10, 5))
@@ -90,7 +90,7 @@ class AudioSeparateGUI(BaseWindow):
                                value=val, width=280).grid(row=row, column=col, sticky="w", pady=3, padx=5)
         
         # === Separation Mode ===
-        mode_frame = ctk.CTkFrame(self.scroll_frame)
+        mode_frame = ctk.CTkFrame(self.scroll_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         mode_frame.pack(fill="x", padx=10, pady=10)
         
         ctk.CTkLabel(mode_frame, text=t("audio_separate_gui.separation_mode"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=15, pady=(10, 5))
@@ -107,7 +107,7 @@ class AudioSeparateGUI(BaseWindow):
                            variable=self.mode_var, value="drums").pack(anchor="w", pady=2)
         
         # === Output Format ===
-        output_frame = ctk.CTkFrame(self.scroll_frame)
+        output_frame = ctk.CTkFrame(self.scroll_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         output_frame.pack(fill="x", padx=10, pady=10)
         
         ctk.CTkLabel(output_frame, text=t("audio_separate_gui.output"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=15, pady=(10, 5))
@@ -155,10 +155,10 @@ class AudioSeparateGUI(BaseWindow):
         btn_frame.pack(fill="x", side="bottom", padx=20, pady=10)
         
         self.btn_run = ctk.CTkButton(btn_frame, text=t("audio_separate_gui.start_separation"), command=self.start_separation,
-                                     font=ctk.CTkFont(weight="bold"), height=40)
+                                     font=ctk.CTkFont(weight="bold"), height=40, fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER)
         self.btn_run.pack(side="right", padx=5)
         self.btn_close = ctk.CTkButton(btn_frame, text=t("common.close"), fg_color="transparent", 
-                                       border_width=1, border_color="gray", command=self.cancel_or_close)
+                                       border_width=1, border_color=THEME_BORDER, command=self.cancel_or_close)
         self.btn_close.pack(side="right", padx=5)
         
         if not self.files:

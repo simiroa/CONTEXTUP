@@ -22,7 +22,7 @@ log_file = Path(__file__).parent.parent.parent / "debug_gui.log"
 logging.basicConfig(filename=str(log_file), level=logging.DEBUG, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from utils.explorer import get_selection_from_explorer
 from utils.external_tools import get_blender
 from utils.i18n import t
@@ -31,7 +31,7 @@ class AutoLODGUI(BaseWindow):
     def __init__(self, target_path, demo=False):
         logging.info(f"Initializing AutoLODGUI with target: {target_path}")
         try:
-            super().__init__(title=t("mesh_lod_gui.title"), width=600, height=450, icon_name="mesh_lod")
+            super().__init__(title=t("mesh_lod_gui.title"), width=500, height=450, icon_name="mesh_lod")
             logging.info("BaseWindow init complete")
             
             self.demo_mode = demo
@@ -220,9 +220,28 @@ class AutoLODGUI(BaseWindow):
         
         ctk.CTkLabel(content, text="(Higher % = Keep more details)", text_color="gray").grid(row=2, column=1, sticky="w", padx=10)
         
+        # Buttons & Progress
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        btn_frame.pack(side="bottom", fill="x", padx=5, pady=10)
+        btn_inner = ctk.CTkFrame(btn_frame, fg_color="transparent")
+        btn_inner.pack(expand=True)
+        
+        ctk.CTkButton(btn_inner, text=t("common.cancel"), fg_color="transparent", border_width=1, border_color=THEME_BORDER, command=self.destroy, width=100).pack(side="left", padx=10)
+        self.btn_run = ctk.CTkButton(btn_inner, text="Generate LODs", command=self.start_generation, height=40, 
+                                     font=ctk.CTkFont(size=14, weight="bold"), width=160,
+                                     fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER)
+        self.btn_run.pack(side="left", padx=10)
+
+        self.progress = ctk.CTkProgressBar(self.main_frame)
+        self.progress.pack(side="bottom", fill="x", padx=20, pady=(5, 5))
+        self.progress.set(0)
+
+        self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("common.ready"), text_color="gray")
+        self.lbl_status.pack(side="bottom", pady=(0, 5))
+
         # Preservation & Policy Options
         pres_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        pres_frame.pack(side="bottom", fill="x", padx=5, pady=5)
+        pres_frame.pack(side="bottom", fill="x", padx=5, pady=(5, 15))
         
         pres_inner = ctk.CTkFrame(pres_frame, fg_color="transparent")
         pres_inner.pack(expand=True)
@@ -234,22 +253,6 @@ class AutoLODGUI(BaseWindow):
         ctk.CTkCheckBox(pres_inner, text="UVs", variable=self.var_uv, width=50).pack(side="left", padx=5)
         ctk.CTkCheckBox(pres_inner, text="Normals", variable=self.var_normal, width=60).pack(side="left", padx=5)
         ctk.CTkCheckBox(pres_inner, text="Boundary", variable=self.var_boundary, width=60).pack(side="left", padx=5)
-        
-        # Buttons & Progress
-        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        btn_frame.pack(side="bottom", fill="x", padx=5, pady=10)
-        btn_inner = ctk.CTkFrame(btn_frame, fg_color="transparent")
-        btn_inner.pack(expand=True)
-        
-        ctk.CTkButton(btn_inner, text=t("common.cancel"), fg_color="transparent", border_width=1, border_color="gray", command=self.destroy, width=100).pack(side="left", padx=10)
-        self.btn_run = ctk.CTkButton(btn_inner, text="Generate LODs", command=self.start_generation, height=40, font=ctk.CTkFont(size=14, weight="bold"), width=160)
-        self.btn_run.pack(side="left", padx=10)
-        
-        self.lbl_status = ctk.CTkLabel(self.main_frame, text=t("common.ready"), text_color="gray")
-        self.lbl_status.pack(side="bottom", pady=(0, 5))
-        self.progress = ctk.CTkProgressBar(self.main_frame)
-        self.progress.pack(side="bottom", fill="x", padx=20, pady=(5, 5))
-        self.progress.set(0)
 
         # Start Analysis
         threading.Thread(target=self.analyze_inputs, daemon=True).start()

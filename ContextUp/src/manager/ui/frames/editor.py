@@ -8,7 +8,7 @@ from ..theme import Theme
 
 class MenuEditorFrame(ctk.CTkFrame):
     def __init__(self, parent, config_manager, settings, package_manager, on_save_registry=None, translator=None):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="transparent")
         self.config_manager = config_manager
         self.settings = settings
         self.package_manager = package_manager
@@ -146,14 +146,17 @@ class MenuEditorFrame(ctk.CTkFrame):
             self.requirements.install_models_async(missing_models, completion_callback=on_models_complete)
 
     def _setup_toolbar(self):
-        toolbar = ctk.CTkFrame(self, height=40)
+        toolbar = ctk.CTkFrame(self, height=40, fg_color="transparent")
         toolbar.grid(row=0, column=0, sticky="ew", padx=20, pady=(10,0))
         
         # Left: Bulk Actions
-        ctk.CTkButton(toolbar, text="Select All", width=70, fg_color="gray", command=self.select_all).pack(side="left", padx=5, pady=5)
+        ctk.CTkButton(toolbar, text="Select All", width=70, fg_color=Theme.STANDARD, 
+                     hover_color=Theme.STANDARD_HOVER, command=self.select_all).pack(side="left", padx=5, pady=5)
         
         # Bulk Menu (Move/Toggle)
-        self.btn_bulk = ctk.CTkButton(toolbar, text="Bulk Action ▼", width=100, command=self.show_bulk_menu)
+        self.btn_bulk = ctk.CTkButton(toolbar, text="Bulk Action ▼", width=100, 
+                                     fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
+                                     command=self.show_bulk_menu)
         self.btn_bulk.pack(side="left", padx=5, pady=5)
         
         # Refresh Menu (next to Bulk Action)
@@ -183,7 +186,9 @@ class MenuEditorFrame(ctk.CTkFrame):
         filter_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=(5,0))
         
         # View Mode Toggle
-        self.btn_view = ctk.CTkButton(filter_frame, text=f"View: {self.view_mode}", width=100, fg_color="gray", command=self.toggle_view)
+        self.btn_view = ctk.CTkButton(filter_frame, text=f"View: {self.view_mode}", width=100, 
+                                     fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, 
+                                     command=self.toggle_view)
         self.btn_view.pack(side="left", padx=5)
 
         ctk.CTkLabel(filter_frame, text="Filter:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(15, 5))
@@ -196,9 +201,12 @@ class MenuEditorFrame(ctk.CTkFrame):
         self.entry_search.pack(side="left", padx=5)
         self.entry_search.bind("<Return>", self.refresh_list)
         
-        ctk.CTkButton(filter_frame, text="🔍", width=30, command=self.refresh_list).pack(side="left", padx=2)
+        ctk.CTkButton(filter_frame, text="🔍", width=30, 
+                     fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER,
+                     command=self.refresh_list).pack(side="left", padx=2)
         # Renamed to Clear to avoid confusion with 'Reset Settings'
-        ctk.CTkButton(filter_frame, text="✖", width=30, fg_color="gray", command=self.reset_filters).pack(side="left", padx=5)
+        ctk.CTkButton(filter_frame, text="✖", width=30, fg_color=Theme.STANDARD, 
+                     hover_color=Theme.STANDARD_HOVER, command=self.reset_filters).pack(side="left", padx=5)
 
     def _setup_list(self):
         self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="Menu Items", fg_color=Theme.BG_MAIN)

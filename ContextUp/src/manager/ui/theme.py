@@ -5,19 +5,19 @@ Extreme Minimal Design: 3 colors only (Gray, Red, Blue)
 
 class Theme:
     # --- Backgrounds ---
-    BG_MAIN = ("#f0f2f5", "#050505")         # Main background (Solid Black)
-    BG_SIDEBAR = ("#e3e6e8", "#050505")      # Sidebar (Solid Black)
-    BG_SIDEBAR_FOOTER = ("#e3e6e8", "#050505")
-    BG_CARD = ("#ffffff", "#121212")         # Cards (Slightly Brighter for contrast)
+    BG_MAIN = ("#f0f2f5", "#020202")         # Deep Dark Background
+    BG_SIDEBAR = ("#e3e6e8", "#080808")      # Subdued Sidebar (Slightly brighter than BG)
+    BG_SIDEBAR_FOOTER = ("#e3e6e8", "#080808")
+    BG_CARD = ("#ffffff", "#0c0c0c")         # Subdued Cards
     BG_DANGER_CARD = ("#fee2e2", "#1a0808")  # Subdued danger
     
     # --- Action Colors: MINIMAL PALETTE ---
     
-    # PRIMARY: Only for Apply Changes button
-    PRIMARY = ("#3b7ecb", "#3b7ecb")
-    PRIMARY_HOVER = ("#2e629f", "#2e629f")
+    # PRIMARY: Only for Apply Changes button (Royal Blue)
+    PRIMARY = ("#0123B4", "#0123B4")
+    PRIMARY_HOVER = ("#012fdf", "#012fdf")
     
-    # STANDARD: Darker Grey for standard buttons
+    # STANDARD: Darker Grey for secondary buttons
     STANDARD = ("#4a4a4a", "#1a1a1a")
     STANDARD_HOVER = ("#5a5a5a", "#222222")
     
@@ -37,9 +37,9 @@ class Theme:
     
     # --- Text Colors ---
     TEXT_MAIN = ("gray10", "#e0e0e0")
-    TEXT_DIM = ("gray40", "#888888")
-    TEXT_DANGER = "#a66" #66")                   # Soft red for errors
-    TEXT_SUCCESS = TEXT_DIM                  # No green - use gray
+    TEXT_DIM = ("gray40", "#666666")
+    TEXT_DANGER = ("#e74c3c", "#e74c3c")      # Vibrant Red for Stop/Error
+    TEXT_SUCCESS = ("#2ecc71", "#2ecc71")     # Vibrant Green for On/Success
     
     # --- Accent ---
     ACCENT = PRIMARY

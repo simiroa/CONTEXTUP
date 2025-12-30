@@ -62,7 +62,6 @@
             "sequence_to_video": "Sequence to Video"
         },
         "ai": {
-            "rife_interpolation": "RIFE Frame Interpolation",
             "whisper_subtitle": "Whisper Subtitle AI",
             "esrgan_upscale": "ESRGAN Upscale",
             "rmbg_background": "RMBG Background Removal",

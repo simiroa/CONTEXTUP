@@ -23,7 +23,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER
 from utils.files import get_safe_path
 from utils.i18n import t
 from core.logger import setup_logger
@@ -76,12 +76,12 @@ class UnwrapFolderGUI(BaseWindow):
         btn_row.pack(fill="x", side="bottom")
         
         ctk.CTkButton(btn_row, text=t("common.cancel"), width=80, height=28,
-                     fg_color="transparent", border_width=1,
+                     fg_color="transparent", border_width=1, border_color=THEME_BORDER,
                      command=self.destroy).pack(side="right")
         
         self.btn_run = ctk.CTkButton(btn_row, text=t("unwrap_folder.run"), 
                                     width=80, height=28,
-                                    fg_color="#27ae60", hover_color="#1e8449",
+                                    fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER,
                                     command=self._run)
         self.btn_run.pack(side="right", padx=(0, 8))
 

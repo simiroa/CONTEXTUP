@@ -13,7 +13,7 @@ src_dir = current_dir.parent.parent  # features/system -> src
 sys.path.append(str(src_dir))
 
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER, THEME_TEXT_MAIN
 from utils.i18n import t
 from utils.files import shell_rename
 
@@ -49,7 +49,8 @@ class RenameGUI(BaseWindow):
         self.add_header(t("rename_gui.renaming_files", count=len(self.selection)), font_size=14)
 
         # Tab Control
-        self.tab_view = ctk.CTkTabview(self.main_frame, height=150)
+        self.tab_view = ctk.CTkTabview(self.main_frame, height=150,
+                                        border_width=1, border_color=THEME_BORDER)
         self.tab_view.pack(fill="x", padx=15, pady=5)
         
         self.tab_prefix = self.tab_view.add(t("rename_gui.add_prefix"))
@@ -96,23 +97,21 @@ class RenameGUI(BaseWindow):
         # --- Preview Area ---
         ctk.CTkLabel(self.main_frame, text="Preview:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(5, 2))
         
-        frame_preview = ctk.CTkFrame(self.main_frame)
+        frame_preview = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         frame_preview.pack(fill="both", expand=True, padx=20, pady=(5, 2))
         
         # Treeview (Styled - Theme Aware)
         style = ttk.Style()
         style.theme_use("clam")
         
-        # Check current appearance mode for theme-aware colors
-        mode = ctk.get_appearance_mode()
-        if mode == "Light":
-            tree_bg, tree_fg, field_bg = "#f0f0f0", "#000000", "#ffffff"
-            head_bg, head_fg, head_active = "#e0e0e0", "#000000", "#d0d0d0"
-            selected_bg = "#0078d7"
-        else:
-            tree_bg, tree_fg, field_bg = "#2b2b2b", "white", "#2b2b2b"
-            head_bg, head_fg, head_active = "#333333", "white", "#404040"
-            selected_bg = "#1f538d"
+        # Theme constants applied directly
+        tree_bg = THEME_CARD
+        tree_fg = "#E0E0E0"
+        field_bg = THEME_CARD
+        head_bg = THEME_DROPDOWN_FG
+        head_fg = "#E0E0E0"
+        head_active = THEME_DROPDOWN_BTN
+        selected_bg = THEME_BTN_PRIMARY
         
         style.configure("Treeview", background=tree_bg, foreground=tree_fg, fieldbackground=field_bg, borderwidth=0)
         style.map("Treeview", background=[("selected", selected_bg)])
@@ -140,8 +139,8 @@ class RenameGUI(BaseWindow):
         btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=20, pady=10)
         
-        ctk.CTkButton(btn_frame, text="Apply Rename", command=self.apply_rename).pack(side="right", padx=5)
-        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Apply Rename", fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER, command=self.apply_rename).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color=THEME_BORDER, command=self.destroy).pack(side="right", padx=5)
         
         # Bind tab clicks to update preview (workaround)
         # We need to preserve the original callback that handles tab switching
@@ -271,7 +270,7 @@ class RenumberGUI(BaseWindow):
         self.add_header(f"Renumbering ({self.mode})")
 
         # Options Frame
-        opt_frame = ctk.CTkFrame(self.main_frame)
+        opt_frame = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         opt_frame.pack(fill="x", padx=10, pady=5)
         
         # Base Name
@@ -304,23 +303,21 @@ class RenumberGUI(BaseWindow):
         # Preview Area
         ctk.CTkLabel(self.main_frame, text="Preview:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
         
-        frame_preview = ctk.CTkFrame(self.main_frame)
+        frame_preview = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
         frame_preview.pack(fill="both", expand=True, padx=10, pady=5)
         
         # Treeview (Styled - Theme Aware)
         style = ttk.Style()
         style.theme_use("clam")
         
-        # Check current appearance mode for theme-aware colors
-        mode = ctk.get_appearance_mode()
-        if mode == "Light":
-            tree_bg, tree_fg, field_bg = "#f0f0f0", "#000000", "#ffffff"
-            head_bg, head_fg, head_active = "#e0e0e0", "#000000", "#d0d0d0"
-            selected_bg = "#0078d7"
-        else:
-            tree_bg, tree_fg, field_bg = "#2b2b2b", "white", "#2b2b2b"
-            head_bg, head_fg, head_active = "#333333", "white", "#404040"
-            selected_bg = "#1f538d"
+        # Theme constants applied directly
+        tree_bg = THEME_CARD
+        tree_fg = "#E0E0E0"
+        field_bg = THEME_CARD
+        head_bg = THEME_DROPDOWN_FG
+        head_fg = "#E0E0E0"
+        head_active = THEME_DROPDOWN_BTN
+        selected_bg = THEME_BTN_PRIMARY
         
         style.configure("Treeview", background=tree_bg, foreground=tree_fg, fieldbackground=field_bg, borderwidth=0)
         style.map("Treeview", background=[("selected", selected_bg)])
@@ -344,8 +341,8 @@ class RenumberGUI(BaseWindow):
         btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=20, pady=20)
         
-        ctk.CTkButton(btn_frame, text="Apply Renumber", command=self.apply_renumber).pack(side="right", padx=5)
-        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Apply Renumber", fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER, command=self.apply_renumber).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Cancel", fg_color="transparent", border_width=1, border_color=THEME_BORDER, command=self.destroy).pack(side="right", padx=5)
 
     def update_preview(self, event=None):
         self.preview_data = []

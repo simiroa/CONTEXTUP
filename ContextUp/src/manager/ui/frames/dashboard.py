@@ -25,7 +25,7 @@ logger = logging.getLogger("manager.ui.dashboard")
 
 class DashboardFrame(ctk.CTkFrame):
     def __init__(self, parent, settings_manager, package_manager, config_manager=None, translator=None, update_checker=None):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="transparent")
         self.settings = settings_manager
         self.package_manager = package_manager
         self.config_manager = config_manager
@@ -93,7 +93,7 @@ class DashboardFrame(ctk.CTkFrame):
         self.lbl_install_type.grid(row=0, column=1, sticky="w", pady=(15, 0))
         
         self.lbl_features_active = ctk.CTkLabel(self.status_frame, text="...", 
-                                              font=ctk.CTkFont(size=14), text_color="gray50", anchor="w")
+                                              font=ctk.CTkFont(size=14), text_color=Theme.TEXT_DIM, anchor="w")
         self.lbl_features_active.grid(row=1, column=1, sticky="nw")
         
         # Quick Actions (Right side)
@@ -729,7 +729,7 @@ class DashboardFrame(ctk.CTkFrame):
         row1 = ctk.CTkFrame(content, fg_color="transparent")
         row1.pack(fill="x", pady=2)
         
-        ctk.CTkLabel(row1, text=self.tr("manager.dashboard.danger.data_management"), width=120, anchor="w", text_color="gray").pack(side="left")
+        ctk.CTkLabel(row1, text=self.tr("manager.dashboard.danger.data_management"), width=120, anchor="w", text_color=Theme.TEXT_DIM).pack(side="left")
         
         ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.export_userdata"), width=120, height=28, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, command=self._export_userdata).pack(side="left", padx=5)
         ctk.CTkButton(row1, text=self.tr("manager.dashboard.danger.import_userdata"), width=120, height=28, fg_color=Theme.STANDARD, hover_color=Theme.STANDARD_HOVER, command=self._import_userdata).pack(side="left", padx=5)

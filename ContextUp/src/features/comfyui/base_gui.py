@@ -49,10 +49,9 @@ class ComfyUIFeatureBase(BaseWindow):
 
     def _setup_status_bar(self):
         """Create a default status bar at the bottom."""
-        # Use grid on root (BaseWindow uses grid) to avoid pack/grid mixing
-        self.grid_rowconfigure(1, weight=0)
-        self.status_frame = ctk.CTkFrame(self, height=30, corner_radius=0, fg_color="transparent")
-        self.status_frame.grid(row=1, column=0, sticky="ew", padx=5, pady=(0, 5))
+        # BaseWindow uses pack(), so we must use pack() here too
+        self.status_frame = ctk.CTkFrame(self.outer_frame, height=30, corner_radius=0, fg_color="transparent")
+        self.status_frame.pack(side="bottom", fill="x", padx=5, pady=(0, 5))
         
         self.status_label_widget = ctk.CTkLabel(
             self.status_frame, 

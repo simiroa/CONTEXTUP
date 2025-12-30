@@ -15,7 +15,7 @@ sys.path.append(str(src_dir))
 
 from utils.ai_runner import run_ai_script
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 
 class TaggingGUI(BaseWindow):
     def __init__(self, target_path):
@@ -50,7 +50,8 @@ class TaggingGUI(BaseWindow):
         
         ctk.CTkLabel(top_frame, text="Model:").pack(side="left", padx=(20, 5), pady=10)
         self.model_var = ctk.StringVar(value="qwen3-vl:8b")
-        self.model_combo = ctk.CTkComboBox(top_frame, variable=self.model_var, values=["qwen3-vl:8b", "llava", "moondream"], width=150)
+        self.model_combo = ctk.CTkComboBox(top_frame, variable=self.model_var, values=["qwen3-vl:8b", "llava", "moondream"], width=150,
+                                           fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.model_combo.pack(side="left", padx=5)
         
         self.btn_run = ctk.CTkButton(top_frame, text="Start Tagging", command=self.start_tagging)
