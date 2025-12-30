@@ -202,12 +202,37 @@ def detect_existing_python():
 
 def setup_embedded_python(force_reinstall: bool = False) -> Optional[Path]:
     py_exe = PYTHON_DIR / "python.exe"
-    if _python_ok(py_exe):
+    
+    if not force_reinstall and _python_ok(py_exe):
         print(f"Using embedded Python: {py_exe}")
         return py_exe
 
-    print("[ERROR] Embedded Python not found or invalid (tkinter required).")
-    print("Please use the full package that includes ContextUp/tools/python.")
+    print("[INFO] Embedded Python not found or invalid.")
+    print(f"Downloading standalone Python environment...")
+    
+    PYTHON_DIR.parent.mkdir(parents=True, exist_ok=True)
+    tar_path = TOOLS_DIR / PYTHON_ARCHIVE_NAME
+    
+    if download_file(PYTHON_URL, tar_path):
+        print("Download complete. Extracting...")
+        # Create python directory if not exists
+        if not extract_tar_gz(tar_path, TOOLS_DIR):
+             print("[ERROR] Failed to extract Python archive.")
+             return None
+        
+        # Cleanup tar
+        try:
+            os.remove(tar_path)
+        except:
+            pass
+            
+        # Verify again
+        if _python_ok(py_exe):
+            print(f"[SUCCESS] Embedded Python installed: {py_exe}")
+            return py_exe
+    else:
+        print("[ERROR] Failed to download Python archive.")
+
     return None
 
 
