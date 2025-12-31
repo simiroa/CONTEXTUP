@@ -11,10 +11,10 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
-from core.config import MenuConfig
-from core.logger import setup_logger
-from core.settings import load_settings
-from core.paths import ROOT_DIR, TOOLS_DIR, USERDATA_DIR, LOGS_DIR
+from .config import MenuConfig
+from .logger import setup_logger
+from .settings import load_settings
+from .paths import ROOT_DIR, TOOLS_DIR, USERDATA_DIR, LOGS_DIR
 
 # Setup logging
 logger = setup_logger("menu_dispatcher")

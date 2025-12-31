@@ -59,7 +59,7 @@ class MenuConfig:
         
         # 2. Apply user overrides
         try:
-            from core.user_overrides import UserOverrideManager
+            from .user_overrides import UserOverrideManager
             override_mgr = UserOverrideManager(self.root_dir)
             self.items = override_mgr.apply_overrides(self._base_items)
         except Exception as e:

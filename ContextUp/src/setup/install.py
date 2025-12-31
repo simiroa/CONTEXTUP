@@ -753,9 +753,13 @@ def main():
                     creationflags = subprocess.CREATE_NO_WINDOW
                 
                 # Use Popen to launch and proceed
+                env = os.environ.copy()
+                env["PYTHONPATH"] = str(ROOT_DIR / "src") + os.pathsep + env.get("PYTHONPATH", "")
+                
                 subprocess.Popen(
-                    [str(chosen_python), str(manager_script)], 
+                    [str(chosen_python), "-m", "manager.main"], 
                     cwd=str(ROOT_DIR),
+                    env=env,
                     creationflags=creationflags
                 )
                 print("매니저가 실행되었습니다.")

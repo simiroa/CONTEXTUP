@@ -23,7 +23,7 @@ class RegistryManager:
 
         # Determine System Python
         try:
-            from core.settings import load_settings
+            from .settings import load_settings
             settings = load_settings()
             custom = settings.get("PYTHON_PATH")
             
@@ -198,7 +198,7 @@ class RegistryManager:
             safe_key_name = "".join(c for c in submenu_name if c.isalnum() or c in ('_', '-'))
             
             # Check settings for position preference
-            from core.settings import load_settings
+            from .settings import load_settings
             settings = load_settings()
             show_at_top = settings.get("MENU_POSITION_TOP", True)
 

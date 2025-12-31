@@ -6,16 +6,16 @@ from tkinter import messagebox
 import webbrowser
 
 # Core
-from manager.mgr_core.config import ConfigManager
+from ..mgr_core.config import ConfigManager
 from core.config import MenuConfig
-from manager.mgr_core.packages import PackageManager
-from manager.mgr_core.process import TrayProcessManager
+from ..mgr_core.packages import PackageManager
+from ..mgr_core.process import TrayProcessManager
 from core.settings import load_settings, save_settings
-from manager.mgr_core.updater import UpdateChecker
+from ..mgr_core.updater import UpdateChecker
 from core.registry import RegistryManager
 
 # Resources
-from manager.resources.translations import Translator
+from ..resources.translations import Translator
 
 # UI Handles
 from .frames.editor import MenuEditorFrame

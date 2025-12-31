@@ -17,25 +17,32 @@ import threading
 from pathlib import Path
 
 # Add src to path
-current_dir = Path(__file__).parent
-src_dir = current_dir.parent
-sys.path.append(str(src_dir))
+current_file = Path(__file__).resolve()
+# If executed as src/tray/agent.py, parent is src/tray, parent.parent is src
+src_dir = current_file.parent.parent 
+
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
+# Remove own directory to avoid package shadowing
+if str(current_file.parent) in sys.path:
+    sys.path.remove(str(current_file.parent))
 
 from core.config import MenuConfig
 from core.logger import setup_logger
 
 # Import tray modules
-from tray.agent_utils import (
+from .agent_utils import (
     pre_kill_existing, 
     setup_file_logging, 
     write_pid, 
     cleanup_files,
     LOG_FILE
 )
-from tray.icon import build_icon_image
-from tray.menu_builder import build_menu
-from tray.ipc import create_udp_listener
-from tray.hotkeys import register_hotkeys, register_quick_menu_hotkey, unregister_all
+from .icon import build_icon_image
+from .menu_builder import build_menu
+from .ipc import create_udp_listener
+from .hotkeys import register_hotkeys, register_quick_menu_hotkey, unregister_all
 
 logger = setup_logger("tray_agent")
 
@@ -132,7 +139,7 @@ def main():
         # Register quick menu hotkey
         def show_popup_menu():
             try:
-                from tray.quick_menu import show_quick_menu
+                from .quick_menu import show_quick_menu
                 show_quick_menu()
             except Exception as e:
                 logger.error(f"Quick menu failed: {e}")

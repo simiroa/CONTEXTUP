@@ -12,7 +12,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import setup_theme
+from .gui_lib import setup_theme
 
 class BatchProgressGUI(ctk.CTkToplevel):
     def __init__(self, title, items, process_func, on_complete=None):

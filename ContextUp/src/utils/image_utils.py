@@ -8,7 +8,7 @@ src_dir = current_dir.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from utils.explorer import get_selection_from_explorer
+from .explorer import get_selection_from_explorer
 
 def scan_for_images(target=None, recursive=False):
     """

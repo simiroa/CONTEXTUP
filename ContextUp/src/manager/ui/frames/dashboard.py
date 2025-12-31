@@ -13,7 +13,7 @@ import webbrowser
 from pathlib import Path
 from datetime import datetime
 from core.user_overrides import UserOverrideManager
-from manager.helpers.requirements import RequirementHelper
+from ...helpers.requirements import RequirementHelper
 from ..theme import Theme
 
 

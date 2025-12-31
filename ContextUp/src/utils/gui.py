@@ -8,7 +8,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import setup_theme
+from .gui_lib import setup_theme
 
 def ask_selection(title: str, prompt: str, options: list):
     """
