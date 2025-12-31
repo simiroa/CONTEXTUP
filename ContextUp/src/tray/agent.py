@@ -31,18 +31,18 @@ if str(current_file.parent) in sys.path:
 from core.config import MenuConfig
 from core.logger import setup_logger
 
-# Import tray modules
-from .agent_utils import (
+# Import tray modules (using absolute imports for direct script execution)
+from tray.agent_utils import (
     pre_kill_existing, 
     setup_file_logging, 
     write_pid, 
     cleanup_files,
     LOG_FILE
 )
-from .icon import build_icon_image
-from .menu_builder import build_menu
-from .ipc import create_udp_listener
-from .hotkeys import register_hotkeys, register_quick_menu_hotkey, unregister_all
+from tray.icon import build_icon_image
+from tray.menu_builder import build_menu
+from tray.ipc import create_udp_listener
+from tray.hotkeys import register_hotkeys, register_quick_menu_hotkey, unregister_all
 
 logger = setup_logger("tray_agent")
 
