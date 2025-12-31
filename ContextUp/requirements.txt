@@ -48,10 +48,11 @@ transformers # Required for diffusion pipelines
 huggingface_hub
 
 # --- PyTorch (CUDA 12.1) ---
-# Ensure these match your target hardware. Defaulting to CUDA 12.1 for AI features.
-torch --index-url https://download.pytorch.org/whl/cu121
-torchvision --index-url https://download.pytorch.org/whl/cu121
-torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Pin versions for compatibility with gfpgan/basicsr (removed functional_tensor in 0.17)
+# torch 2.1.2 + torchvision 0.16.2 is the last stable combination that works with basicsr
+torch==2.1.2 --index-url https://download.pytorch.org/whl/cu121
+torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
+torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu121
 
 # --- AI Models & APIs ---
 open_clip_torch
