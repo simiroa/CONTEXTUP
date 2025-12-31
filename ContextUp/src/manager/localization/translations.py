@@ -6,7 +6,7 @@ import json
 import logging
 from pathlib import Path
 
-logger = logging.getLogger("manager.resources.translations")
+logger = logging.getLogger("manager.localization.translations")
 
 class Translator:
     def __init__(self, root_dir: Path, lang="en"):

@@ -15,7 +15,7 @@ from manager.mgr_core.updater import UpdateChecker
 from core.registry import RegistryManager
 
 # Resources
-from manager.resources.translations import Translator
+from manager.localization.translations import Translator
 
 # UI Handles
 from manager.ui.frames.editor import MenuEditorFrame
