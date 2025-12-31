@@ -20,6 +20,12 @@ from pathlib import Path
 current_file = Path(__file__).resolve()
 # If executed as src/tray/agent.py, parent is src/tray, parent.parent is src
 src_dir = current_file.parent.parent 
+root_dir = src_dir.parent
+
+# DEBUG: Print path information
+print(f"DEBUG [Tray]: current_file = {current_file}")
+print(f"DEBUG [Tray]: src_dir = {src_dir}")
+print(f"DEBUG [Tray]: sys.path BEFORE = {sys.path[:3]}")
 
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
@@ -27,6 +33,14 @@ if str(src_dir) not in sys.path:
 # Remove own directory to avoid package shadowing
 if str(current_file.parent) in sys.path:
     sys.path.remove(str(current_file.parent))
+
+# DEBUG: Print path after
+print(f"DEBUG [Tray]: sys.path AFTER = {sys.path[:3]}")
+
+# Verify critical packages
+tray_pkg = src_dir / "tray"
+print(f"DEBUG [Tray]: tray package exists = {tray_pkg.exists()}")
+print(f"DEBUG [Tray]: agent_utils.py exists = {(tray_pkg / 'agent_utils.py').exists()}")
 
 from core.config import MenuConfig
 from core.logger import setup_logger
