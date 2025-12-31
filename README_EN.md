@@ -1,115 +1,195 @@
-
 <div align="center">
 
 # ContextUp
 
-**Windows Context Menu on Steroids. ⚡**
+**Windows Context Menu on Steroids ⚡**
 
 > "Why click 10 times when you can just Right-Click once?"
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](https://www.microsoft.com/windows)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)]()
+[![Version](https://img.shields.io/badge/version-4.0.1-green.svg)](CHANGELOG.md)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
-[**🇰🇷 한국어 설명서 (Korean Manual)**](ContextUp/docs/user/README_KR.md) | [**✨ Full Feature List**](ContextUp/docs/user/FEATURES.md)
+[**✨ Full Feature List**](ContextUp/docs/user/FEATURES.md) | [**🇰🇷 한국어 설명서 (Korean Manual)**](README.md)
+
+<br>
+
+**ContextUp** is an all-in-one productivity suite that turns your Windows right-click menu into a productivity hub.
+
+> **💡 From daily repetitive tasks to advanced open-source AI features.**
+> <br>Solve it instantly with a single Right-Click, without opening heavy software.
+
+Currently in **Test Version (v4.0.1)**.<br>
+We are continuously updating with new features and external tool integrations. Feedback is welcome.
+
+<br>
+
+> Check [Changelog](CHANGELOG.md) for updates.
 
 </div>
 
 ---
 
-## 💡 What is ContextUp?
+## Key Features
 
-**ContextUp** is an all-in-one productivity suite that supercharges your Windows right-click menu.
-
-It integrates powerful tools—from **AI-powered image upscaling** and **background removal** to **PDF conversion** and **smart renaming**—directly into your daily workflow.
-
-Each feature is designed to be **Zero-Friction**:
-*   No opening heavy apps.
-*   No uploading files to sketchy websites.
-*   Just **Right-Click** and go.
-
----
-
-## 🚀 Key Features
-
-### 🧠 AI Powerhouse
-| Feature | Description | Engine |
-| :--- | :--- | :--- |
-| **AI Text Lab** | Refine, translate, and summarize text instantly. | **Gemini / Ollama** |
-| **Background Removal** | Remove backgrounds from images with one click. | **Rembg (U2Net)** |
-| **AI Upscale** | High-quality upscaling with ComfyUI support. | **RealESRGAN / ComfyUI** |
-| **Marigold PBR** | Generate Normal & Depth maps from flat images. | **Marigold** |
-| **Frame Interpolation** | Smoothen animations/videos (30fps -> 60fps). | **RIFE** |
-
-### 🎨 Creative Tools
-*   **ComfyUI Creative Studio**: Unified workspace for prompt layers, LoRA stacking, and advanced workflows.
-*   **Format Conversion**: Supports **EXR, HDR, RAW, HEIC, WebP, DDS** and more.
-*   **Sequence Tools**: Professional tools for **Render Sequences** (Arrange, Renumber, To Video, Analyze).
-*   **Texture Packing**: Merge channels (ORM) or split EXR layers.
-*   **Video Tools**: Convert to ProRes, extract audio stems (Vocals/Drums), generate subtitles.
-
-### 💼 Productivity & System
-*   **Quick Menu (`Ctrl+Shift+C`)**: A beautiful **Frosted Glass** overlay for quick actions.
-*   **Duplicate Finder**: Smartly find and clean up duplicate files (Name, Size, Hash).
-*   **Document Tools**: PDF Merge, Split, Convert to Markdown/Images.
-*   **Smart Clipboard**: "Copy Path as Image", "Paste to New Folder", "Copy My Info".
-*   **Batch Rename**: Powerful Regex-based bulk renaming.
-*   **Quick Actions**: Clean empty folders, unwrap folders, create symlinks.
+| Category | Example Features |
+|----------|-----------|
+| **AI** | Remove Background, Upscale (ComfyUI compatible), PBR Generation, Subtitles, AI Text Lab (Gemini/Ollama), **Creative Studio (Z/Advanced)** |
+| **Image** | Format Convert (DDS/EXR/WebP etc.), EXR Merge/Split, Texture Packer, Power of 2 Resize |
+| **Sequence** | Render Sequence Sorting, Missing Frame Detection, Video Conversion, Analysis & Renumbering |
+| **Video** | ProRes Convert, Proxy Generation, Frame Interpolation (RIFE), YouTube Downloader |
+| **Audio** | Format Convert, Vocal/Stem Separation, Volume Normalization |
+| **3D** | Auto LOD, CAD→OBJ, Mesh Convert, Texture Extraction, Blender Link |
+| **System** | Batch Rename, Copy My Info, Copy UNC Path, Symlink, Search Files |
 
 ---
 
-## 🛠️ Usage
+## 🚀 Installation
 
-### The Workflow
-1.  **Right-Click** any file, folder, or background.
-2.  Navigate to the **ContextUp** menu.
-3.  Select your tool.
+### Requirements
 
-### System Tray Agent
-The **ContextUp Agent** runs in the background to provide:
-*   **Quick Menu (`Ctrl+Shift+C`)**: Access recently used folders and clipboard tools.
-*   **Notification**: Status updates for background tasks (e.g., downloads, conversions).
-*   **Management**: Open the main Manager / Config app.
+| Item | Requirement |
+|------|------|
+| **OS** | Windows 10/11 (64-bit) |
+| **Python** | 3.9 ~ 3.12 (For running install script) |
+| **Disk** | Min 2GB (5GB+ with AI models) |
 
----
+> After installation, it uses an embedded Python 3.11 in `tools/python/`, completely isolated from your system environment.
 
-## 📥 Installation
+### 1. Download (Get Code)
 
-**Zero Config Required.** The installer handles everything, including an isolated Python environment.
+**Option A: Git Clone (Recommended)**
+```bash
+git clone https://github.com/simiroa/ContextUp.git
+cd ContextUp
+```
 
-1.  **Clone/Download** the repository.
-2.  Double-click **`install.bat`** in the root folder.
-3.  Follow the prompts.
-
-> **Note**: The installation creates a self-contained environment in `ContextUp/tools/python`. It **does not** interfere with your system Python.
-
----
-
-## 📚 Documentation
-
-### For Users
-*   [**Feature Manual**](ContextUp/docs/user/FEATURES.md): Detailed usage guide for every tool.
-*   [**Installation Guide**](ContextUp/docs/user/INSTALL.md): Advanced setup options.
-*   [**Troubleshooting**](ContextUp/docs/dev/TROUBLESHOOTING.md): Fix common issues.
-
-### For Developers
-*   [**Architecture**](ContextUp/architecture.md): System design overview.
-*   [**Developer Guide**](ContextUp/docs/dev/DEVELOPMENT.md): How to add new features.
-*   [**GUI Guidelines**](ContextUp/docs/dev/GUI_GUIDELINES.md): UX/UI standards.
+**Option B: Download ZIP**
+1. Click `Code` button -> `Download ZIP`
+2. Extract and move to the folder.
 
 ---
 
-## 🤝 Credits
+### 2. Setup & Migration
+
+Double-click **`install.bat`** in the root directory.<br>
+For existing users, configuration files will be automatically migrated to the `userdata/` folder.
+
+> Or run via terminal:
+```bash
+python ContextUp/src/setup/install.py
+```
+
+### 3. Menu Manager
+
+Once installed, use the Manager GUI to register/unregister the menu from the registry.
+
+**Run Manager:**
+Execute `manager.bat` in the root folder.
+
+**Key Features:**
+- **Refresh Menu**: Re-register menus checking current config and dependencies.
+- **Item Editor**: Toggle visibility, change order, or edit icons for each feature.
+- **Dependency Scan**: Check if required external tools are installed at a glance.
+- **Change Tier**: Adjust the scope of features (Minimal / Standard / Full).
+
+### Core Interfaces (Context / Tray / Quick Menu)
+
+- **Unified Control**: Access features via Right-Click Menu, System Tray, or Quick Menu.
+- **Tray/Quick Menu Config**: Control activation via `user_overrides.json` or Manager.
+- **Tray Agent**: Runs in the background to manage tasks and provide quick access.
+- **Reload**: Click **Reload** in the Tray menu to apply setting changes instantly.
+
+### 4. CLI (Command Line Interface)
+
+You can also manage via command line:
+```bash
+# Register Menu
+ContextUp\tools\python\python.exe ContextUp\manage.py register
+# Unregister Menu
+ContextUp\tools\python\python.exe ContextUp\manage.py unregister
+```
+
+---
+
+## Uninstallation
+
+```bash
+# Unregister Menu
+python ContextUp/manage.py unregister
+
+# (Optional) Delete installed tools
+ContextUp\tools\python\python.exe ContextUp\src\setup\uninstall.py
+```
+
+---
+
+## 🔧 External Tools
+
+Some advanced features use external tools that need separate installation.
+Place them in `ContextUp/tools/` and they will be auto-detected.
+
+> **💡 Tip**: Use Symbolic Links for large tools (Blender, ComfyUI).
+
+| Tool | Usage | Recommended Setup |
+|------|------|----------|
+| **FFmpeg** | Video/Audio Convert | **Auto-installed** (or [Download](https://ffmpeg.org/download.html)) |
+| **Real-ESRGAN** | AI Image Upscale | **Auto-installed** (or [Download](https://github.com/xinntao/Real-ESRGAN/releases)) |
+| **Blender** | 3D Mesh Convert, LOD | Link existing path (or [Download](https://www.blender.org/download/)) |
+| **ComfyUI** | AI Upscale/Gen | Link existing path (or [Download](https://github.com/comfyanonymous/ComfyUI)) |
+| **Mayo** | CAD Viewer (STEP/IGES) | [Download](https://github.com/fougue/mayo/releases) and link |
+
+### Install Path Structure
+
+```
+ContextUp/tools/
+├─ ffmpeg/         # ffmpeg.exe, ffprobe.exe
+├─ blender/        # blender-x.x.x-windows-x64/
+├─ Mayo/           # mayo.exe
+├─ realesrgan/     # realesrgan-ncnn-vulkan.exe
+└─ ComfyUI/        # (Symbolic Link Recommended)
+```
+
+> **⚠️ Note**: Menu items requiring missing tools will be disabled.
+
+---
+
+## Shortcuts
+
+| Shortcut | Action |
+|--------|------|
+| `Ctrl+Shift+C` | Open Quick Menu |
+| `Ctrl+Alt+V` | Open Clipboard Path |
+| `Ctrl+Alt+Shift+F1` | Open Manager |
+
+---
+
+## 📂 Folder Structure
+
+```
+[Root]/
+├─ install.bat          # Install & Migration
+├─ manager.bat          # Run Manager
+├─ uninstall.bat        # Uninstaller
+└─ ContextUp/
+   ├─ src/              # Source Code (Core, Features, Manager, Tray)
+   ├─ config/           # Default App Config (Git tracked)
+   │  └─ categories/    # Menu Category Config
+   ├─ userdata/         # User Settings & Secrets (Git ignored)
+   │  ├─ secrets.json   # API Keys
+   │  ├─ user_overrides.json # Custom Menu Overrides
+   │  ├─ gui_states.json # GUI State Save
+   │  ├─ download_history.json # Download logs
+   │  └─ copy_my_info.json # Personal Info Template
+   ├─ tools/            # Embedded Python & External Tools
+   ├─ resources/        # AI Models & Resources
+   └─ manage.py         # Server/Registry CLI
+```
+
+---
+
+## Credits
 
 ContextUp stands on the shoulders of giants. A huge thank you to the open-source community.
 
-See [**CREDITS.md**](CREDITS.md) for the full list of libraries and projects used.
-
----
-
-<div align="center">
-
-**Made with 💻 and ☕ by Simiroa.**
-
-</div>
+See [**CREDITS.md**](CREDITS.md) for the full list.
