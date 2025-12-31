@@ -21,10 +21,12 @@ from manager.helpers.comfyui_service import ComfyUIService
 
 class SeedVR2_GUI(PremiumComfyWindow):
     def __init__(self):
-        super().__init__(title="SeedVR2 Upscaler", width=800, height=700)
+        super().__init__(title="SeedVR2 Upscaler", width=420, height=580)
         self.video_path = None
         self.is_video = False
         
+        # Use standard theme color for status badge
+        self.status_badge.configure(fg_color="#121212")
         self._setup_ui()
         
     def _setup_ui(self):
@@ -32,50 +34,50 @@ class SeedVR2_GUI(PremiumComfyWindow):
         self.content_area.grid_columnconfigure(0, weight=1)
         self.content_area.grid_rowconfigure(0, weight=1)
         
-        # Main Card
+        # Main Card - Reduce padding for compact UI
         self.card = GlassFrame(self.content_area)
-        self.card.grid(row=0, column=0, sticky="nsew", padx=40, pady=20)
+        self.card.grid(row=0, column=0, sticky="nsew", padx=15, pady=(5, 15))
         self.card.grid_columnconfigure(0, weight=1)
         
-        # 1. Hero Select
+        # 1. Hero Select - Reduced padding
         self.hero_frame = ctk.CTkFrame(self.card, fg_color="transparent")
-        self.hero_frame.pack(fill="x", padx=30, pady=30)
+        self.hero_frame.pack(fill="x", padx=20, pady=(20, 10))
         
-        self.btn_file = ActionButton(self.hero_frame, text="📂 Open Media File", variant="secondary", height=60, command=self.select_file)
+        self.btn_file = ActionButton(self.hero_frame, text="📂 Open Media File", variant="secondary", height=50, command=self.select_file)
         self.btn_file.pack(fill="x")
         
         self.lbl_file_info = PremiumLabel(self.hero_frame, text="No file selected", style="secondary")
-        self.lbl_file_info.pack(pady=10)
+        self.lbl_file_info.pack(pady=5)
         
-        # 2. Settings Grid
+        # 2. Settings Grid - Reduced padding
         self.settings = ctk.CTkFrame(self.card, fg_color="transparent")
-        self.settings.pack(fill="x", padx=30, pady=10)
+        self.settings.pack(fill="x", padx=20, pady=5)
         
         # Model
         row1 = ctk.CTkFrame(self.settings, fg_color="transparent")
-        row1.pack(fill="x", pady=5)
+        row1.pack(fill="x", pady=2)
         PremiumLabel(row1, text="Upscale Model", style="body").pack(side="left")
-        self.combo_model = ctk.CTkComboBox(row1, values=["seedvr2_ema_7b_sharp_fp16.safetensors"], width=250,
+        self.combo_model = ctk.CTkComboBox(row1, values=["seedvr2_ema_7b_sharp_fp16.safetensors"], width=200, height=28,
                                            fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_model.pack(side="right")
         
         # Resolution
         row2 = ctk.CTkFrame(self.settings, fg_color="transparent")
-        row2.pack(fill="x", pady=5)
+        row2.pack(fill="x", pady=2)
         PremiumLabel(row2, text="Target Res", style="body").pack(side="left")
-        self.combo_res = ctk.CTkComboBox(row2, values=["1024", "2048", "3840"], width=250,
+        self.combo_res = ctk.CTkComboBox(row2, values=["1024", "2048", "3840"], width=200, height=28,
                                          fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, border_color=THEME_DROPDOWN_BTN)
         self.combo_res.set("2048")
         self.combo_res.pack(side="right")
         
-        # Progress
-        self.progress_bar = ctk.CTkProgressBar(self.card, height=6, progress_color=Colors.ACCENT_PRIMARY)
+        # Progress - Reduced padding and standard blue color
+        self.progress_bar = ctk.CTkProgressBar(self.card, height=6, progress_color=Colors.THEME_ACCENT)
         self.progress_bar.set(0)
-        self.progress_bar.pack(fill="x", padx=30, pady=(40, 5))
+        self.progress_bar.pack(fill="x", padx=20, pady=(25, 5))
         
-        # 3. Action
+        # 3. Action - Reduced padding
         self.btn_start = ActionButton(self.card, text="Start Upscale", variant="primary", command=self.start_process, state="disabled")
-        self.btn_start.pack(fill="x", padx=30, pady=(10, 30))
+        self.btn_start.pack(fill="x", padx=20, pady=(10, 20))
 
     def select_file(self):
         path = filedialog.askopenfilename(filetypes=[("Media", "*.png *.jpg *.mp4 *.mkv")])

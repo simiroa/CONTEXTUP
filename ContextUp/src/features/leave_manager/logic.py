@@ -339,6 +339,25 @@ class LeaveManagerCore:
         except:
             return start_date_str
 
+    def is_public_holiday(self, year, month, day):
+        """Checks if a given date is a public holiday using the 'holidays' library."""
+        try:
+            import holidays
+            kr_holidays = holidays.KR(years=year)
+            h_date = date(year, month, day)
+            if h_date in kr_holidays:
+                return kr_holidays.get(h_date)
+            return None
+        except ImportError:
+            # Fallback to a minimal static list if library is missing
+            h_str = f"{month:02d}-{day:02d}"
+            static_holidays = {
+                "01-01": "신정", "03-01": "삼일절", "05-05": "어린이날",
+                "06-06": "현충일", "08-15": "광복절", "10-03": "개천절",
+                "10-09": "한글날", "12-25": "성탄절"
+            }
+            return static_holidays.get(h_str)
+
     def get_preview_dates(self, start_date_str, duration_days):
         """Returns a list of date strings involved in this duration, skipping weekends and holidays."""
         try:
@@ -347,33 +366,25 @@ class LeaveManagerCore:
             current = start_date
             count = 0.0 # Use float for count to handle partial days
             
-            # Simple list of Korean public holidays (Static for demo, expansion could use API)
-            # MM-DD format
-            holidays = [
-                "01-01", "03-01", "05-05", "06-06", "08-15", "10-03", "10-09", "12-25"
-                # Lunar holidays like Chuseok/Seollal would need a library or pre-calculated list
-            ]
-            
             while count < duration_days:
-                h_str = current.strftime("%m-%d")
+                # Get holiday name for the current date
+                holiday_name = self.is_public_holiday(current.year, current.month, current.day)
+                
                 # Skip weekends and public holidays
-                if current.weekday() < 5 and h_str not in holidays:
+                if current.weekday() < 5 and not holiday_name:
                     dates.append(current.strftime("%Y-%m-%d"))
                     count += 1.0
                 elif duration_days < 1.0: # Special case for partial days
                     # If the user requests a partial day (e.g., 0.5 days) and the start date
                     # is a weekend/holiday, we still want to count it as the requested day.
-                    # This assumes a partial day can be taken on any day.
-                    # If the intent is strictly "working days only", this 'elif' should be removed.
                     dates.append(current.strftime("%Y-%m-%d"))
-                    count += 1.0 # Count it as one day for the purpose of adding to dates list
-                                # The actual duration_days will handle the fractional part later.
+                    count += 1.0 
                 
-                # Safety break to prevent infinite loop if duration_days is very large
-                if (current - start_date).days > 365 * 2: # Check up to 2 years ahead
+                # Safety break to prevent infinite loop (limit to 2 years)
+                if (current - start_date).days > 365 * 2:
                     break
                 
-                if count >= duration_days: break # Break if we've found enough days
+                if count >= duration_days: break
                 current += timedelta(days=1)
                 
             return dates

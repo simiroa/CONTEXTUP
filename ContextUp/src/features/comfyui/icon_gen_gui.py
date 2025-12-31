@@ -16,7 +16,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton, PremiumScrollableFrame
 try:
     from rembg import remove
     REMBG_AVAILABLE = True
@@ -176,7 +176,7 @@ class IconGenGUI(PremiumComfyWindow):
         self.btn_save_png.pack(side="left", padx=2)
         
         # Scrollable Gallery (Right)
-        self.gallery_frame = ctk.CTkScrollableFrame(self.strip, orientation="horizontal", height=60, fg_color="transparent")
+        self.gallery_frame = PremiumScrollableFrame(self.strip, orientation="horizontal", height=60, fg_color="transparent")
         self.gallery_frame.pack(side="right", fill="x", expand=True, padx=5, pady=5)
 
     # --- Logic ---

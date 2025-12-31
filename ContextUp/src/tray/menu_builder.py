@@ -126,7 +126,7 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
         
         valid_tools = []
         for tool in tray_tools:
-            if tool.get("category") == "Comfyui":
+            if tool.get("category") == "ComfyUI":
                 valid_tools.append(tool)
                 continue
             valid, _ = pm.check_dependencies(tool, installed_packages)
@@ -150,7 +150,7 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
             categories[cat].sort(key=lambda x: x.get("order", 9999))
         
         # Build category submenus
-        category_order = ["Comfyui", "Tools", "AI", "System", "Other"]
+        category_order = ["ComfyUI", "Tools", "AI", "System", "Other"]
         added_any = False
         
         def build_category_submenu(cat_name, tools):
@@ -158,7 +158,7 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
             submenu_items = []
             
             # SPECIAL: Add ComfyUI server controls (Static items to avoid blocking startup)
-            if cat_name == "Comfyui":
+            if cat_name == "ComfyUI":
                 def start_server_action():
                     try:
                         from manager.helpers.comfyui_service import ComfyUIService

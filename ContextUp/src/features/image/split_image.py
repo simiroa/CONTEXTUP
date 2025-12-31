@@ -11,7 +11,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/image -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, PremiumScrollableFrame
 from utils.files import get_safe_path
 
 # EXR Optional Import
@@ -107,7 +107,7 @@ class ImageSplitGUI(BaseWindow):
                      command=self.browse_files).pack(side="right", padx=2)
         
         # File List Scroll
-        self.scroll_files = ctk.CTkScrollableFrame(file_card, height=50, fg_color="transparent")
+        self.scroll_files = PremiumScrollableFrame(file_card, height=50, fg_color="transparent")
         self.scroll_files.pack(fill="x", padx=5, pady=0)
         
         self.lbl_no_files = ctk.CTkLabel(self.scroll_files, text="Drag & Drop files here or click + Add", text_color="gray", font=("Arial", 11))
@@ -158,7 +158,7 @@ class ImageSplitGUI(BaseWindow):
         ctk.CTkLabel(layer_header, text="Suffix", font=("Arial", 11, "bold"), anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
 
         # Scrollable Area (The Table Body) - Pack last with expand=True
-        self.scroll_layers = ctk.CTkScrollableFrame(self.main_frame, height=180, fg_color="transparent")
+        self.scroll_layers = PremiumScrollableFrame(self.main_frame, height=180, fg_color="transparent")
         self.scroll_layers.pack(fill="both", expand=True, padx=15, pady=0)
 
 

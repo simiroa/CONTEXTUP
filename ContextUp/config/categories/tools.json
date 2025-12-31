@@ -25,7 +25,7 @@
         "icon": "assets/icons/icon_video_downloader.ico",
         "types": "*",
         "scope": "background",
-        "enabled": false,
+        "enabled": true,
         "submenu": "ContextUp",
         "show_in_tray": true,
         "environment": "embedded",

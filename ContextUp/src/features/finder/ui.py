@@ -9,7 +9,7 @@ from tkinter import filedialog, messagebox
 from .models import FinderGroup, FinderItem
 from .scanner import scan_worker
 from core.logger import setup_logger
-from utils.gui_lib import setup_theme, BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_ACCENT, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
+from utils.gui_lib import setup_theme, BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_ACCENT, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, PremiumScrollableFrame
 
 # PIP: send2trash
 try:
@@ -138,7 +138,7 @@ class FinderApp(BaseWindow):
                                variable=self.var_sort, command=self._apply_sort).pack(side="right", padx=5, pady=4)
         ctk.CTkLabel(self.frm_header, text="Sort:", font=("Arial", 10), text_color="gray").pack(side="right")
         
-        self.scroll_results = ctk.CTkScrollableFrame(self.frm_right, fg_color=THEME_BG)
+        self.scroll_results = PremiumScrollableFrame(self.frm_right, fg_color=THEME_BG)
         self.scroll_results.pack(fill="both", expand=True)
         
         self.btn_load_more = ctk.CTkButton(self.frm_right, text="Load More", command=self._load_next_page)

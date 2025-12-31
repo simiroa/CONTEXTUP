@@ -30,7 +30,7 @@
             "show_in_context_menu": false
         },
         {
-            "category": "Comfyui",
+            "category": "ComfyUI",
             "id": "creative_studio_z",
             "name": "ComfyUI Creative Studio (Z)",
             "icon": "assets/icons/icon_art.ico",
@@ -51,7 +51,7 @@
             "show_in_context_menu": false
         },
         {
-            "category": "Comfyui",
+            "category": "ComfyUI",
             "id": "creative_studio_advanced",
             "name": "ComfyUI Creative Studio (Advanced)",
             "icon": "assets/icons/icon_art_advanced.ico",
@@ -72,7 +72,7 @@
             "show_in_context_menu": false
         },
         {
-            "category": "Comfyui",
+            "category": "ComfyUI",
             "id": "ace_audio_editor",
             "name": "Creative Audio Studio (ACE)",
             "icon": "assets/icons/icon_music.ico",
@@ -95,7 +95,7 @@
             "show_in_context_menu": false
         },
         {
-            "category": "Comfyui",
+            "category": "ComfyUI",
             "id": "comfyui_dashboard",
             "name": "Open Web UI",
             "icon": "assets/icons/icon_comfyui.ico",

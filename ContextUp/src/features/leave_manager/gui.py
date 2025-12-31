@@ -17,7 +17,11 @@ _bootstrap()
 # -----------------
 
 from utils.i18n import t
-from utils.gui_lib import THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
+from utils.gui_lib import (
+    BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, 
+    THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER,
+    THEME_TEXT_MAIN, THEME_TEXT_DIM
+)
 
 try:
     # Absolute imports (works if src is in path)
@@ -100,22 +104,24 @@ class CustomCalendar(ctk.CTkFrame):
         self.header = ctk.CTkFrame(self, fg_color="transparent")
         self.header.pack(fill="x", pady=(0, 5))
         
-        self.btn_prev = ctk.CTkButton(self.header, text="<", width=30, height=24, command=self.prev_month, fg_color="transparent", border_width=1, text_color="gray80")
+        self.btn_prev = ctk.CTkButton(self.header, text="<", width=30, height=24, command=self.prev_month, fg_color="transparent", 
+                                       border_width=1, border_color=THEME_BORDER, text_color=THEME_TEXT_MAIN)
         self.btn_prev.pack(side="left")
         
-        self.lbl_month = ctk.CTkLabel(self.header, text="Month Year", font=("Arial", 14, "bold"))
+        self.lbl_month = ctk.CTkLabel(self.header, text="Month Year", font=("Arial", 14, "bold"), text_color=THEME_TEXT_MAIN)
         self.lbl_month.pack(side="left", expand=True)
         
-        self.btn_next = ctk.CTkButton(self.header, text=">", width=30, height=24, command=self.next_month, fg_color="transparent", border_width=1, text_color="gray80")
+        self.btn_next = ctk.CTkButton(self.header, text=">", width=30, height=24, command=self.next_month, fg_color="transparent", 
+                                       border_width=1, border_color=THEME_BORDER, text_color=THEME_TEXT_MAIN)
         self.btn_next.pack(side="right")
         
         # Grid
-        self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.grid_frame.pack(fill="both", expand=True)
+        self.grid_frame = ctk.CTkFrame(self, fg_color=THEME_CARD, corner_radius=12, border_width=1, border_color=THEME_BORDER)
+        self.grid_frame.pack(fill="both", expand=True, padx=2, pady=2)
         
         days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
         for i, d in enumerate(days):
-            l = ctk.CTkLabel(self.grid_frame, text=d, font=("Arial", 10, "bold"), text_color="gray60")
+            l = ctk.CTkLabel(self.grid_frame, text=d, font=("Arial", 10, "bold"), text_color=THEME_TEXT_DIM)
             l.grid(row=0, column=i, sticky="nsew", padx=1, pady=1)
 
         for i in range(7): self.grid_frame.grid_columnconfigure(i, weight=1)
@@ -147,6 +153,14 @@ class CustomCalendar(ctk.CTkFrame):
         
         events = self.get_events(self.current_date.year, self.current_date.month)
         
+        # Get holidays for the current year
+        holidays_in_year = {}
+        try:
+            import holidays
+            holidays_in_year = holidays.KR(years=self.current_date.year)
+        except:
+            pass
+        
         # Logic to find start day and number of days
         year, month = self.current_date.year, self.current_date.month
         first_day = date(year, month, 1)
@@ -174,14 +188,18 @@ class CustomCalendar(ctk.CTkFrame):
             date_str = f"{year}-{month:02d}-{d:02d}"
             
             fg = "transparent"
-            border_color = "gray30"
+            border_color = THEME_BORDER
             border_width = 1
-            text_color = "gray90"
-            hover_color = "#3B3B3B"
+            text_color = THEME_TEXT_MAIN
+            hover_color = THEME_DROPDOWN_HOVER
             
             # Weekend text color (Sat=col 5, Sun=col 6)
-            if col >= 5:  # Saturday or Sunday
-                text_color = "#ef5350"  # Red for weekend
+            # Check for holiday
+            current_day_date = date(year, month, d)
+            holiday_name = holidays_in_year.get(current_day_date)
+            
+            if col >= 5 or holiday_name:  # Saturday, Sunday or holiday
+                text_color = "#ef5350"  # Red for weekend/holiday
 
             # Check events for this day
             day_events = events.get(d, [])
@@ -271,25 +289,29 @@ class CustomCalendar(ctk.CTkFrame):
             btn.bind("<Button-3>", lambda e, ds=date_str: self.on_date_right_click(ds))
             self.day_buttons.append(btn)
             
-            # Add tooltip if there's an event
-            if day_events:
-                event = day_events[0]
-                tooltip_text = f"{event.get('type', 'Event')}\n{event.get('note', '')}"
-                if event.get('amount'):
-                    tooltip_text += f"\nDays: {abs(event.get('amount'))}"  
-                ToolTip(btn, tooltip_text)
+            # Add tooltip if there's an event or holiday
+            if day_events or holiday_name:
+                tooltip_text = ""
+                if holiday_name:
+                    tooltip_text += f"공휴일: {holiday_name}\n"
+                
+                if day_events:
+                    event = day_events[0]
+                    tooltip_text += f"{event.get('type', 'Event')}\n{event.get('note', '')}"
+                    if event.get('amount'):
+                        tooltip_text += f"\nDays: {abs(event.get('amount'))}"  
+                
+                if tooltip_text:
+                    ToolTip(btn, tooltip_text.strip())
             
             col += 1
             if col > 6:
                 col = 0
                 row += 1
 
-class LeaveManagerGUI(ctk.CTk):
+class LeaveManagerGUI(BaseWindow):
     def __init__(self):
-        super().__init__()
-        self.title("Leave Manager 4.0")
-        self.geometry("400x780")
-        self.resizable(False, False)
+        super().__init__(title="Leave Manager 5.0", width=420, height=840)
         
         self.storage = LeaveManagerStorage()
         self.core = LeaveManagerCore(self.storage)
@@ -307,24 +329,24 @@ class LeaveManagerGUI(ctk.CTk):
         self._refresh_stats()
 
     def _setup_ui(self):
-        # Header with Undo/Redo
-        self.header_actions = ctk.CTkFrame(self, fg_color="transparent")
-        self.header_actions.pack(fill="x", padx=15, pady=(5, 0))
+        # Header with Undo/Redo inside main_frame
+        self.header_actions = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.header_actions.pack(fill="x", padx=15, pady=(0, 5))
         
         self.btn_undo = ctk.CTkButton(self.header_actions, text="↩️ Undo", width=70, height=22, font=("Arial", 10), 
-                                       fg_color="gray25", command=self._undo_handler)
+                                       fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER, command=self._undo_handler)
         self.btn_undo.pack(side="left", padx=2)
         
         self.btn_redo = ctk.CTkButton(self.header_actions, text="↪️ Redo", width=70, height=22, font=("Arial", 10), 
-                                       fg_color="gray25", command=self._redo_handler)
+                                       fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER, command=self._redo_handler)
         self.btn_redo.pack(side="left", padx=2)
 
         # 1. Yearly Progress Card
-        self.yearly_card = YearlyProgressCard(self)
+        self.yearly_card = YearlyProgressCard(self.main_frame)
         self.yearly_card.pack(fill="x", padx=15, pady=(5, 5))
 
         # 3. Main Action Tabs
-        self.tabview = ctk.CTkTabview(self, height=220, fg_color=THEME_CARD,
+        self.tabview = ctk.CTkTabview(self.main_frame, height=220, fg_color=THEME_CARD,
                                       segmented_button_selected_color=THEME_BTN_PRIMARY,
                                       segmented_button_selected_hover_color=THEME_BTN_HOVER,
                                       segmented_button_unselected_color=THEME_DROPDOWN_FG,
@@ -343,26 +365,31 @@ class LeaveManagerGUI(ctk.CTk):
         
         # 4. History (Collapsible)
         self.history_expanded = False
-        self.frame_history_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.frame_history_container = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.frame_history_container.pack(fill="x", padx=15, pady=0)
         
         self.btn_history_toggle = ctk.CTkButton(
             self.frame_history_container, 
             text=f"{t('leave_manager_gui.history')} ▼", 
             command=self._toggle_history,
-            fg_color="gray15", 
-            hover_color="gray20",
-            height=24,
+            fg_color=THEME_CARD, 
+            hover_color=THEME_DROPDOWN_HOVER,
+            border_width=1,
+            border_color=THEME_BORDER,
+            height=28,
             anchor="w"
         )
         self.btn_history_toggle.pack(fill="x")
         
         self.frame_history_content = ctk.CTkScrollableFrame(self.frame_history_container, height=0, fg_color="transparent") # Initially hidden
-        self.btn_export_all = ctk.CTkButton(self.frame_history_container, text=t("leave_manager_gui.export_csv"), fg_color="gray30", hover_color="gray40", height=24, command=self._export_all_handler)
+        self.btn_export_all = ctk.CTkButton(self.frame_history_container, text=t("leave_manager_gui.export_csv"), 
+                                            fg_color=THEME_CARD, hover_color=THEME_DROPDOWN_HOVER, 
+                                            border_width=1, border_color=THEME_BORDER,
+                                            height=24, command=self._export_all_handler)
         # content pack handled in toggle
         
         # 5. Calendar
-        self.frame_calendar = ctk.CTkFrame(self, fg_color="gray10")
+        self.frame_calendar = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, corner_radius=12, border_width=1, border_color=THEME_BORDER)
         self.frame_calendar.pack(fill="both", expand=True, padx=15, pady=(5, 10))
         
         self.calendar = CustomCalendar(self.frame_calendar, self._on_date_selected, self._on_date_right_click, self.core.get_events_for_month)
@@ -377,7 +404,8 @@ class LeaveManagerGUI(ctk.CTk):
         self.ent_use_date_var = ctk.StringVar(value=self.selected_date)
         self.ent_use_date_var.trace_add("write", lambda *args: self._update_preview())
         
-        self.ent_use_date = ctk.CTkEntry(row1, placeholder_text="YYYY-MM-DD", textvariable=self.ent_use_date_var)
+        self.ent_use_date = ctk.CTkEntry(row1, placeholder_text="YYYY-MM-DD", textvariable=self.ent_use_date_var,
+                                        fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER)
         self.ent_use_date.pack(side="left", fill="x", expand=True)
         
         # Type
@@ -385,7 +413,10 @@ class LeaveManagerGUI(ctk.CTk):
         row2.pack(fill="x", pady=5)
         ctk.CTkLabel(row2, text=t("leave_manager_gui.type"), width=60, anchor="w").pack(side="left")
         self.var_use_type = ctk.StringVar(value="Annual")
-        self.cmb_use_type = ctk.CTkComboBox(row2, variable=self.var_use_type, values=self.core.get_leave_types())
+        self.cmb_use_type = ctk.CTkComboBox(row2, variable=self.var_use_type, values=self.core.get_leave_types(),
+                                          fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER,
+                                          button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER,
+                                          dropdown_fg_color=THEME_DROPDOWN_FG)
         self.cmb_use_type.pack(side="left", fill="x", expand=True)
         
         # Amount
@@ -401,7 +432,8 @@ class LeaveManagerGUI(ctk.CTk):
         # Note
         row4 = ctk.CTkFrame(self.tab_use, fg_color="transparent")
         row4.pack(fill="x", pady=5)
-        self.ent_use_note = ctk.CTkEntry(row4, placeholder_text=t("leave_manager_gui.reason_note"))
+        self.ent_use_note = ctk.CTkEntry(row4, placeholder_text=t("leave_manager_gui.reason_note"),
+                                         fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER)
         self.ent_use_note.pack(fill="x")
         
         # Button
@@ -429,7 +461,8 @@ class LeaveManagerGUI(ctk.CTk):
         row1 = ctk.CTkFrame(self.tab_add, fg_color="transparent")
         row1.pack(fill="x", pady=5)
         ctk.CTkLabel(row1, text=t("leave_manager_gui.date"), width=60, anchor="w").pack(side="left")
-        self.ent_add_date = ctk.CTkEntry(row1, placeholder_text="YYYY-MM-DD")
+        self.ent_add_date = ctk.CTkEntry(row1, placeholder_text="YYYY-MM-DD",
+                                         fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER)
         self.ent_add_date.insert(0, self.selected_date)
         self.ent_add_date.pack(side="left", fill="x", expand=True)
         
@@ -437,7 +470,8 @@ class LeaveManagerGUI(ctk.CTk):
         row2 = ctk.CTkFrame(self.tab_add, fg_color="transparent")
         row2.pack(fill="x", pady=5)
         ctk.CTkLabel(row2, text=t("leave_manager_gui.type"), width=60, anchor="w").pack(side="left")
-        self.ent_add_type = ctk.CTkEntry(row2, placeholder_text="Credit Type (e.g. Overtime)")
+        self.ent_add_type = ctk.CTkEntry(row2, placeholder_text="Credit Type (e.g. Overtime)",
+                                         fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER)
         self.ent_add_type.insert(0, t("leave_manager_gui.credit_leave"))
         self.ent_add_type.pack(side="left", fill="x", expand=True)
 
@@ -488,7 +522,7 @@ class LeaveManagerGUI(ctk.CTk):
         f = ctk.CTkFrame(self.frame_settings_fields, fg_color="transparent")
         f.pack(fill="x", pady=2)
         ctk.CTkLabel(f, text=label, width=80, anchor="w").pack(side="left")
-        e = ctk.CTkEntry(f)
+        e = ctk.CTkEntry(f, fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER)
         e.insert(0, value)
         e.pack(side="left", fill="x", expand=True)
         return e
@@ -520,14 +554,18 @@ class LeaveManagerGUI(ctk.CTk):
 
         # Search
         self.ent_search = ctk.CTkEntry(self.frame_history_controls, placeholder_text="Search notes...", 
-                                        textvariable=self.search_var, height=24, font=("Arial", 11))
+                                        textvariable=self.search_var, height=24, font=("Arial", 11),
+                                        fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER)
         self.ent_search.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         # Filter Type
         types = ["All"] + self.core.get_leave_types()
         self.cmb_filter_type = ctk.CTkComboBox(self.frame_history_controls, values=types, 
                                                 variable=self.filter_type_var, width=100, height=24, 
-                                                font=("Arial", 11), command=lambda v: self._on_filter_changed())
+                                                font=("Arial", 11), command=lambda v: self._on_filter_changed(),
+                                                fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER,
+                                                button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER,
+                                                dropdown_fg_color=THEME_DROPDOWN_FG)
         self.cmb_filter_type.pack(side="right")
 
     def _on_filter_changed(self):
@@ -607,7 +645,7 @@ class LeaveManagerGUI(ctk.CTk):
             var = tk.IntVar(value=0)
             self.batch_vars[timestamp] = var
 
-            f = ctk.CTkFrame(self.frame_history_content, fg_color="gray20")
+            f = ctk.CTkFrame(self.frame_history_content, fg_color=THEME_CARD, border_width=1, border_color=THEME_BORDER)
             f.pack(fill="x", pady=2)
             
             ctk.CTkCheckBox(f, text="", variable=var, width=20).pack(side="left", padx=5)

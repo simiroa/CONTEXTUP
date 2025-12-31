@@ -48,7 +48,7 @@ class CTkToolTip:
 
 class MarigoldGUI(BaseWindow):
     def __init__(self, target_path):
-        super().__init__(title="ContextUp PBR Generator (Marigold)", width=350, height=920, icon_name="ai_pbr")
+        super().__init__(title="ContextUp PBR Generator (Marigold)", width=420, height=920, icon_name="ai_pbr")
         
         if target_path is None:
             self.target_path = None
@@ -131,13 +131,15 @@ class MarigoldGUI(BaseWindow):
         p_top = ctk.CTkFrame(self.prev_container, fg_color="transparent", height=30)
         p_top.pack(fill="x", padx=10, pady=5)
         
-        self.btn_prev = ctk.CTkButton(p_top, text="<", width=30, height=24, command=self.prev_preview, state="disabled")
+        self.btn_prev = ctk.CTkButton(p_top, text="◀", width=30, height=24, command=self.prev_preview, state="disabled", 
+                                       fg_color="transparent", border_width=1, border_color=THEME_BORDER)
         self.btn_prev.pack(side="left")
         
         self.lbl_preview_title = ctk.CTkLabel(p_top, text=t("marigold_gui.preview"), font=("Arial", 12, "bold"))
         self.lbl_preview_title.pack(side="left", fill="x", expand=True)
         
-        self.btn_next = ctk.CTkButton(p_top, text=">", width=30, height=24, command=self.next_preview, state="disabled")
+        self.btn_next = ctk.CTkButton(p_top, text="▶", width=30, height=24, command=self.next_preview, state="disabled",
+                                       fg_color="transparent", border_width=1, border_color=THEME_BORDER)
         self.btn_next.pack(side="right")
 
         # Image Area
@@ -328,9 +330,9 @@ class MarigoldGUI(BaseWindow):
             target_h = 240
             target_w = int(target_h / ratio)
             
-            # Limit width if super wide
-            if target_w > 460:
-                target_w = 460
+            # Limit width to fit container (approx 380px for 420px window)
+            if target_w > 380:
+                target_w = 380
                 target_h = int(target_w * ratio)
             
             ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(target_w, target_h))

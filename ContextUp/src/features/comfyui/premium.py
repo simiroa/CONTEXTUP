@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk, ImageDraw, ImageFilter
 import math
+from utils.gui_lib import PremiumScrollableFrame
 
 # --- Design Tokens ---
 class Colors:
@@ -12,6 +13,7 @@ class Colors:
     BG_CARD_HOVER = "#252525"
     
     ACCENT_PRIMARY = "#00E676"   # Neon Mint
+    THEME_ACCENT = "#0123B4"     # Royal Blue (Project Standard)
     ACCENT_SECONDARY = "#2979FF" # Electric Blue
     ACCENT_PURPLE = "#BB86FC"    # Magic/AI
     ACCENT_ERROR = "#FF5252"
@@ -69,9 +71,9 @@ class ActionButton(ctk.CTkButton):
         
         if variant == "primary":
             self.configure(
-                fg_color=Colors.ACCENT_PRIMARY,
-                text_color="#000000",
-                hover_color="#69F0AE"
+                fg_color=Colors.THEME_ACCENT,
+                text_color="#FFFFFF",
+                hover_color="#012fdf"
             )
         elif variant == "secondary":
             self.configure(
@@ -130,8 +132,9 @@ class PremiumComfyWindow(ComfyUIFeatureBase):
     def __init__(self, title, width=1200, height=800):
         super().__init__(title=title, width=width, height=height)
         
-        # Override Theme
-        self.configure(fg_color=Colors.BG_MAIN)
+        # Override Theme - Apply to outer_frame to preserve root transparency
+        if hasattr(self, 'outer_frame'):
+            self.outer_frame.configure(fg_color=Colors.BG_MAIN)
         
         # Cleanup BaseWindow layout - remove default main_frame and status_frame
         # so we can build our own layout using pack
@@ -162,9 +165,10 @@ class PremiumComfyWindow(ComfyUIFeatureBase):
         
     def _build_content_area(self):
         # Subclasses should put their content here
+        # Adding pady=(0, 10) to ensure content doesn't hit the bottom rounded corners
         self.content_area = ctk.CTkFrame(self.outer_frame, fg_color="transparent")
-        self.content_area.pack(fill="both", expand=True, padx=0, pady=0)
-        # Default grid for content area (grid is OK inside content_area since it's a new container)
+        self.content_area.pack(fill="both", expand=True, padx=0, pady=(0, 10))
+        # Default grid for content area
         self.content_area.grid_columnconfigure(0, weight=1)
         self.content_area.grid_rowconfigure(0, weight=1)
         

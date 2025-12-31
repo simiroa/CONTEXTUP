@@ -17,7 +17,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton, PremiumScrollableFrame
 from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui.core.wrappers import registry
 from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget
@@ -72,7 +72,7 @@ class CreativeStudioGUI(PremiumComfyWindow):
         ctk.CTkFrame(self.sidebar, height=1, fg_color="#333").pack(fill="x", padx=15)
 
         # 2. SCROLLABLE PROMPT BODY
-        self.scroll_body = ctk.CTkScrollableFrame(self.sidebar, fg_color="transparent")
+        self.scroll_body = PremiumScrollableFrame(self.sidebar, fg_color="transparent")
         self.scroll_body.pack(fill="both", expand=True, padx=5, pady=5)
         
         self.prompt_widget = PromptStackWidget(self.scroll_body, "PROMPT LAYERS", on_refine_handler=self._on_ai_refine)

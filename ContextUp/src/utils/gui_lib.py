@@ -61,10 +61,16 @@ def setup_theme():
         # Global fix: Ensure border_spacing exists for ALL components in the theme
         for component in ctk.ThemeManager.theme:
             if isinstance(ctk.ThemeManager.theme[component], dict):
-                if "border_spacing" not in ctk.ThemeManager.theme[component]:
-                    # Scrollable frame usually needs ~3, others 0
-                    default_space = 3 if "Scrollable" in component else 0
-                    ctk.ThemeManager.theme[component]["border_spacing"] = default_space
+                    if "border_spacing" not in ctk.ThemeManager.theme[component]:
+                        # Scrollable frame usually needs ~3, others 0
+                        default_space = 3 if "Scrollable" in component else 0
+                        ctk.ThemeManager.theme[component]["border_spacing"] = default_space
+                    
+                    # Ensure scrollbar colors exist (Crucial for CTk 5.x)
+                    if "scrollbar_button_color" not in ctk.ThemeManager.theme[component]:
+                        ctk.ThemeManager.theme[component]["scrollbar_button_color"] = ["#a0a0a0", "#3a3a3a"]
+                    if "scrollbar_button_hover_color" not in ctk.ThemeManager.theme[component]:
+                        ctk.ThemeManager.theme[component]["scrollbar_button_hover_color"] = ["#808080", "#4a4a4a"]
     except Exception as e:
         print(f"Theme patch failed: {e}")
 
@@ -88,9 +94,10 @@ class BaseWindow(ctk.CTk):
         self._offsety = 0
         
         # Main Outer Container (Rounded Border)
+        # Increased margin to 10 to ensure radius 16 isn't clipped by root window bounds
         self.outer_frame = ctk.CTkFrame(self, fg_color=THEME_BG, corner_radius=16, 
                                       border_width=1, border_color=THEME_BORDER)
-        self.outer_frame.pack(fill="both", expand=True, padx=2, pady=2)
+        self.outer_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Custom Title Bar
         self.title_bar = ctk.CTkFrame(self.outer_frame, fg_color="transparent", height=40, corner_radius=0)
@@ -248,6 +255,37 @@ class FileListFrame(ctk.CTkScrollableFrame):
             if size < 1024: return f"{size:.1f} {unit}"
             size /= 1024
         return f"{size:.1f} TB"
+
+class PremiumScrollableFrame(ctk.CTkScrollableFrame):
+    """
+    A premium scrollable frame that automatically hides its scrollbars 
+    when the content fits within the visible area.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Wrap the canvas scroll commands to handle visibility
+        if hasattr(self, "_scrollbar"):
+            self._parent_canvas.configure(yscrollcommand=self._dynamic_set_y)
+        if hasattr(self, "_h_scrollbar"):
+            self._parent_canvas.configure(xscrollcommand=self._dynamic_set_x)
+        
+    def _dynamic_set_y(self, low, high):
+        try:
+            if float(low) <= 0.0 and float(high) >= 1.0:
+                self._scrollbar.grid_remove()
+            else:
+                self._scrollbar.grid()
+        except: pass
+        self._scrollbar.set(low, high)
+
+    def _dynamic_set_x(self, low, high):
+        try:
+            if float(low) <= 0.0 and float(high) >= 1.0:
+                self._h_scrollbar.grid_remove()
+            else:
+                self._h_scrollbar.grid()
+        except: pass
+        self._h_scrollbar.set(low, high)
 
 class ModernInputDialog(ctk.CTkToplevel):
     """

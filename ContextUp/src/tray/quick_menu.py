@@ -7,6 +7,7 @@ import os
 import json
 import subprocess
 import ctypes
+import time
 from pathlib import Path
 import customtkinter as ctk
 
@@ -51,6 +52,21 @@ class WINDOWCOMPOSITIONATTRIBDATA(ctypes.Structure):
 class POINT(ctypes.Structure):
     _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
 
+# Win32 Helpers for robust focus tracking
+GA_ROOT = 2
+
+def get_window_title(hwnd):
+    length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+    buff = ctypes.create_unicode_buffer(length + 1)
+    ctypes.windll.user32.GetWindowTextW(hwnd, buff, length + 1)
+    return buff.value
+
+def get_window_pid(hwnd):
+    pid = ctypes.c_ulong()
+    ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+    return pid.value
+
+
 
 def apply_blur_effect(hwnd, opacity=230):
     """Apply Windows Acrylic blur effect to window"""
@@ -87,8 +103,11 @@ class QuickMenu(ctk.CTkToplevel):
         self.config(bg='#000001')
         self.attributes('-transparentcolor', '#000001')
         
+        self.attributes('-transparentcolor', '#000001')
+        
         self.pinned = False
-
+        self.unlock_time = 0 # Timestamp when closing is allowed
+        
         # Close behavior for daemon vs one-shot
         self.protocol("WM_DELETE_WINDOW", self._close_window)
         self.bind("<FocusOut>", self._on_focus_out)
@@ -154,20 +173,33 @@ class QuickMenu(ctk.CTkToplevel):
 
     def _check_focus_loop(self):
         """Periodic check to hide if lost focus, supplementary to <FocusOut>"""
-        if not self.pinned and self.winfo_exists():
+        if not self.pinned and time.time() > self.unlock_time and self.winfo_exists():
             try:
-                # If window is visible but not focused, and it's not a temporary focus loss
-                # (like clicking a child widget), withdraw it.
                 # Use windll to get actual foreground window
                 fg_hwnd = ctypes.windll.user32.GetForegroundWindow()
+                if fg_hwnd == 0 or self.state() != "normal":
+                    return
+
+                # Get root owners to compare top-level windows correctly
                 my_hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+                my_root = ctypes.windll.user32.GetAncestor(my_hwnd, GA_ROOT)
+                fg_root = ctypes.windll.user32.GetAncestor(fg_hwnd, GA_ROOT)
                 
-                if fg_hwnd != 0 and fg_hwnd != my_hwnd and self.state() == "normal":
-                    # Check if fg_hwnd is a child of my_hwnd
-                    # (Simplified: if not my_hwnd, just withdraw)
-                    self.withdraw()
-            except:
-                pass
+                if fg_root != my_root:
+                    fg_pid = get_window_pid(fg_hwnd)
+                    my_pid = os.getpid()
+                    
+                    if fg_pid != my_pid:
+                        title = get_window_title(fg_hwnd)
+                        logger.info(f"Closing: Focus lost to [{title}] (PID: {fg_pid}, HWND: {fg_hwnd})")
+                        self.withdraw()
+                    else:
+                        # Focus is in another window of the same process (e.g. a dialog or tool)
+                        # We stay open.
+                        pass
+            except Exception as e:
+                logger.debug(f"Focus loop error: {e}")
+
         
         if self.winfo_exists():
             self.after(1000, self._check_focus_loop)
@@ -208,6 +240,10 @@ class QuickMenu(ctk.CTkToplevel):
         
         x = pt.x + 10
         y = pt.y + 10
+        
+        # Set grace period (2.0s) using timestamp for better stability
+        self.unlock_time = time.time() + 2.0
+        
         logger.info(f"Showing Quick Menu at: {x}, {y} (Mouse: {pt.x}, {pt.y})")
 
         if x + menu_width > v_left + v_width: x = pt.x - menu_width - 10
@@ -229,6 +265,17 @@ class QuickMenu(ctk.CTkToplevel):
         self.focus_force()
         self.attributes('-alpha', 0.95)
         self._apply_blur()
+        
+        # Force foreground (Windows API) to steal focus back from other apps
+        try:
+            hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+            root_hwnd = ctypes.windll.user32.GetAncestor(hwnd, GA_ROOT)
+            
+            # Sequence to ensure focus: Topmost -> Force -> SetForeground
+            self.attributes('-topmost', True)
+            ctypes.windll.user32.SetForegroundWindow(root_hwnd)
+        except Exception as e:
+            logger.debug(f"SetForegroundWindow failed: {e}")
         
         # One-shot lift but NOT continuous topmost re-assertion
         self.after(10, lambda: self.lift())
@@ -282,7 +329,9 @@ class QuickMenu(ctk.CTkToplevel):
             self.btn_pin.configure(text_color="gray", fg_color="transparent")
 
     def _on_focus_out(self, event):
-        if event.widget == self and not self.pinned:
+        if event.widget == self and not self.pinned and time.time() > self.unlock_time:
+
+
             if self.is_daemon:
                 self.withdraw()
             else:
@@ -349,12 +398,13 @@ class QuickMenu(ctk.CTkToplevel):
             
             
             # 3. Category-based Tools (ComfyUI, Tools, etc.)
-            category_order = ["Comfyui", "Tools", "AI", "System", "Other"]
+            category_order = ["ComfyUI", "Tools", "AI", "System", "Other"]
             added_any_category = False
             
             for cat_name in category_order:
                 if cat_name in categories and categories[cat_name]:
                     # Add category header
+
                     self._add_category_header(scrollable, cat_name)
                     
                     for item in categories[cat_name]:
@@ -371,10 +421,12 @@ class QuickMenu(ctk.CTkToplevel):
                             lambda i=item: self._launch_tool(i)
                         )
                     
+                    
                     # Add ComfyUI specific background server controls
-                    if cat_name == "Comfyui":
+                    if cat_name == "ComfyUI":
                         self._add_menu_button(
                             scrollable,
+
                             "   🚀  Start ComfyUI Server",
                             self._start_comfy_server
                         )

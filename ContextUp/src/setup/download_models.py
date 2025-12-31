@@ -184,6 +184,37 @@ def download_whisper():
         print(f"Whisper Download Failed: {e}")
         return False
 
+def download_rmbg20():
+    print("\n=== Checking RMBG-2.0 (BriaAI) ===")
+    try:
+        from transformers import AutoModelForImageSegmentation
+        from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError, LocalTokenNotFoundError
+        
+        print("Verifying 'briaai/RMBG-2.0' (Gated Model)...")
+        # RMBG-2.0 is gated. It requires HF_TOKEN or huggingface-cli login.
+        try:
+            # Try loading. If not logged in and not cached, this will fail.
+            AutoModelForImageSegmentation.from_pretrained("briaai/RMBG-2.0", trust_remote_code=True)
+            print("RMBG-2.0 Verified.")
+            return True
+        except (GatedRepoError, LocalTokenNotFoundError, OSError) as e:
+            # Check if it's an auth issue
+            error_msg = str(e).lower()
+            if "401" in error_msg or "403" in error_msg or "gated" in error_msg or "token" in error_msg:
+                print("\n[Auth Required] RMBG-2.0 is a gated model.")
+                print("1. Create a Hugging Face account and agree to the license at: https://huggingface.co/briaai/RMBG-2.0")
+                print("2. Create an Access Token: https://huggingface.co/settings/tokens")
+                print("3. Run: `huggingface-cli login` in your terminal and paste the token.")
+                print("   Or set environment variable: set HF_TOKEN=<your_token>")
+                print(f"Details: {e}")
+                return False
+            else:
+                raise e
+            
+    except Exception as e:
+        print(f"RMBG-2.0 Download Failed: {e}")
+        return False
+
 def download_upscale():
     print("\n=== Checking Upscale Models (RealESRGAN/GFPGAN) ===")
     try:
@@ -230,6 +261,7 @@ def main():
         "Upscale": download_upscale(),
         "Whisper": download_whisper(),
         "Demucs": download_demucs(),
+        "RMBG-2.0": download_rmbg20(),
     }
     
     print("\n=== Model Download Summary ===")

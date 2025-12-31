@@ -9,6 +9,11 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger("uninstall")
 
+# Force UTF-8 encoding for Windows terminals
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
 ROOT_DIR = Path(__file__).parent.parent.parent
 TOOLS_DIR = ROOT_DIR / "tools"
 

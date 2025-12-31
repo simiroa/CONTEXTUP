@@ -18,6 +18,7 @@ _bootstrap()
 # -----------------
 
 from utils.i18n import t
+from utils.gui_lib import THEME_CARD, THEME_BG, THEME_TEXT_MAIN, THEME_TEXT_DIM, THEME_BORDER
 
 class YearlyProgressCard(ctk.CTkFrame):
     """휴가 현황 카드 - 테마 지원"""
@@ -26,13 +27,13 @@ class YearlyProgressCard(ctk.CTkFrame):
     COLOR_ANNUAL = ("#1976D2", "#42a5f5")
     COLOR_CREDIT = ("#388E3C", "#66bb6a")
     COLOR_SICK = ("#0097A7", "#26c6da")
-    COLOR_BG = ("#E0E0E0", "#3a3a3a")
-    COLOR_TEXT = ("#212121", "#e0e0e0")
-    COLOR_SUB = ("#757575", "#bbb")
-    COLOR_SUB_DARK = ("#9E9E9E", "#999")
+    COLOR_BG = ("#E0E0E0", THEME_BG)
+    COLOR_TEXT = ("#212121", THEME_TEXT_MAIN)
+    COLOR_SUB = ("#757575", THEME_TEXT_DIM)
+    COLOR_SUB_DARK = ("#9E9E9E", "#555")
     
     def __init__(self, parent, stats=None):
-        super().__init__(parent, fg_color=("#FFFFFF", "#1a1a1a"), corner_radius=12)
+        super().__init__(parent, fg_color=THEME_CARD, corner_radius=12, border_width=1, border_color=THEME_BORDER)
         self.configure(height=130)
         self.pack_propagate(False)
         
@@ -64,7 +65,7 @@ class YearlyProgressCard(ctk.CTkFrame):
         self.lbl_annual_total.pack(side="left", pady=(4, 0))
         
         # 구분선
-        sep = ctk.CTkFrame(stats_container, width=1, height=40, fg_color=("#E0E0E0", "#444"))
+        sep = ctk.CTkFrame(stats_container, width=1, height=40, fg_color=("#E0E0E0", THEME_BORDER))
         sep.pack(side="left", padx=10)
         
         # === 대체휴가 (오른쪽) ===

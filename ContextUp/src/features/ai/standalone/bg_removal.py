@@ -15,6 +15,65 @@ warnings.filterwarnings("ignore")
 
 from transformers import AutoModelForImageSegmentation
 
+def remove_background_rmbg(image_path, output_path):
+    """RMBG-2.0 (BriaAI) Implementation - Requires Auth."""
+    from torchvision import transforms
+    from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError, LocalTokenNotFoundError
+    
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print("Loading RMBG-2.0 model...")
+    
+    model_id = "briaai/RMBG-2.0"
+    try:
+        model = AutoModelForImageSegmentation.from_pretrained(model_id, trust_remote_code=True, local_files_only=True)
+    except OSError:
+        print(f"\n[알림] '{model_id}' 모델 로드 중...")
+        try:
+            model = AutoModelForImageSegmentation.from_pretrained(model_id, trust_remote_code=True)
+        except (GatedRepoError, LocalTokenNotFoundError, OSError) as e:
+             # Check if it's an auth issue
+            error_msg = str(e).lower()
+            if "401" in error_msg or "403" in error_msg or "gated" in error_msg or "token" in error_msg:
+                print("\n[인증 필요] RMBG-2.0은 사용 승인이 필요한 모델입니다.")
+                print("1. Hugging Face 계정으로 로그인 후 라이선스에 동의해주세요: https://huggingface.co/briaai/RMBG-2.0")
+                print("2. Access Token을 발급받으세요: https://huggingface.co/settings/tokens")
+                print("3. 터미널에서 `huggingface-cli login` 명령어로 로그인하거나 환경변수 `HF_TOKEN`을 설정하세요.")
+                return False
+            else:
+                 print(f"Error loading model: {e}")
+                 return False
+
+    model.to(device)
+    model.eval()
+    
+    # Process
+    print(f"Processing: {Path(image_path).name}")
+    image = Image.open(image_path)
+    if image.mode != 'RGB': image = image.convert('RGB')
+    orig_size = image.size
+    
+    # Transform (1024x1024 for RMBG-2.0)
+    transform = transforms.Compose([
+        transforms.Resize((1024, 1024)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5, 0.5, 0.5], [1.0, 1.0, 1.0])
+    ])
+    
+    input_tensor = transform(image).unsqueeze(0).to(device)
+    
+    with torch.no_grad():
+        preds = model(input_tensor)[-1].sigmoid().cpu()
+    
+    pred = preds[0].squeeze()
+    pred_pil = transforms.ToPILImage()(pred)
+    mask = pred_pil.resize(orig_size, Image.LANCZOS)
+    
+    image_rgba = image.convert("RGBA")
+    image_rgba.putalpha(mask)
+    image_rgba.save(output_path, "PNG")
+    print(f"✓ Success: {output_path}")
+    return True
+
 
 
 def remove_background_birefnet_fixed(image_path, output_path):
@@ -165,8 +224,8 @@ def main():
     parser = argparse.ArgumentParser(description='AI Background Removal (Fixed)')
     parser.add_argument('image_path', help='Input image path')
     parser.add_argument('--output', help='Output path (optional)')
-    parser.add_argument('--model', choices=['birefnet', 'inspyrenet'], 
-                       default='birefnet', help='Model to use (default: birefnet)')
+    parser.add_argument('--model', choices=['birefnet', 'inspyrenet', 'rmbg'], 
+                       default='rmbg', help='Model to use (default: rmbg)')
     parser.add_argument('--no-transparency', action='store_true', 
                        help='Output with white background instead of transparency')
     parser.add_argument('--postprocess', choices=['none', 'smooth', 'sharpen', 'feather'],
@@ -193,6 +252,8 @@ def main():
             success = remove_background_birefnet_fixed(str(image_path), str(output_path))
         elif args.model == 'inspyrenet':
             success = remove_background_inspyrenet(str(image_path), str(output_path))
+        elif args.model == 'rmbg':
+            success = remove_background_rmbg(str(image_path), str(output_path))
         else:
             print(f"Error: Unknown model {args.model}")
             return 1

@@ -290,6 +290,14 @@
         "label_fg_color": [
             "#f0f2f5",
             "#050505"
+        ],
+        "scrollbar_button_color": [
+            "#a0a0a0",
+            "#3a3a3a"
+        ],
+        "scrollbar_button_hover_color": [
+            "#808080",
+            "#4a4a4a"
         ]
     },
     "CTkSegmentedButton": {
@@ -340,6 +348,14 @@
         "text_color": [
             "#1a1a1a",
             "#e0e0e0"
+        ],
+        "scrollbar_button_color": [
+            "#a0a0a0",
+            "#3a3a3a"
+        ],
+        "scrollbar_button_hover_color": [
+            "#808080",
+            "#4a4a4a"
         ]
     },
     "CTkTabview": {
@@ -393,6 +409,14 @@
         "text_color": [
             "#1a1a1a",
             "#e0e0e0"
+        ],
+        "scrollbar_button_color": [
+            "#a0a0a0",
+            "#3a3a3a"
+        ],
+        "scrollbar_button_hover_color": [
+            "#808080",
+            "#4a4a4a"
         ]
     }
 }

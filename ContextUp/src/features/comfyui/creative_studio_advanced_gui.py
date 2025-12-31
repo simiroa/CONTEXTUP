@@ -17,7 +17,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton, PremiumScrollableFrame
 from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui.workflow_wrappers import WorkflowRegistry
 from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget, ComboboxWidget, CheckboxWidget, LoraStackWidget, ImageParamWidget, SketchPadWidget, TextInputWidget, SeedWidget, AspectRatioWidget
@@ -42,7 +42,7 @@ class CreativeStudioAdvancedGUI(PremiumComfyWindow):
         self.sidebar.grid(row=0, column=0, sticky="nsew", padx=(20, 10), pady=(0, 20))
         self.sidebar.grid_propagate(False)
         
-        self.scroll = ctk.CTkScrollableFrame(self.sidebar, fg_color="transparent")
+        self.scroll = PremiumScrollableFrame(self.sidebar, fg_color="transparent")
         self.scroll.pack(fill="both", expand=True, padx=5, pady=5) # Tight padding
 
         # 1. Preset Selector

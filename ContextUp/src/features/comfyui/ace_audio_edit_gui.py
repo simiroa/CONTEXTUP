@@ -16,7 +16,7 @@ src_dir = current_dir.parent.parent
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton
+from features.comfyui.premium import PremiumComfyWindow, Colors, Fonts, GlassFrame, PremiumLabel, ActionButton, PremiumScrollableFrame
 from utils.gui_lib import THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 from features.comfyui.core.wrappers import registry
 from features.comfyui.ui.widgets import ValueSliderWidget, PromptStackWidget, TagSelectorWidget
@@ -123,7 +123,7 @@ class ACEAudioEditorGUI(PremiumComfyWindow):
         ctk.CTkFrame(self.frame_comp, height=1, fg_color="#333").pack(fill="x", padx=15)
 
         # 2. SCROLLING CONTENT
-        self.scroll_comp = ctk.CTkScrollableFrame(self.frame_comp, fg_color="transparent")
+        self.scroll_comp = PremiumScrollableFrame(self.frame_comp, fg_color="transparent")
         self.scroll_comp.pack(fill="both", expand=True, padx=10, pady=10)
 
         # --- RIGHT: RACK & TRANSPORT ---

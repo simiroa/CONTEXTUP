@@ -6,7 +6,7 @@ import sys
 import subprocess
 from pathlib import Path
 from core.logger import setup_logger
-from core.paths import SRC_DIR
+from core.paths import SRC_DIR, LOGS_DIR
 
 logger = setup_logger("launchers")
 
@@ -122,10 +122,19 @@ def launch_tool(tool_id: str, tool_name: str = None, tool_script: str = None):
                 if pythonw.exists():
                     python_exe = str(pythonw)
 
+            # Redirect output for debugging
+            debug_log = LOGS_DIR / "tool_launch_debug.log"
+            # Fix: Keep file open for the subprocess!
+            f = open(debug_log, "a", encoding="utf-8")
+            f.write(f"\n--- Launching {display_name} ---\n")
+            f.flush()
+            
             subprocess.Popen(
                 [python_exe, str(script_path)], 
                 cwd=str(project_root),
-                creationflags=0x08000000  # CREATE_NO_WINDOW
+                creationflags=0x08000000,
+                stdout=f,
+                stderr=subprocess.STDOUT
             )
         else:
             # Fallback: use menu.py dispatcher
@@ -139,10 +148,17 @@ def launch_tool(tool_id: str, tool_name: str = None, tool_script: str = None):
                 if pythonw.exists():
                     python_exe = str(pythonw)
 
+            debug_log = LOGS_DIR / "tool_launch_debug.log"
+            f = open(debug_log, "a", encoding="utf-8")
+            f.write(f"\n--- Launching {display_name} (Dispatcher) ---\n")
+            f.flush()
+            
             subprocess.Popen(
                 [python_exe, str(menu_py), tool_id, "background"],
                 cwd=str(project_root),
-                creationflags=0x08000000
+                creationflags=0x08000000,
+                stdout=f,
+                stderr=subprocess.STDOUT
             )
     except Exception as e:
         logger.error(f"Failed to launch {display_name}: {e}")

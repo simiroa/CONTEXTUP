@@ -14,7 +14,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/system -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow, THEME_BTN_PRIMARY, THEME_BTN_HOVER
+from utils.gui_lib import BaseWindow, THEME_BTN_PRIMARY, THEME_BTN_HOVER, PremiumScrollableFrame
 
 def get_recent_folders():
     """
@@ -102,7 +102,7 @@ class OpenRecentGUI(BaseWindow):
                      command=self.refresh_list).pack(side="right")
         
         # Scrollable list container
-        self.list_frame = ctk.CTkScrollableFrame(self.main_frame)
+        self.list_frame = PremiumScrollableFrame(self.main_frame)
         self.list_frame.pack(fill="both", expand=True, padx=20, pady=10)
         
         # Footer

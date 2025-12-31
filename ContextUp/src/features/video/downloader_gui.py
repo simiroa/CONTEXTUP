@@ -39,29 +39,15 @@ LEGACY_HISTORY_FILES = [
 # Appearance mode is now inherited from settings.json
 
 from core.config import MenuConfig
-from utils.gui_lib import setup_theme, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
+from utils.gui_lib import (
+    BaseWindow, THEME_BG, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, 
+    THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER,
+    THEME_TEXT_MAIN, THEME_TEXT_DIM, PremiumScrollableFrame
+)
 
-class VideoDownloaderGUI(ctk.CTk):
+class VideoDownloaderGUI(BaseWindow):
     def __init__(self):
-        super().__init__()
-        setup_theme()  # Apply theme from settings.json
-
-        # Hide Default Title Bar
-        self.overrideredirect(True)
-        self._offsetx = 0
-        self._offsety = 0
-
-        # Sync Name
-        self.tool_name = "ContextUp Video Downloader"
-        try:
-             config = MenuConfig()
-             item = config.get_item_by_id("youtube_downloader")
-             if item: self.tool_name = item.get("name", self.tool_name)
-        except: pass
-
-        self.title(self.tool_name)
-        # Larger initial height for the new layout
-        self.geometry("480x720")
+        super().__init__(title="VIDEO | Downloader", width=480, height=820, scrollable=True, icon_name="video")
         
         # Data
         self.current_video_info = None
@@ -71,65 +57,12 @@ class VideoDownloaderGUI(ctk.CTk):
         self._history_lock = threading.Lock()
         self._migrate_download_history()
         
-        # Colors & Constants (Adaptive: Light, Dark)
-        self.BG_COLOR = ("#F5F5F5", "#050505")
-        self.HEADER_BG = ("#FFFFFF", "#111111")
-        self.ACCENT_COLOR = ("#3498db", "#3498db")  # Consistent Blue
-        self.NEUTRAL_BORDER = ("#E0E0E0", "#1A1A1A")
-        self.CARD_BG = ("#FCFCFC", "#0A0A0A")
-        self.INNER_CARD = ("#F0F0F0", "#181818")
-        self.TEXT_MAIN = ("#222222", "#E0E0E0")
-        self.TEXT_DIM = ("#666666", "#888888")
-        self.BORDER_DEEP = ("#D0D0D0", "#333333")
-        
         # Layout
-        self.setup_modern_ui()
+        self.create_widgets()
         
         # Protocol
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
-    def setup_modern_ui(self):
-        """Unified premium look with custom title bar and rounded containers"""
-        # Outer Frame with Rounded Corners
-        TRANS_KEY = "#000001"
-        self.configure(fg_color=TRANS_KEY)
-        self.wm_attributes("-transparentcolor", TRANS_KEY)
-        
-        self.outer_frame = ctk.CTkFrame(self, fg_color=self.BG_COLOR, corner_radius=16, border_width=1, border_color="#333333")
-        self.outer_frame.pack(fill="both", expand=True, padx=2, pady=2)
-        
-        # 1. Custom Title Bar
-        self.title_bar = ctk.CTkFrame(self.outer_frame, fg_color="transparent", height=40)
-        self.title_bar.pack(fill="x", padx=10, pady=(5, 0))
-        
-        title_lbl = ctk.CTkLabel(self.title_bar, text=" ✨ VIDEO", font=("Segoe UI", 13, "bold"), text_color="#E0E0E0")
-        title_lbl.pack(side="left", padx=(5, 0))
-        ctk.CTkLabel(self.title_bar, text=" | Downloader", font=("Segoe UI", 13), text_color="#666").pack(side="left")
-        
-        btn_close = ctk.CTkButton(self.title_bar, text="✕", width=32, height=28, fg_color="transparent", hover_color="#922B21", 
-                                  command=self.on_close, font=("Arial", 11), corner_radius=6)
-        btn_close.pack(side="right", padx=5)
-        
-        # Drag support
-        self.title_bar.bind("<Button-1>", self.start_move)
-        self.title_bar.bind("<B1-Motion>", self.do_move)
-        title_lbl.bind("<Button-1>", self.start_move)
-        title_lbl.bind("<B1-Motion>", self.do_move)
-
-        # 2. Main content container
-        self.container = ctk.CTkScrollableFrame(self.outer_frame, fg_color="transparent")
-        self.container.pack(fill="both", expand=True, padx=5, pady=5)
-        
-        self.create_widgets()
-
-    def start_move(self, event):
-        self._offsetx = event.x
-        self._offsety = event.y
-
-    def do_move(self, event):
-        x = self.winfo_x() + event.x - self._offsetx
-        y = self.winfo_y() + event.y - self._offsety
-        self.geometry(f"+{x}+{y}")
 
     def load_settings(self):
         # Default to current execution directory
@@ -200,38 +133,38 @@ class VideoDownloaderGUI(ctk.CTk):
 
     def create_widgets(self):
         # --- 1. Main Info & Settings Card (URL + Preview + Quality) ---
-        main_card = ctk.CTkFrame(self.container, fg_color=self.HEADER_BG, corner_radius=12, border_width=1, border_color=self.NEUTRAL_BORDER)
+        main_card = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, corner_radius=12, border_width=1, border_color=THEME_BORDER)
         main_card.pack(fill="x", padx=10, pady=(10, 5))
         
         # URL Row
-        ctk.CTkLabel(main_card, text="VIDEO SOURCE & SETTINGS", font=("Segoe UI", 11, "bold"), text_color=self.TEXT_MAIN, anchor="w").pack(fill="x", padx=15, pady=(12, 5))
+        ctk.CTkLabel(main_card, text="VIDEO SOURCE & SETTINGS", font=("Segoe UI", 11, "bold"), text_color=THEME_TEXT_MAIN, anchor="w").pack(fill="x", padx=15, pady=(12, 5))
         
         url_row = ctk.CTkFrame(main_card, fg_color="transparent")
         url_row.pack(fill="x", padx=10, pady=(0, 10))
         
         self.url_var = ctk.StringVar()
         self.entry_url = ctk.CTkEntry(url_row, textvariable=self.url_var, placeholder_text="Paste video URL here...", height=40, 
-                                      fg_color=self.CARD_BG, border_color=self.BORDER_DEEP, corner_radius=8, text_color=self.TEXT_MAIN)
+                                      fg_color=THEME_DROPDOWN_FG, border_color=THEME_BORDER, corner_radius=8, text_color=THEME_TEXT_MAIN)
         self.entry_url.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.entry_url.bind("<Return>", lambda e: self.start_analysis())
         
         self.btn_analyze = ctk.CTkButton(url_row, text="SEARCH", width=80, height=40, command=self.start_analysis, 
-                                        fg_color=self.ACCENT_COLOR, hover_color="#2980b9", font=("Segoe UI", 12, "bold"), corner_radius=8)
+                                        fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER, font=("Segoe UI", 12, "bold"), corner_radius=8)
         self.btn_analyze.pack(side="right")
 
         # Preview Area (Nested within main_card)
-        self.preview_inner = ctk.CTkFrame(main_card, fg_color=self.CARD_BG, corner_radius=10, border_width=1, border_color=self.BORDER_DEEP)
+        self.preview_inner = ctk.CTkFrame(main_card, fg_color=THEME_BG, corner_radius=10, border_width=1, border_color=THEME_BORDER)
         self.preview_inner.pack(fill="x", padx=10, pady=5)
         
         self.preview_inner.grid_columnconfigure(1, weight=1)
-        self.lbl_thumb = ctk.CTkLabel(self.preview_inner, text="No Media", width=120, height=68, fg_color=self.INNER_CARD, corner_radius=6)
+        self.lbl_thumb = ctk.CTkLabel(self.preview_inner, text="No Media", width=120, height=68, fg_color=THEME_CARD, corner_radius=6)
         self.lbl_thumb.grid(row=0, column=0, rowspan=2, padx=10, pady=10)
         
         self.lbl_title = ctk.CTkLabel(self.preview_inner, text="Video title will appear here", font=("Segoe UI", 12, "bold"), 
-                                      wraplength=250, anchor="nw", justify="left", text_color=self.TEXT_MAIN)
+                                      wraplength=250, anchor="nw", justify="left", text_color=THEME_TEXT_MAIN)
         self.lbl_title.grid(row=0, column=1, padx=(0, 10), pady=(12, 2), sticky="nsew")
         
-        self.lbl_meta = ctk.CTkLabel(self.preview_inner, text="Uploader | 00:00", text_color=self.TEXT_DIM, font=("Segoe UI", 11), 
+        self.lbl_meta = ctk.CTkLabel(self.preview_inner, text="Uploader | 00:00", text_color=THEME_TEXT_DIM, font=("Segoe UI", 11), 
                                      anchor="nw", justify="left")
         self.lbl_meta.grid(row=1, column=1, padx=(0, 10), pady=(0, 12), sticky="nsew")
 
@@ -243,56 +176,56 @@ class VideoDownloaderGUI(ctk.CTk):
         self.quality_menu = ctk.CTkOptionMenu(q_row, variable=self.var_quality, height=32,
                           values=["Best Video+Audio", "4K (2160p)", "1080p", "720p", "Audio Only (MP3)", "Audio Only (M4A)"],
                           fg_color=THEME_DROPDOWN_FG, button_color=THEME_DROPDOWN_BTN, button_hover_color=THEME_DROPDOWN_HOVER, 
-                          text_color=self.TEXT_MAIN, corner_radius=6, dropdown_fg_color=self.HEADER_BG, dropdown_hover_color=self.INNER_CARD, dropdown_text_color=self.TEXT_MAIN)
+                          text_color=THEME_TEXT_MAIN, corner_radius=6, dropdown_fg_color=THEME_DROPDOWN_FG, dropdown_hover_color=THEME_DROPDOWN_HOVER, dropdown_text_color=THEME_TEXT_MAIN)
         self.quality_menu.pack(side="left", fill="x", expand=True, padx=(0, 10))
         
         self.var_subs = ctk.BooleanVar(value=False)
-        self.check_subs = ctk.CTkCheckBox(q_row, text="Subs", variable=self.var_subs, font=("Segoe UI", 11), text_color=self.TEXT_DIM, 
-                                          checkbox_width=18, checkbox_height=18, corner_radius=6, hover_color=self.INNER_CARD)
+        self.check_subs = ctk.CTkCheckBox(q_row, text="Subs", variable=self.var_subs, font=("Segoe UI", 11), text_color=THEME_TEXT_DIM, 
+                                          checkbox_width=18, checkbox_height=18, corner_radius=6, hover_color=THEME_CARD)
         self.check_subs.pack(side="left")
 
         # --- 2. Save Path Card ---
-        p_card = ctk.CTkFrame(self.container, fg_color=self.HEADER_BG, corner_radius=12, border_width=1, border_color=self.NEUTRAL_BORDER)
+        p_card = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, corner_radius=12, border_width=1, border_color=THEME_BORDER)
         p_card.pack(fill="x", padx=10, pady=5)
         
-        ctk.CTkLabel(p_card, text="SAVE PATH", font=("Segoe UI", 10, "bold"), text_color=self.TEXT_DIM, anchor="w").pack(fill="x", padx=15, pady=(8, 2))
+        ctk.CTkLabel(p_card, text="SAVE PATH", font=("Segoe UI", 10, "bold"), text_color=THEME_TEXT_DIM, anchor="w").pack(fill="x", padx=15, pady=(8, 2))
         
         p_input = ctk.CTkFrame(p_card, fg_color="transparent")
         p_input.pack(fill="x", padx=10, pady=(0, 10))
         
-        self.entry_path = ctk.CTkEntry(p_input, height=32, fg_color=self.CARD_BG, border_width=1, border_color=self.BORDER_DEEP, corner_radius=6, text_color=self.TEXT_MAIN)
+        self.entry_path = ctk.CTkEntry(p_input, height=32, fg_color=THEME_DROPDOWN_FG, border_width=1, border_color=THEME_BORDER, corner_radius=6, text_color=THEME_TEXT_MAIN)
         self.entry_path.pack(side="left", fill="x", expand=True, padx=(0, 6))
         self.entry_path.insert(0, self.settings['download_path'])
         
         self.btn_browse = ctk.CTkButton(p_input, text="📂", width=36, height=32, command=self.browse_path, 
-                                        fg_color=self.INNER_CARD, hover_color=self.BORDER_DEEP, text_color=self.TEXT_MAIN, corner_radius=6)
+                                        fg_color=THEME_DROPDOWN_BTN, hover_color=THEME_DROPDOWN_HOVER, text_color=THEME_TEXT_MAIN, corner_radius=6)
         self.btn_browse.pack(side="left", padx=2)
         
         self.btn_open_folder = ctk.CTkButton(p_input, text="↗", width=36, height=32, command=self.open_current_folder, 
-                                        fg_color=self.INNER_CARD, hover_color=self.BORDER_DEEP, text_color=self.TEXT_MAIN, corner_radius=6)
+                                        fg_color=THEME_DROPDOWN_BTN, hover_color=THEME_DROPDOWN_HOVER, text_color=THEME_TEXT_MAIN, corner_radius=6)
         self.btn_open_folder.pack(side="left")
 
         # --- 3. Action Buttons ---
-        btn_frame = ctk.CTkFrame(self.container, fg_color="transparent")
+        btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=10, pady=10)
         
         self.btn_queue = ctk.CTkButton(btn_frame, text="ADD TO QUEUE", command=self.add_to_queue, state="disabled", height=45, 
-                                      fg_color=self.INNER_CARD, hover_color=self.BORDER_DEEP, text_color=self.TEXT_MAIN,
-                                      font=("Segoe UI", 12, "bold"), corner_radius=10, border_width=1, border_color=self.BORDER_DEEP)
+                                      fg_color=THEME_CARD, hover_color=THEME_DROPDOWN_HOVER, text_color=THEME_TEXT_MAIN,
+                                      font=("Segoe UI", 12, "bold"), corner_radius=10, border_width=1, border_color=THEME_BORDER)
         self.btn_queue.pack(side="left", fill="x", expand=True, padx=(0, 10))
         
         self.btn_download = ctk.CTkButton(btn_frame, text="DOWNLOAD NOW", command=self.start_download, state="disabled", height=45, 
-                                         font=("Segoe UI", 13, "bold"), fg_color=self.ACCENT_COLOR, hover_color="#2980b9", corner_radius=10)
+                                         font=("Segoe UI", 13, "bold"), fg_color=THEME_BTN_PRIMARY, hover_color=THEME_BTN_HOVER, corner_radius=10)
         self.btn_download.pack(side="left", fill="x", expand=True)
 
         # --- 4. Progress Section ---
-        ctk.CTkLabel(self.container, text="DOWNLOAD PROGRESS", font=("Segoe UI", 11, "bold"), text_color=self.TEXT_DIM).pack(anchor="w", padx=20, pady=(5, 0))
+        ctk.CTkLabel(self.main_frame, text="DOWNLOAD PROGRESS", font=("Segoe UI", 11, "bold"), text_color=THEME_TEXT_DIM).pack(anchor="w", padx=20, pady=(5, 0))
         
-        self.downloads_frame = ctk.CTkFrame(self.container, fg_color=self.CARD_BG, corner_radius=12, border_width=1, border_color=self.NEUTRAL_BORDER)
+        self.downloads_frame = ctk.CTkFrame(self.main_frame, fg_color=THEME_CARD, corner_radius=12, border_width=1, border_color=THEME_BORDER)
         self.downloads_frame.pack(fill="both", expand=True, padx=10, pady=(5, 20))
         
         # Internal scrollable frame for items
-        self.scroll_list = ctk.CTkScrollableFrame(self.downloads_frame, fg_color="transparent", height=180)
+        self.scroll_list = PremiumScrollableFrame(self.downloads_frame, fg_color="transparent", height=180)
         self.scroll_list.pack(fill="both", expand=True, padx=2, pady=2)
 
         # Queue Logic
@@ -422,16 +355,16 @@ class VideoDownloaderGUI(ctk.CTk):
 
     def _create_download_row(self, dl_id, title, status="Enqueued"):
         # Use scroll_list instead of downloads_frame
-        frame = ctk.CTkFrame(self.scroll_list, fg_color=self.INNER_CARD, corner_radius=8)
+        frame = ctk.CTkFrame(self.scroll_list, fg_color=THEME_BG, corner_radius=8, border_width=1, border_color=THEME_BORDER)
         frame.pack(fill="x", pady=2, padx=5)
         
-        lbl_title = ctk.CTkLabel(frame, text=title, anchor="w", width=180, font=("Segoe UI", 11, "bold"), text_color=self.TEXT_MAIN)
+        lbl_title = ctk.CTkLabel(frame, text=title, anchor="w", width=180, font=("Segoe UI", 11, "bold"), text_color=THEME_TEXT_MAIN)
         lbl_title.pack(side="left", padx=12, pady=8)
         
-        lbl_status = ctk.CTkLabel(frame, text=status, width=80, font=("Segoe UI", 10), text_color=self.ACCENT_COLOR)
+        lbl_status = ctk.CTkLabel(frame, text=status, width=80, font=("Segoe UI", 10), text_color=THEME_BTN_PRIMARY)
         lbl_status.pack(side="right", padx=12)
         
-        progress = ctk.CTkProgressBar(frame, height=6, progress_color=self.ACCENT_COLOR, fg_color=self.CARD_BG, corner_radius=3)
+        progress = ctk.CTkProgressBar(frame, height=6, progress_color=THEME_BTN_PRIMARY, fg_color=THEME_CARD, corner_radius=3)
         progress.pack(side="right", fill="x", expand=True, padx=5)
         progress.set(0)
         

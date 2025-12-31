@@ -15,7 +15,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/image -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow
+from utils.gui_lib import BaseWindow, PremiumScrollableFrame
 from utils.explorer import get_selection_from_explorer
 
 def get_nearest_pot(n, upscale=True):
@@ -81,7 +81,7 @@ class TextureToolsGUI(BaseWindow):
         ctk.CTkCheckBox(settings_frame, text="Preserve Alpha Channel", variable=self.var_alpha).pack(anchor="w", padx=20, pady=10)
         
         # Preview Area
-        self.preview_frame = ctk.CTkScrollableFrame(self.main_frame, height=150)
+        self.preview_frame = PremiumScrollableFrame(self.main_frame, height=150)
         self.preview_frame.pack(fill="both", expand=True, padx=20, pady=10)
         
         # Actions
