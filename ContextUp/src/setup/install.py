@@ -753,20 +753,14 @@ def main():
                     creationflags = subprocess.CREATE_NO_WINDOW
                 
                 # Use Popen to launch and proceed
-                env = os.environ.copy()
-                src_dir = (ROOT_DIR / "src").resolve()
-                env["PYTHONPATH"] = str(src_dir) + os.pathsep + env.get("PYTHONPATH", "")
-                
-                # On a new machine, let's NOT hide the window for the first manager launch
-                # so the user can see if there are any immediate import or DLL errors.
-                # Once it's confirmed working, we can revert to hidden.
-                # However, for now, we'll try to use a standard Popen without flags to see output.
+                # Note: Using direct script execution instead of -m flag
+                # because -m requires the package to be importable BEFORE the script runs,
+                # but we need main.py to set up sys.path first.
                 
                 subprocess.Popen(
-                    [str(chosen_python), "-m", "manager.main"], 
+                    [str(chosen_python), str(manager_script)], 
                     cwd=str(ROOT_DIR),
-                    env=env,
-                    # Remove CREATE_NO_WINDOW and DETACHED_PROCESS to see potential errors
+                    # Show console for debugging on first launch
                     creationflags=0 
                 )
                 print("매니저 실행 요청을 보냈습니다. (오류가 발생하면 새 창에 표시됩니다.)")
