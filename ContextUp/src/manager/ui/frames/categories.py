@@ -2,7 +2,7 @@ import customtkinter as ctk
 import tkinter.messagebox
 from tkinter import colorchooser
 from core.settings import save_settings
-from ..theme import Theme
+from manager.ui.theme import Theme
 
 
 class CategoriesFrame(ctk.CTkFrame):

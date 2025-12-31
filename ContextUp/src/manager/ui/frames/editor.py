@@ -1,10 +1,10 @@
 import customtkinter as ctk
 import tkinter.messagebox
 from tkinter import Menu
-from ..dialogs.item_editor import ItemEditorDialog
-from ...helpers.icons import IconManager
-from ...helpers.requirements import RequirementHelper
-from ..theme import Theme
+from manager.ui.dialogs.item_editor import ItemEditorDialog
+from manager.helpers.icons import IconManager
+from manager.helpers.requirements import RequirementHelper
+from manager.ui.theme import Theme
 
 class MenuEditorFrame(ctk.CTkFrame):
     def __init__(self, parent, config_manager, settings, package_manager, on_save_registry=None, translator=None):

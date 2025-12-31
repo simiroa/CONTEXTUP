@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import threading
 import time
-from ..theme import Theme
+from manager.ui.theme import Theme
 from utils.comfy_server import is_comfy_running, start_comfy, stop_comfy
 
 

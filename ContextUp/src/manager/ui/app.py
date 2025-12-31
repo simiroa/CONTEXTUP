@@ -6,24 +6,24 @@ from tkinter import messagebox
 import webbrowser
 
 # Core
-from ..mgr_core.config import ConfigManager
+from manager.mgr_core.config import ConfigManager
 from core.config import MenuConfig
-from ..mgr_core.packages import PackageManager
-from ..mgr_core.process import TrayProcessManager
+from manager.mgr_core.packages import PackageManager
+from manager.mgr_core.process import TrayProcessManager
 from core.settings import load_settings, save_settings
-from ..mgr_core.updater import UpdateChecker
+from manager.mgr_core.updater import UpdateChecker
 from core.registry import RegistryManager
 
 # Resources
-from ..resources.translations import Translator
+from manager.resources.translations import Translator
 
 # UI Handles
-from .frames.editor import MenuEditorFrame
-from .frames.dashboard import DashboardFrame
-from .frames.dependencies import DependenciesFrame
-from .frames.categories import CategoriesFrame
-from .frames.logs import LogsFrame
-from .theme import Theme
+from manager.ui.frames.editor import MenuEditorFrame
+from manager.ui.frames.dashboard import DashboardFrame
+from manager.ui.frames.dependencies import DependenciesFrame
+from manager.ui.frames.categories import CategoriesFrame
+from manager.ui.frames.logs import LogsFrame
+from manager.ui.theme import Theme
 
 
 class ContextUpManager(ctk.CTk):
