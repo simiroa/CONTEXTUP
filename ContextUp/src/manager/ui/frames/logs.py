@@ -51,6 +51,7 @@ class LogsFrame(ctk.CTkFrame):
         self.text_widgets = {}
         
         for name, _ in self.log_files.items():
+            self.tabview.add(name)  # Create tab first
             tab = self.tabview.tab(name)
             
             # Sub-toolbar for current tab

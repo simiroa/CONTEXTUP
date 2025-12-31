@@ -14,6 +14,8 @@ import urllib.error
 import json
 import ssl
 
+from manager.ui.theme import Theme
+
 class ApiRow(ctk.CTkFrame):
     """Row for API Key / URL with Test button."""
     def __init__(self, parent, api_key, label_text, initial_value, on_test):
