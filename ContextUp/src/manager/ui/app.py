@@ -24,6 +24,7 @@ from manager.ui.frames.dependencies import DependenciesFrame
 from manager.ui.frames.categories import CategoriesFrame
 from manager.ui.frames.logs import LogsFrame
 from manager.ui.theme import Theme
+from manager.ui.theme import Theme
 
 
 class ContextUpManager(ctk.CTk):
