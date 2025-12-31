@@ -14,8 +14,9 @@ if exist "tools\python\python.exe" (
     set "PYTHON_EXE=python"
 )
 
-:: Run the manager using the package mode
-"%PYTHON_EXE%" -m manager.main
+:: Run the manager using direct script execution
+:: Note: -m flag doesn't work because it tries to import the package before sys.path is set
+"%PYTHON_EXE%" src\manager\main.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.

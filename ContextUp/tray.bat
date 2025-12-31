@@ -14,9 +14,9 @@ if exist "tools\python\python.exe" (
     set "PYTHON_EXE=python"
 )
 
-:: Run the tray agent using the package mode
-:: We use start /b to let it run in the background (or just run it normally if it's a persistent app)
-"%PYTHON_EXE%" -m tray.agent
+:: Run the tray agent using direct script execution
+:: Note: -m flag doesn't work because it tries to import the package before sys.path is set
+"%PYTHON_EXE%" src\tray\agent.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
