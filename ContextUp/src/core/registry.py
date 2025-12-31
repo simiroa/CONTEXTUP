@@ -94,7 +94,8 @@ class RegistryManager:
                 # Check Dependencies
                 valid, missing = pm.check_dependencies(item, installed_packages)
                 if not valid:
-                    logger.warning(f"Skipping {item['id']} due to missing dependencies: {missing}")
+                    # Use INFO level - this is expected for minimal installs, not an error
+                    logger.info(f"Skipping {item['id']}: requires AI_Heavy installation (missing: {missing})")
                     continue
                 
                 scope = item.get('scope', 'file')
