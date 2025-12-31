@@ -39,7 +39,3 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-
-echo.
-echo [SUCCESS] Launcher finished.
-pause

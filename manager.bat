@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 > nul
 cd /d "%~dp0"
 
 set PYTHON_EXE=%~dp0ContextUp\tools\python\python.exe
