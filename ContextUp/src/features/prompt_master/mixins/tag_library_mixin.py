@@ -3,7 +3,7 @@ import json
 import customtkinter as ctk
 from ..constants import TAGS_FILE, TAG_CATEGORIES_FILE
 from ..tooltip import Tooltip
-from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
+from utils.gui_lib import THEME_BG, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
 
 class TagLibraryMixin:
     def load_tags(self):
