@@ -39,4 +39,22 @@ def main():
     app.mainloop()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        from pathlib import Path
+        
+        # Emergency log to root if core/paths not ready
+        error_msg = f"Manager Startup Fatal Error: {e}\n{traceback.format_exc()}"
+        print(error_msg)
+        
+        try:
+            log_path = Path(__file__).resolve().parent.parent.parent / "logs" / "manager_crash.log"
+            log_path.parent.mkdir(exist_ok=True)
+            with open(log_path, "a", encoding="utf-8") as f:
+                import datetime
+                f.write(f"\n[{datetime.datetime.now()}] {error_msg}\n")
+        except:
+            pass
+        sys.exit(1)
