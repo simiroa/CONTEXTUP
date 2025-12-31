@@ -129,9 +129,15 @@ def launch_tool(tool_id: str, tool_name: str = None, tool_script: str = None):
             f.write(f"\n--- Launching {display_name} ---\n")
             f.flush()
             
+            # Set PYTHONPATH for proper imports
+            import os
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(SRC_DIR) + os.pathsep + env.get("PYTHONPATH", "")
+            
             subprocess.Popen(
                 [python_exe, str(script_path)], 
                 cwd=str(project_root),
+                env=env,
                 creationflags=0x08000000,
                 stdout=f,
                 stderr=subprocess.STDOUT
@@ -153,9 +159,15 @@ def launch_tool(tool_id: str, tool_name: str = None, tool_script: str = None):
             f.write(f"\n--- Launching {display_name} (Dispatcher) ---\n")
             f.flush()
             
+            # Set PYTHONPATH for proper imports
+            import os
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(SRC_DIR) + os.pathsep + env.get("PYTHONPATH", "")
+            
             subprocess.Popen(
                 [python_exe, str(menu_py), tool_id, "background"],
                 cwd=str(project_root),
+                env=env,
                 creationflags=0x08000000,
                 stdout=f,
                 stderr=subprocess.STDOUT

@@ -105,6 +105,9 @@ def download_marigold():
             cache_dir=paths.MARIGOLD_DIR
         )
         
+        print("Marigold Models Verified.")
+        return True
+        
     except ImportError:
         print("Marigold Download Failed: 'diffusers' library not found. Ensure 'AI_Heavy' was selected during install.")
         return False
