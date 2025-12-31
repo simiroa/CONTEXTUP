@@ -10,6 +10,12 @@ def main():
     src_dir = current_file.parent.parent 
     root_dir = src_dir.parent
     
+    # DEBUG: Print path information
+    print(f"DEBUG: current_file = {current_file}")
+    print(f"DEBUG: src_dir = {src_dir}")
+    print(f"DEBUG: root_dir = {root_dir}")
+    print(f"DEBUG: sys.path BEFORE = {sys.path[:3]}")
+    
     # Ensure src is in sys.path for absolute imports of other packages (core, features, etc.)
     if str(src_dir) not in sys.path:
         sys.path.insert(0, str(src_dir))
@@ -17,6 +23,17 @@ def main():
     # Remove own directory from path to avoid shadowing the package name 'manager'
     if str(current_file.parent) in sys.path:
         sys.path.remove(str(current_file.parent))
+    
+    # DEBUG: Print path after
+    print(f"DEBUG: sys.path AFTER = {sys.path[:3]}")
+    
+    # Verify the path is correct
+    manager_pkg = src_dir / "manager"
+    resources_pkg = manager_pkg / "resources"
+    print(f"DEBUG: manager package exists = {manager_pkg.exists()}")
+    print(f"DEBUG: resources package exists = {resources_pkg.exists()}")
+    print(f"DEBUG: translations.py exists = {(resources_pkg / 'translations.py').exists()}")
+    print(f"DEBUG: __init__.py exists = {(resources_pkg / '__init__.py').exists()}")
         
     # High DPI Fix (Windows)
     try:
