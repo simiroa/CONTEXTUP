@@ -162,5 +162,26 @@
         "external_tools": [],
         "order": 408,
         "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "noise_master",
+        "name": "Noise Master",
+        "icon": "assets/icons/icon_noise_master.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "numpy",
+            "noise",
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "order": 410,
+        "gui": true
     }
 ]

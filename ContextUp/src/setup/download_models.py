@@ -118,6 +118,19 @@ def download_marigold():
 def download_rembg():
     print("\n=== Checking Rembg Models ===")
     
+    # Fix for missing CUDA DLLs in ONNXRuntime when Torch is installed
+    try:
+        import torch
+        torch_lib = Path(torch.__file__).parent / "lib"
+        if torch_lib.exists():
+            os.environ["PATH"] = str(torch_lib) + os.pathsep + os.environ["PATH"]
+            try:
+                os.add_dll_directory(str(torch_lib))
+            except AttributeError:
+                pass # Python < 3.8
+    except ImportError:
+        pass
+    
     # Set Env Var for Rembg
     os.environ["U2NET_HOME"] = str(paths.REMBG_DIR)
     paths.REMBG_DIR.mkdir(parents=True, exist_ok=True)

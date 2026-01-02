@@ -52,8 +52,45 @@ from utils.gui_lib import BaseWindow
 ```
 
 ### Step 2: Implement GUI (Guidelines)
+
+---
+
+## 1. Feature Design & Ideation
+
+Clarify the feature's purpose and placement.
+*   **Utility**: Does this save time or solve a specific problem?
+*   **Context**: Where should this appear? (File, Folder, background, or Tray?)
+*   **Category**: Which existing category does it fit into? (image, video, ai, sequence, etc.)
+
+---
+
+## 2. Step-by-Step Implementation
+
+### Step 1: Create Script & Path Management
+Create your script in `src/features/<category>/`.
+
+**CRITICAL: Use Centralized Paths**
+Instead of hardcoding paths or using `os.path`, use `src.core.paths`.
+
+```python
+# --- Standard Header ---
+import sys
+from pathlib import Path
+
+# Add src to path if running directly
+ROOT = Path(__file__).resolve().parent
+while not (ROOT / 'src').exists() and ROOT.parent != ROOT:
+    ROOT = ROOT.parent
+if (ROOT / 'src').exists() and str(ROOT / 'src') not in sys.path:
+    sys.path.insert(0, str(ROOT / 'src'))
+
+from core.paths import USERDATA_DIR, TOOLS_DIR
+from utils.gui_lib import BaseWindow
+# -----------------------
+```
+
+### Step 2: Implement GUI (Guidelines)
 - **Theme**: Use `customtkinter`. Never hardcode colors (use tuples for light/dark).
-- **Localization**: Update `config/i18n/en.json` and `ko.json`. Use `from utils.i18n import t`.
 
 ### Step 3: Install Dependencies
 Install packages into the **Embedded Environment**:
@@ -62,7 +99,24 @@ ContextUp/tools/python/python.exe -m pip install <package>
 ```
 Update `requirements.txt` accordingly.
 
-### Step 4: Define Configuration
+### Step 4: Localization (i18n)
+All user-facing text must be localized using `src.utils.i18n`.
+
+1.  **Code Usage**:
+    ```python
+    from utils.i18n import t
+    # Use dot-notation keys corresponding to JSON structure
+    btn = ctk.CTkButton(self, text=t("my_feature_gui.start_button"))
+    ```
+2.  **Add Keys**: Update `config/i18n/en.json` (Required) and `ko.json` (Optional).
+    ```json
+    "my_feature_gui": {
+        "title": "My Feature",
+        "start_button": "Start"
+    }
+    ```
+
+### Step 5: Define Configuration
 Edit the JSON file in `config/categories/` (e.g., `image.json`).
 
 ```json
@@ -72,7 +126,7 @@ Edit the JSON file in `config/categories/` (e.g., `image.json`).
     "name": "My Tool Name",
     "icon": "assets/icons/icon_my_tool.ico",
     "types": ".jpg;.png",        // filter
-    "scope": "file",             // file, directory, background, tray_only
+    "scope": "file",             // file, directory, background (folder bg), tray_only
     "enabled": true,
     "submenu": "ContextUp",
     "show_in_tray": true,
@@ -86,9 +140,19 @@ Edit the JSON file in `config/categories/` (e.g., `image.json`).
 }
 ```
 
+### Step 6: Register in Menu Dispatcher
+**Crucial for Context Menu**: Even if configured in JSON, the `src/core/menu.py` dispatcher must know how to launch your script.
+
+1.  Open `src/core/menu.py`.
+2.  Locate `build_handler_map()`.
+3.  Add your ID mapping:
+    ```python
+    "my_feature": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "my_feature_gui.py"), str(p)]),
+    ```
+
 For ComfyUI entries, edit `config/categories/comfyui.json` and add a new item under the `features` list with a `script` field (e.g., `src.features.comfyui.my_gui`).
 
-### Step 5: Registry Refresh
+### Step 7: Registry Refresh
 Run `manager.bat` or use CLI to refresh the context menu:
 ```powershell
 ContextUp\tools\python\python.exe ContextUp\manage.py register
@@ -110,7 +174,20 @@ When adding new ComfyUI features, follow these rules to avoid tray/GUI breakage:
 
 ## 3. Verification & Debugging
 
-### AI Icons
+### Icon Management
+
+**1. Check Missing Icons**
+Run verify script to find enabled features without enabled icons:
+```powershell
+python dev/scripts/check_missing_icons.py
+```
+
+**2. Generate Dummy Icons**
+If you don't have a design, generate a placeholder arrow/text icon:
+1. Edit `dev/scripts/generate_icons.py` and add your tool to `TOOLS`.
+2. Run: `python dev/scripts/generate_icons.py`
+
+**3. Generate AI Icons (Advanced)**
 1. **Prompts**: `python dev/scripts/update_prompts_md.py`
 2. **Generate**: `python dev/scripts/generate_icons_ai.py --target my_feature`
 
@@ -121,6 +198,9 @@ python dev/scripts/capture_gui_screenshots.py --themes
 ```
 
 ### Common Issues
-*   **ImportError**: Check `sys.path` insertion at the top of the GUI script.
+*   **Context Menu vs Tray**:
+    *   **Context Menu**: Controlled by `src/core/menu.py`. You MUST add a handler there.
+    *   **Tray Menu**: Controlled by `src/tray/launchers.py`. It usually auto-detects scripts, but check if manual mapping is needed.
+*   **ImportError**:Check `sys.path` insertion at the top of the GUI script.
 *   **Registry Not Updating**: Close any open Explorer windows or restart `explorer.exe`.
 *   **`SubCommands` Error**: Ensure you are not manually creating `SubCommands` keys in the registry (fixed in v4.0.0).

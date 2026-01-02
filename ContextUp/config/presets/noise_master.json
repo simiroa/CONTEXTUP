@@ -1,0 +1,392 @@
+{
+    "Default": [
+        {
+            "name": "Base Noise",
+            "type": "perlin",
+            "scale": 4.0,
+            "octaves": 4,
+            "persistence": 0.5,
+            "visible": true,
+            "blend_mode": "normal",
+            "seed": 123
+        }
+    ],
+    "Terrain: Cracked Mud": [
+        {
+            "name": "Cells",
+            "type": "cellular",
+            "scale": 8.0,
+            "blend_mode": "normal",
+            "invert": true,
+            "opacity": 1.0,
+            "ridged": true
+        },
+        {
+            "name": "Surface Grain",
+            "type": "simplex",
+            "scale": 50.0,
+            "blend_mode": "multiply",
+            "opacity": 0.4
+        }
+    ],
+    "Terrain: Mountain Ridge": [
+        {
+            "name": "Main Ridge",
+            "type": "perlin",
+            "scale": 2.0,
+            "octaves": 6,
+            "ridged": true,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Erosion",
+            "type": "simplex",
+            "scale": 10.0,
+            "octaves": 4,
+            "blend_mode": "subtract",
+            "opacity": 0.3
+        }
+    ],
+    "Terrain: Moon Surface": [
+        {
+            "name": "Base Dust",
+            "type": "simplex",
+            "scale": 5.0,
+            "octaves": 5,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Craters Large",
+            "type": "voronoi",
+            "scale": 4.0,
+            "blend_mode": "subtract",
+            "opacity": 0.6,
+            "invert": true
+        },
+        {
+            "name": "Craters Small",
+            "type": "voronoi",
+            "scale": 12.0,
+            "blend_mode": "subtract",
+            "opacity": 0.4,
+            "invert": true
+        }
+    ],
+    "Water: Deep Ocean": [
+        {
+            "name": "Swell",
+            "type": "simplex",
+            "scale": 2.0,
+            "octaves": 2,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Choppy",
+            "type": "perlin",
+            "scale": 8.0,
+            "octaves": 4,
+            "blend_mode": "overlay",
+            "opacity": 0.4
+        }
+    ],
+    "Water: Caustics": [
+        {
+            "name": "Net 1",
+            "type": "voronoi",
+            "scale": 8.0,
+            "blend_mode": "add",
+            "invert": true,
+            "opacity": 0.7
+        },
+        {
+            "name": "Net 2",
+            "type": "voronoi",
+            "scale": 12.0,
+            "blend_mode": "add",
+            "invert": true,
+            "offset_x": 50,
+            "opacity": 0.5
+        }
+    ],
+    "Water: Frozen Lake": [
+        {
+            "name": "Ice Sheet",
+            "type": "simplex",
+            "scale": 3.0,
+            "octaves": 2,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Cracks",
+            "type": "perlin",
+            "scale": 6.0,
+            "ridged": true,
+            "blend_mode": "overlay",
+            "opacity": 0.15
+        }
+    ],
+    "Sky: Cumulus Clouds": [
+        {
+            "name": "Puffs",
+            "type": "simplex",
+            "scale": 3.0,
+            "octaves": 6,
+            "persistence": 0.6,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Density",
+            "type": "perlin",
+            "scale": 1.5,
+            "blend_mode": "multiply",
+            "opacity": 0.7
+        }
+    ],
+    "Sky: Nebula": [
+        {
+            "name": "Gas Main",
+            "type": "simplex",
+            "scale": 2.0,
+            "octaves": 4,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Dust Lanes",
+            "type": "perlin",
+            "scale": 4.0,
+            "blend_mode": "subtract",
+            "opacity": 0.5
+        },
+        {
+            "name": "Glow",
+            "type": "simplex",
+            "scale": 8.0,
+            "blend_mode": "add",
+            "opacity": 0.3
+        }
+    ],
+    "Sky: Starfield": [
+        {
+            "name": "Void",
+            "type": "perlin",
+            "scale": 1.0,
+            "blend_mode": "normal",
+            "opacity": 0.0
+        },
+        {
+            "name": "Stars",
+            "type": "simplex",
+            "scale": 50.0,
+            "octaves": 1,
+            "blend_mode": "add",
+            "ridged": true,
+            "opacity": 1.0
+        }
+    ],
+    "Organic: Zebra-ish": [
+        {
+            "name": "Stripes Base",
+            "type": "perlin",
+            "scale": 10.0,
+            "octaves": 2,
+            "ridged": true,
+            "blend_mode": "normal",
+            "invert": false,
+            "opacity": 1.0
+        }
+    ],
+    "Organic: Leopard Spots": [
+        {
+            "name": "Spots",
+            "type": "cellular",
+            "scale": 12.0,
+            "blend_mode": "normal",
+            "invert": true,
+            "opacity": 1.0
+        },
+        {
+            "name": "Threshold",
+            "type": "perlin",
+            "scale": 2.0,
+            "blend_mode": "multiply",
+            "opacity": 1.0
+        }
+    ],
+    "Organic: Skin Pores": [
+        {
+            "name": "Skin Base",
+            "type": "perlin",
+            "scale": 2.0,
+            "blend_mode": "normal",
+            "opacity": 0.5
+        },
+        {
+            "name": "Pores",
+            "type": "simplex",
+            "scale": 40.0,
+            "blend_mode": "multiply",
+            "opacity": 0.2
+        }
+    ],
+    "Ind: Rusty Iron": [
+        {
+            "name": "Metal Base",
+            "type": "simplex",
+            "scale": 50.0,
+            "blend_mode": "normal",
+            "opacity": 0.8
+        },
+        {
+            "name": "Rust Patches",
+            "type": "perlin",
+            "scale": 3.0,
+            "octaves": 4,
+            "blend_mode": "multiply",
+            "opacity": 0.6
+        },
+        {
+            "name": "Deep Corrosion",
+            "type": "cellular",
+            "scale": 10.0,
+            "blend_mode": "subtract",
+            "opacity": 0.3
+        }
+    ],
+    "Ind: Tech Panels": [
+        {
+            "name": "Plates",
+            "type": "cellular",
+            "scale_x": 5.0,
+            "scale_y": 5.0,
+            "blend_mode": "normal",
+            "invert": true,
+            "opacity": 1.0
+        },
+        {
+            "name": "Dirt",
+            "type": "perlin",
+            "scale_x": 15.0,
+            "scale_y": 15.0,
+            "blend_mode": "multiply",
+            "opacity": 0.3
+        }
+    ],
+    "Ind: Brushed Metal": [
+        {
+            "name": "Streaks",
+            "type": "simplex",
+            "scale_x": 2.0,
+            "scale_y": 50.0,
+            "octaves": 2,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Highlights",
+            "type": "perlin",
+            "scale_x": 1.0,
+            "scale_y": 30.0,
+            "blend_mode": "overlay",
+            "opacity": 0.4
+        }
+    ],
+    "Weather: Rainy Window": [
+        {
+            "name": "Streaks",
+            "type": "cellular",
+            "scale_x": 40.0,
+            "scale_y": 3.0,
+            "blend_mode": "normal",
+            "invert": true,
+            "opacity": 1.0
+        },
+        {
+            "name": "Drops",
+            "type": "simplex",
+            "scale_x": 10.0,
+            "scale_y": 10.0,
+            "blend_mode": "add",
+            "opacity": 0.3
+        }
+    ],
+    "Magic: Portal": [
+        {
+            "name": "Energy",
+            "type": "simplex",
+            "scale": 2.0,
+            "octaves": 4,
+            "ridged": true,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Swirl",
+            "type": "perlin",
+            "scale": 4.0,
+            "blend_mode": "add",
+            "offset_x": 100,
+            "opacity": 0.5
+        }
+    ],
+    "hi": [
+        {
+            "name": "Base Noise",
+            "type": "gradient",
+            "scale": 40.0,
+            "ratio": -0.040000000000000036,
+            "octaves": 4,
+            "persistence": 0.5,
+            "visible": true,
+            "blend_mode": "normal",
+            "seed": 5124,
+            "opacity": 1.0,
+            "warp_scale": 5.05,
+            "distortion": 0.95,
+            "subtype": "radial"
+        },
+        {
+            "name": "Cells",
+            "type": "cellular",
+            "scale": 8.0,
+            "blend_mode": "normal",
+            "invert": true,
+            "opacity": 1.0,
+            "ridged": true
+        },
+        {
+            "name": "Surface Grain",
+            "type": "simplex",
+            "scale": 50.0,
+            "blend_mode": "multiply",
+            "opacity": 0.4
+        },
+        {
+            "name": "Gas Main",
+            "type": "simplex",
+            "scale": 2.0,
+            "octaves": 4,
+            "blend_mode": "normal",
+            "opacity": 1.0
+        },
+        {
+            "name": "Dust Lanes",
+            "type": "perlin",
+            "scale": 4.0,
+            "blend_mode": "subtract",
+            "opacity": 0.5
+        },
+        {
+            "name": "Glow",
+            "type": "simplex",
+            "scale": 8.0,
+            "blend_mode": "add",
+            "opacity": 0.3
+        }
+    ]
+}

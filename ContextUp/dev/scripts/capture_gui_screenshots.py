@@ -146,6 +146,7 @@ GUI_LIST = [
     ("ace_audio", "features/comfyui/ace_audio_edit_gui.py", (["ACE", "Audio"], ["ACE", "Audio"]), "none", []),
     ("icon_gen", "features/comfyui/icon_gen_gui.py", (["Icon", "Gen"], ["Icon", "Gen"]), "none", []),
     ("z_image_turbo", "features/comfyui/z_image_turbo_gui.py", (["Image", "Turbo"], ["Image", "Turbo"]), "none", []),
+    ("noise_master", "features/image/noise_master_gui.py", (["Noise", "Master"], ["Noise", "Master"]), "none", []),
     
     # Mesh
     ("mesh_lod", "features/mesh/lod_gui.py", (["LOD", "Auto"], ["LOD", "Auto"]), "none", ["--demo"]),

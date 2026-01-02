@@ -1,10 +1,9 @@
 {
   "Rembg": true,
   "BiRefNet": true,
-  "Marigold": false,
+  "Marigold": true,
   "Upscale": true,
   "Whisper": true,
-  "OCR": true,
   "Demucs": true,
-  "RIFE": false
+  "RMBG-2.0": true
 }

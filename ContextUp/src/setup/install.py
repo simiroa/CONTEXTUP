@@ -85,6 +85,7 @@ PKG_MEDIA = [
     "rawpy",
     "pillow-heif",
     "opencv-python",
+    "noise",
 ]
 
 # 문서 처리 패키지
