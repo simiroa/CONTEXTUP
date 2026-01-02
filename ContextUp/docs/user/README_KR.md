@@ -1,6 +1,6 @@
 # ContextUp (한국어)
 
-![Version](https://img.shields.io/badge/version-4.0.1-green.svg)
+![Version](https://img.shields.io/badge/version-4.0.2-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
@@ -15,7 +15,7 @@
 | 카테고리 | 예시 기능 |
 |----------|-----------|
 | AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), **Creative Studio (Z/Advanced)** |
-| 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈 |
+| 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈, **노이즈 마스터(레이어 절차적 생성)** |
 | 시퀀스 | 렌더링 시퀀스 정렬, 누락 프레임 탐색, 영상 변환, 분석 및 리넘버링 |
 | 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(30fps), 오디오 추출/제거, 유튜브 다운로더 |
 | 오디오 | 포맷 변환, 보컬/배경 분리, 볼륨 정규화 |

@@ -4,6 +4,16 @@ All notable changes to ContextUp will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.0.2] - 2026-01-03
+
+### Image
+- **Noise Master Redesign**: 
+    - Complete architectural overhaul with clean separation of generation (`generators.py`) and compositing (`engine.py`).
+    - Added new pattern types: Gradient (Linear/Radial), Checker, Grid, and Brick.
+    - Improved noise generation stability and added safe fallbacks for missing libraries.
+    - Modernized UI with ThreadPoolExecutor for smooth, background rendering.
+    - Simplified controls and unified coordinate system (Scale/Rotation/Offset).
+
 ---
 
 ## [4.0.1] - 2025-12-23
