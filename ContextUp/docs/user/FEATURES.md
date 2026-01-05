@@ -45,7 +45,7 @@
 | 카테고리 | 아이콘 | 영문 이름 | 한글 이름 | 기능 소개 | 비고 |
 | :--- | :---: | :--- | :--- | :--- | :--- |
 | **Image** | <img src="../../assets/icons/icon_image_format_convert.png" width="24"> | **Img Convert** | 이미지 변환 | 수십 종의 특수 포맷 및 최신 포맷을 고화질 무손실 상호 변환 | OpenCV |
-| **Image** | <img src="../../assets/icons/icon_noise_master.ico" width="24"> | **Noise Master** | 노이즈 마스터 | 레이어 기반 텍스처 및 노이즈(Perlin, Gradient 등) 생성 도구 | Python |
+
 | **Video** | <img src="../../assets/icons/icon_video_convert.png" width="24"> | **Vid Convert** | 영상 변환 | 비트레이트 제어 및 코덱 변환을 통한 용량/호환성 최적화 | FFmpeg (자동 설치) |
 | **Video** | <img src="../../assets/icons/icon_video_frame_interp.ico" width="24"> | **Interp 30fps** | 30fps 보간 | 저프레임 영상을 30fps로 부드럽게 변환 (Minterpolate) | FFmpeg (자동 설치) |
 | **Video** | <img src="../../assets/icons/icon_video_audio_tools.ico" width="24"> | **Extract Audio** | 오디오 추출 | 영상에서 오디오 트랙만 원본 무손실 또는 MP3로 추출 | FFmpeg |

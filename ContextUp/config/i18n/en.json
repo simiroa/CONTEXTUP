@@ -260,19 +260,6 @@
         "cancelled": "Processing was cancelled.",
         "completed_with_errors": "Completed with Errors"
     },
-    "noise_master_gui": {
-        "title": "Noise Master",
-        "layers": "Layers",
-        "properties": "Properties",
-        "add_layer": "+ Add Layer",
-        "save_image": "Save Image",
-        "type": "Type",
-        "seed": "Seed",
-        "randomize": "Randomize",
-        "invert": "Invert",
-        "ridged": "Ridged",
-        "opacity": "Opacity"
-    },
     "marigold_gui": {
         "title": "ContextUp PBR Generator (Marigold)",
         "file_not_found": "File not found.",
