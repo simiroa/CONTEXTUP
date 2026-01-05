@@ -135,7 +135,8 @@
             "youtube_downloader": "Video Downloader",
             "translator": "Translator",
             "ai_text_lab": "AI Text Lab",
-            "leave_manager": "Leave Manager"
+            "leave_manager": "Leave Manager",
+            "context_flow": "ContextFlow"
         }
     },
     "rename_gui": {

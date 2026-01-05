@@ -136,7 +136,8 @@
       "youtube_downloader": "비디오 다운로더",
       "translator": "번역기",
       "ai_text_lab": "AI 텍스트 연구소",
-      "leave_manager": "휴가 관리"
+      "leave_manager": "휴가 관리",
+      "context_flow": "ContextFlow"
     }
   },
   "rename_gui": {

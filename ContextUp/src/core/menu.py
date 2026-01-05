@@ -206,6 +206,7 @@ def build_handler_map():
         "vacance": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "leave_manager" / "gui.py")]),
         "leave_manager": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "leave_manager" / "gui.py")]),
         "ai_text_lab": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "tools" / "ai_text_lab.py")]),
+        "context_flow": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "tools" / "context_flow" / "gui.py")]),
 
         # === ComfyUI ===
         "seedvr2_upscaler": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "comfyui" / "seedvr2_gui.py"), str(p)]),

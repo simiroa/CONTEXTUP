@@ -96,5 +96,26 @@
         "order": 606,
         "gui": true,
         "description": "AI-powered prompt management and refinement tool."
+    },
+    {
+        "category": "Tools",
+        "id": "context_flow",
+        "name": "ContextFlow",
+        "icon": "assets/icons/icon_context_flow.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "PySide6",
+            "psutil",
+            "pynvml"
+        ],
+        "external_tools": [],
+        "order": 1103,
+        "gui": true,
+        "description": "System resource monitor with NVIDIA GPU support."
     }
 ]
