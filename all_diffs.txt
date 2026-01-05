@@ -1,0 +1,185 @@
+﻿diff --git a/ContextUp/src/features/ai/standalone/bg_removal.py b/ContextUp/src/features/ai/standalone/bg_removal.py
+index 92a5169..b9c1a1b 100644
+--- a/ContextUp/src/features/ai/standalone/bg_removal.py
++++ b/ContextUp/src/features/ai/standalone/bg_removal.py
+@@ -38,9 +38,11 @@ def remove_background_rmbg(image_path, output_path):
+                 print("1. Hugging Face 怨꾩젙?쇰줈 濡쒓렇?????쇱씠?좎뒪???숈쓽?댁＜?몄슂: https://huggingface.co/briaai/RMBG-2.0")
+                 print("2. Access Token??諛쒓툒諛쏆쑝?몄슂: https://huggingface.co/settings/tokens")
+                 print("3. ?곕??먯뿉??`huggingface-cli login` 紐낅졊?대줈 濡쒓렇?명븯嫄곕굹 ?섍꼍蹂??`HF_TOKEN`???ㅼ젙?섏꽭??")
++                print("\n[TIP] ?몄쬆 ?놁씠 利됱떆 ?ъ슜???먰븯?쒕㈃ 'BiRefNet' 紐⑤뜽???ъ슜??蹂댁꽭??")
+                 return False
+             else:
+                  print(f"Error loading model: {e}")
++                 print("[TIP] 'BiRefNet' ?먮뒗 'InSPyReNet' 紐⑤뜽? ?ㅼ슫濡쒕뱶 利됱떆 ?ъ슜 媛?ν빀?덈떎.")
+                  return False
+ 
+     model.to(device)
+diff --git a/ContextUp/src/features/ai/standalone/upscale.py b/ContextUp/src/features/ai/standalone/upscale.py
+index 1e5580f..84b6d07 100644
+--- a/ContextUp/src/features/ai/standalone/upscale.py
++++ b/ContextUp/src/features/ai/standalone/upscale.py
+@@ -12,6 +12,12 @@ warnings.filterwarnings("ignore")
+ # Add libs to path
+ sys.path.append(str(Path(__file__).parent.parent.parent.parent / "libs"))
+ 
++# --- Monkey Patch for BasicSR compatibility with torchvision >= 0.17 ---
++import torchvision
++if not hasattr(torchvision.transforms, 'functional_tensor'):
++    torchvision.transforms.functional_tensor = torchvision.transforms.functional
++# ----------------------------------------------------------------------
++
+ from basicsr.archs.rrdbnet_arch import RRDBNet
+ from realesrgan import RealESRGANer
+ from gfpgan import GFPGANer
+diff --git a/ContextUp/src/features/ai/tools.py b/ContextUp/src/features/ai/tools.py
+index 2115233..4daa095 100644
+--- a/ContextUp/src/features/ai/tools.py
++++ b/ContextUp/src/features/ai/tools.py
+@@ -38,7 +38,7 @@ class BackgroundRemovalGUI(BaseWindow):
+         # Model Selection
+         ctk.CTkLabel(self.main_frame, text="Select AI Model:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(10, 5))
+         
+-        self.model_var = ctk.StringVar(value="rmbg")
++        self.model_var = ctk.StringVar(value="birefnet")
+         
+         models = [
+             ("rmbg", "RMBG-2.0", "Best Balance (92% accuracy)"),
+@@ -52,6 +52,12 @@ class BackgroundRemovalGUI(BaseWindow):
+             ctk.CTkRadioButton(frame, text=name, variable=self.model_var, value=val).pack(side="left")
+             ctk.CTkLabel(frame, text=desc, text_color="gray", font=ctk.CTkFont(size=11)).pack(side="left", padx=10)
+             
++        # Auth Notice for RMBG-2.0
++        auth_box = ctk.CTkFrame(self.main_frame, fg_color="gray30", corner_radius=6)
++        auth_box.pack(fill="x", padx=30, pady=(10, 0))
++        ctk.CTkLabel(auth_box, text="?뱄툘 RMBG-2.0 requires Hugging Face approval & token.", 
++                    text_color="#E67E22", font=ctk.CTkFont(size=11)).pack(pady=5)
++            
+         # Options
+         ctk.CTkLabel(self.main_frame, text="Output Options:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+         
+diff --git a/ContextUp/src/manager/ui/frames/dashboard.py b/ContextUp/src/manager/ui/frames/dashboard.py
+index 2cde5a0..6c37dc2 100644
+--- a/ContextUp/src/manager/ui/frames/dashboard.py
++++ b/ContextUp/src/manager/ui/frames/dashboard.py
+@@ -796,7 +796,19 @@ class DashboardFrame(ctk.CTkFrame):
+         try:
+             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_SET_VALUE)
+             if is_enabled:
+-                cmd = f'"{sys.executable}" "{self.src_dir / "tray" / "agent.py"}"'
++                # 1. Try embedded pythonw.exe first (Single source of truth)
++                embedded_w = self.src_dir.parent / "tools" / "python" / "pythonw.exe"
++                if embedded_w.exists():
++                    py_path = embedded_w
++                else:
++                    # 2. Fallback to current interpreter's sibling pythonw
++                    py_path = Path(sys.executable)
++                    if py_path.name.lower() == "python.exe":
++                        w_path = py_path.parent / "pythonw.exe"
++                        if w_path.exists():
++                            py_path = w_path
++                
++                cmd = f'"{py_path}" "{self.src_dir / "tray" / "agent.py"}"'
+                 winreg.SetValueEx(key, "ContextUpTray", 0, winreg.REG_SZ, cmd)
+             else:
+                 try: winreg.DeleteValue(key, "ContextUpTray")
+diff --git a/ContextUp/tray.bat b/ContextUp/tray.bat
+index 605b403..b6384bd 100644
+--- a/ContextUp/tray.bat
++++ b/ContextUp/tray.bat
+@@ -8,15 +8,17 @@ echo ContextUp Tray Agent ?ㅽ뻾 以?..
+ set PYTHONPATH=%CD%\src;%PYTHONPATH%
+ 
+ :: Determine which python to use (Embedded first, then system)
+-if exist "tools\python\python.exe" (
++if exist "tools\python\pythonw.exe" (
++    set "PYTHON_EXE=tools\python\pythonw.exe"
++) else if exist "tools\python\python.exe" (
+     set "PYTHON_EXE=tools\python\python.exe"
+ ) else (
+-    set "PYTHON_EXE=python"
++    set "PYTHON_EXE=pythonw"
+ )
+ 
+ :: Run the tray agent using direct script execution
+ :: Note: -m flag doesn't work because it tries to import the package before sys.path is set
+-"%PYTHON_EXE%" src\tray\agent.py
++start "" "%PYTHON_EXE%" src\tray\agent.py
+ 
+ if %ERRORLEVEL% NEQ 0 (
+     echo.
+diff --git a/ContextUp/requirements.txt b/ContextUp/requirements.txt
+index b88124b..9fa66b5 100644
+--- a/ContextUp/requirements.txt
++++ b/ContextUp/requirements.txt
+@@ -39,6 +39,9 @@ xhtml2pdf  # HTML/Markdown to PDF
+ ebooklib  # PDF to EPUB
+ 
+ # --- AI & Processing ---
++setuptools
++wheel
++packaging
+ numpy<2
+ noise
+ tqdm
+diff --git a/README.md b/README.md
+index 8ecf54c..7602d8c 100644
+--- a/README.md
++++ b/README.md
+@@ -6,7 +6,7 @@
+ 
+ > "Why click 10 times when you can just Right-Click once?"
+ 
+-[![Version](https://img.shields.io/badge/version-4.0.1-green.svg)](CHANGELOG.md)
++[![Version](https://img.shields.io/badge/version-4.0.2-green.svg)](CHANGELOG.md)
+ ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+ ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
+ 
+@@ -19,7 +19,7 @@
+ > **?뮕 留ㅼ씪 ?ъ슜?섎뒗 ?⑥닚 諛섎났 ?묒뾽遺?? 泥⑤떒 ?ㅽ뵂?뚯뒪 AI 湲곕뒫源뚯?.**
+ > <br>臾닿굅???뚰봽?몄썾?대? ?ㅽ뻾???꾩슂 ?놁씠, ?고겢由???踰덉쑝濡?利됱떆 ?닿껐?섏꽭??
+ 
+-?꾩옱 **?뚯뒪??踰꾩쟾 (v4.0.1)** ?낅땲??<br>
++?꾩옱 **?뚯뒪??踰꾩쟾 (v4.0.2)** ?낅땲??<br>
+ 吏?띿쟻???낅뜲?댄듃濡??ㅼ뼇??湲곕뒫怨??몃? ?꾧뎄 ?곕룞??異붽??섍퀬 ?덉뒿?덈떎. 留롮? ?쇰뱶諛?遺?곷뱶由쎈땲??
+ 
+ <br>
+@@ -35,7 +35,7 @@
+ | 移댄뀒怨좊━ | ?덉떆 湲곕뒫 |
+ |----------|-----------|
+ | AI | 諛곌꼍 ?쒓굅, ?낆뒪耳??ComfyUI ?명솚), PBR ?앹꽦, ?먮쭑 ?앹꽦, AI Text Lab(Gemini/Ollama), **Creative Studio (Z/Advanced)** |
+-| ?대?吏 | ?щ㎎ 蹂??DDS/EXR/WebP ??, EXR 蹂묓빀/遺꾨━, ?띿뒪泥??⑥빱, 2??嫄곕벊?쒓낢 由ъ궗?댁쫰 |
++| ?대?吏 | ?щ㎎ 蹂??DDS/EXR/WebP ??, EXR 蹂묓빀/遺꾨━, ?띿뒪泥??⑥빱, 2??嫄곕벊?쒓낢 由ъ궗?댁쫰, **?몄씠利?留덉뒪???덉씠???덉감???앹꽦)** |
+ | ?쒗??| ?뚮뜑留??쒗???뺣젹, ?꾨씫 ?꾨젅???먯깋, ?곸긽 蹂?? 遺꾩꽍 諛?由щ꽆踰꾨쭅 |
+ | 鍮꾨뵒??| ProRes 蹂?? ?꾨줉???앹꽦, ?꾨젅??蹂닿컙(RIFE), ?좏뒠釉??ㅼ슫濡쒕뜑 |
+ | ?ㅻ뵒??| ?щ㎎ 蹂?? 蹂댁뺄/諛곌꼍 遺꾨━, 蹂쇰ⅷ ?뺢퇋??|
+diff --git a/README_EN.md b/README_EN.md
+index 7a4c154..b778ead 100644
+--- a/README_EN.md
++++ b/README_EN.md
+@@ -6,7 +6,7 @@
+ 
+ > "Why click 10 times when you can just Right-Click once?"
+ 
+-[![Version](https://img.shields.io/badge/version-4.0.1-green.svg)](CHANGELOG.md)
++[![Version](https://img.shields.io/badge/version-4.0.2-green.svg)](CHANGELOG.md)
+ ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+ ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
+ 
+@@ -19,7 +19,7 @@
+ > **?뮕 From daily repetitive tasks to advanced open-source AI features.**
+ > <br>Solve it instantly with a single Right-Click, without opening heavy software.
+ 
+-Currently in **Test Version (v4.0.1)**.<br>
++Currently in **Test Version (v4.0.2)**.<br>
+ We are continuously updating with new features and external tool integrations. Feedback is welcome.
+ 
+ <br>
+@@ -35,7 +35,7 @@ We are continuously updating with new features and external tool integrations. F
+ | Category | Example Features |
+ |----------|-----------|
+ | **AI** | Remove Background, Upscale (ComfyUI compatible), PBR Generation, Subtitles, AI Text Lab (Gemini/Ollama), **Creative Studio (Z/Advanced)** |
+-| **Image** | Format Convert (DDS/EXR/WebP etc.), EXR Merge/Split, Texture Packer, Power of 2 Resize |
++| **Image** | Format Convert (DDS/EXR/WebP etc.), EXR Merge/Split, Texture Packer, Power of 2 Resize, **Noise Master (Layer-based Procedural Generation)** |
+ | **Sequence** | Render Sequence Sorting, Missing Frame Detection, Video Conversion, Analysis & Renumbering |
+ | **Video** | ProRes Convert, Proxy Generation, Frame Interpolation (RIFE), YouTube Downloader |
+ | **Audio** | Format Convert, Vocal/Stem Separation, Volume Normalization |

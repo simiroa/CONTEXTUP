@@ -38,9 +38,11 @@ def remove_background_rmbg(image_path, output_path):
                 print("1. Hugging Face 계정으로 로그인 후 라이선스에 동의해주세요: https://huggingface.co/briaai/RMBG-2.0")
                 print("2. Access Token을 발급받으세요: https://huggingface.co/settings/tokens")
                 print("3. 터미널에서 `huggingface-cli login` 명령어로 로그인하거나 환경변수 `HF_TOKEN`을 설정하세요.")
+                print("\n[TIP] 인증 없이 즉시 사용을 원하시면 'BiRefNet' 모델을 사용해 보세요.")
                 return False
             else:
                  print(f"Error loading model: {e}")
+                 print("[TIP] 'BiRefNet' 또는 'InSPyReNet' 모델은 다운로드 즉시 사용 가능합니다.")
                  return False
 
     model.to(device)

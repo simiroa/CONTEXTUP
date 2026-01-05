@@ -8,15 +8,17 @@ echo ContextUp Tray Agent 실행 중...
 set PYTHONPATH=%CD%\src;%PYTHONPATH%
 
 :: Determine which python to use (Embedded first, then system)
-if exist "tools\python\python.exe" (
+if exist "tools\python\pythonw.exe" (
+    set "PYTHON_EXE=tools\python\pythonw.exe"
+) else if exist "tools\python\python.exe" (
     set "PYTHON_EXE=tools\python\python.exe"
 ) else (
-    set "PYTHON_EXE=python"
+    set "PYTHON_EXE=pythonw"
 )
 
 :: Run the tray agent using direct script execution
 :: Note: -m flag doesn't work because it tries to import the package before sys.path is set
-"%PYTHON_EXE%" src\tray\agent.py
+start "" "%PYTHON_EXE%" src\tray\agent.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.

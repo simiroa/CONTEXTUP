@@ -39,6 +39,9 @@ xhtml2pdf  # HTML/Markdown to PDF
 ebooklib  # PDF to EPUB
 
 # --- AI & Processing ---
+setuptools
+wheel
+packaging
 numpy<2
 noise
 tqdm

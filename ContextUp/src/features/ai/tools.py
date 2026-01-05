@@ -38,7 +38,7 @@ class BackgroundRemovalGUI(BaseWindow):
         # Model Selection
         ctk.CTkLabel(self.main_frame, text="Select AI Model:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(10, 5))
         
-        self.model_var = ctk.StringVar(value="rmbg")
+        self.model_var = ctk.StringVar(value="birefnet")
         
         models = [
             ("rmbg", "RMBG-2.0", "Best Balance (92% accuracy)"),
@@ -51,6 +51,12 @@ class BackgroundRemovalGUI(BaseWindow):
             frame.pack(anchor="w", padx=30, pady=2)
             ctk.CTkRadioButton(frame, text=name, variable=self.model_var, value=val).pack(side="left")
             ctk.CTkLabel(frame, text=desc, text_color="gray", font=ctk.CTkFont(size=11)).pack(side="left", padx=10)
+            
+        # Auth Notice for RMBG-2.0
+        auth_box = ctk.CTkFrame(self.main_frame, fg_color="gray30", corner_radius=6)
+        auth_box.pack(fill="x", padx=30, pady=(10, 0))
+        ctk.CTkLabel(auth_box, text="ℹ️ RMBG-2.0 requires Hugging Face approval & token.", 
+                    text_color="#E67E22", font=ctk.CTkFont(size=11)).pack(pady=5)
             
         # Options
         ctk.CTkLabel(self.main_frame, text="Output Options:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))

@@ -796,7 +796,19 @@ class DashboardFrame(ctk.CTkFrame):
         try:
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_SET_VALUE)
             if is_enabled:
-                cmd = f'"{sys.executable}" "{self.src_dir / "tray" / "agent.py"}"'
+                # 1. Try embedded pythonw.exe first (Single source of truth)
+                embedded_w = self.src_dir.parent / "tools" / "python" / "pythonw.exe"
+                if embedded_w.exists():
+                    py_path = embedded_w
+                else:
+                    # 2. Fallback to current interpreter's sibling pythonw
+                    py_path = Path(sys.executable)
+                    if py_path.name.lower() == "python.exe":
+                        w_path = py_path.parent / "pythonw.exe"
+                        if w_path.exists():
+                            py_path = w_path
+                
+                cmd = f'"{py_path}" "{self.src_dir / "tray" / "agent.py"}"'
                 winreg.SetValueEx(key, "ContextUpTray", 0, winreg.REG_SZ, cmd)
             else:
                 try: winreg.DeleteValue(key, "ContextUpTray")

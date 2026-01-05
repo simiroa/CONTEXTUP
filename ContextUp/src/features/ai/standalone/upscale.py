@@ -12,6 +12,12 @@ warnings.filterwarnings("ignore")
 # Add libs to path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent / "libs"))
 
+# --- Monkey Patch for BasicSR compatibility with torchvision >= 0.17 ---
+import torchvision
+if not hasattr(torchvision.transforms, 'functional_tensor'):
+    torchvision.transforms.functional_tensor = torchvision.transforms.functional
+# ----------------------------------------------------------------------
+
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 from gfpgan import GFPGANer

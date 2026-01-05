@@ -6,7 +6,7 @@
 
 > "Why click 10 times when you can just Right-Click once?"
 
-[![Version](https://img.shields.io/badge/version-4.0.1-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.0.2-green.svg)](CHANGELOG.md)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
@@ -19,7 +19,7 @@
 > **💡 From daily repetitive tasks to advanced open-source AI features.**
 > <br>Solve it instantly with a single Right-Click, without opening heavy software.
 
-Currently in **Test Version (v4.0.1)**.<br>
+Currently in **Test Version (v4.0.2)**.<br>
 We are continuously updating with new features and external tool integrations. Feedback is welcome.
 
 <br>
@@ -35,7 +35,7 @@ We are continuously updating with new features and external tool integrations. F
 | Category | Example Features |
 |----------|-----------|
 | **AI** | Remove Background, Upscale (ComfyUI compatible), PBR Generation, Subtitles, AI Text Lab (Gemini/Ollama), **Creative Studio (Z/Advanced)** |
-| **Image** | Format Convert (DDS/EXR/WebP etc.), EXR Merge/Split, Texture Packer, Power of 2 Resize |
+| **Image** | Format Convert (DDS/EXR/WebP etc.), EXR Merge/Split, Texture Packer, Power of 2 Resize, **Noise Master (Layer-based Procedural Generation)** |
 | **Sequence** | Render Sequence Sorting, Missing Frame Detection, Video Conversion, Analysis & Renumbering |
 | **Video** | ProRes Convert, Proxy Generation, Frame Interpolation (RIFE), YouTube Downloader |
 | **Audio** | Format Convert, Vocal/Stem Separation, Volume Normalization |
