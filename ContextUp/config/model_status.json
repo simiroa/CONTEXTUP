@@ -2,8 +2,8 @@
   "Rembg": true,
   "BiRefNet": true,
   "Marigold": true,
-  "Upscale": true,
+  "Upscale": false,
   "Whisper": true,
   "Demucs": true,
-  "RMBG-2.0": true
+  "RMBG-2.0": false
 }

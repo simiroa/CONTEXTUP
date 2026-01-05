@@ -701,8 +701,21 @@ def main():
     # Print Summary
     print_summary(categories, tools_results, models_ok, pkg_ok, bool(download_models))
 
-    # Log upload on failure
-    if not pkg_ok or not models_ok:
+    # Register context menu BEFORE error logging (should proceed even if some models failed)
+    if not safe_test and pkg_ok:
+        print("\n컨텍스트 메뉴를 등록합니다...")
+        try:
+            reg_script = ROOT_DIR / "re_register_menu.py"
+            result = subprocess.call([str(chosen_python), str(reg_script)])
+            if result == 0:
+                print("[성공] 컨텍스트 메뉴 등록 완료.")
+            else:
+                print(f"[경고] 메뉴 등록 스크립트가 오류 코드 {result}를 반환했습니다.")
+        except Exception as e:
+            print(f"[경고] 메뉴 등록 실패: {e}")
+
+    # Log upload on failure (model failures are low severity, don't block installation)
+    if not pkg_ok:
         print("\n[경고] 설치 중 일부 오류가 발생했습니다.")
         log_path = ROOT_DIR / "install_log.txt"
         if prompt_yn("오류 로그를 개발자에게 전송하시겠습니까?", False):
@@ -734,13 +747,6 @@ def main():
     print("!"*50 + "\n")
     
     if not safe_test:
-        # 2025-12-21: Auto-register context menu
-        print("\n컨텍스트 메뉴를 등록합니다...")
-        try:
-            reg_script = ROOT_DIR / "re_register_menu.py"
-            subprocess.call([str(chosen_python), str(reg_script)])
-        except Exception as e:
-            print(f"[경고] 메뉴 등록 실패: {e}")
 
         print("\nContextUp 매니저를 실행합니다...")
         # GUI 매니저는 src/manager/main.py에 있음 (manage.py는 CLI 도구)

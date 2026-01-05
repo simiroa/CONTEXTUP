@@ -43,6 +43,8 @@ numpy<2
 noise
 tqdm
 rembg
+numba  # JIT acceleration for numeric kernels
+cupy-cuda12x  # GPU backend for Noise Master (CUDA 12.x)
 accelerate  # Hugging Face model loading
 diffusers  # Stable Diffusion pipelines
 transformers # Required for diffusion pipelines

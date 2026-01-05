@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 1010, in <module>
+    app = NoiseMasterWindow()
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 319, in __init__
+    self._update_properties()
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 598, in _update_properties
+    if t in ['fbm', 'perlin', 'simplex']:
+       ^
+UnboundLocalError: cannot access local variable 't' where it is not associated with a value

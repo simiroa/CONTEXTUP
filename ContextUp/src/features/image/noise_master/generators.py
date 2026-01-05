@@ -1,293 +1,161 @@
 """
-Noise Master - Unified Pattern Generators
-
-Single entry point for all pattern generation.
-All functions return np.ndarray (float32) in range [0.0, 1.0].
+Noise Master - Generator dispatcher.
 """
 
+from __future__ import annotations
+
 import numpy as np
-from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
-# Safe import for noise library
-try:
-    import noise
-    HAS_NOISE = True
-except ImportError:
-    HAS_NOISE = False
-    noise = None
+from .layers import LayerConfig
+from .gpu_backend import GPU_AVAILABLE, get_xp, to_numpy
 
+from .noise_perlin import perlin_fractal_distorted
+from .noise_perlin_gpu import perlin_fractal_distorted_gpu
+from .noise_patterns import (
+    white_noise,
+    magic_texture,
+    wave_texture,
+    gabor_texture,
+    gradient_texture,
+    brick_texture,
+)
+from .noise_patterns_gpu import (
+    white_noise as white_noise_gpu,
+    magic_texture as magic_texture_gpu,
+    wave_texture as wave_texture_gpu,
+    gabor_texture as gabor_texture_gpu,
+    gradient_texture as gradient_texture_gpu,
+    brick_texture as brick_texture_gpu,
+)
+from .noise_voronoi import voronoi_texture
+from .noise_voronoi_gpu import voronoi_texture_gpu
 
-@dataclass
-class LayerData:
-    """Immutable layer configuration."""
-    name: str = "Layer"
-    type: str = "perlin"
-    visible: bool = True
-    blend_mode: str = "normal"
-    opacity: float = 1.0
-    
-    # Transform
-    scale: float = 10.0
-    rotation: float = 0.0
-    offset_x: float = 0.0
-    offset_y: float = 0.0
-    
-    # Noise params
-    seed: int = 0
-    octaves: int = 4
-    persistence: float = 0.5
-    lacunarity: float = 2.0
-    
-    # Modifiers
-    invert: bool = False
-    ridged: bool = False
-    
-    # Type-specific
-    subtype: str = "linear"
+__all__ = ["generate"]
 
 
-def generate(layer: LayerData, width: int, height: int) -> np.ndarray:
-    """
-    Single entry point for all pattern generation.
-    
-    Args:
-        layer: Layer configuration
-        width: Output width in pixels
-        height: Output height in pixels
-        
-    Returns:
-        np.ndarray: float32 array [0.0, 1.0] of shape (height, width)
-    """
-    # Create coordinate grid
-    coords = _create_coords(width, height, layer)
-    
-    # Dispatch to generator
-    generators = {
-        'perlin': _gen_perlin,
-        'simplex': _gen_simplex,
-        'cellular': _gen_cellular,
-        'voronoi': _gen_cellular,
-        'gradient': _gen_gradient,
-        'checker': _gen_checker,
-        'grid': _gen_grid,
-        'brick': _gen_brick,
-    }
-    
-    gen_func = generators.get(layer.type, _gen_perlin)
-    result = gen_func(coords, layer)
-    
-    # Apply modifiers
-    if layer.ridged:
-        result = 1.0 - 2.0 * np.abs(result - 0.5)
-    if layer.invert:
-        result = 1.0 - result
-        
-    return np.clip(result, 0.0, 1.0).astype(np.float32)
+def _create_uv_grid(width: int, height: int):
+    x = np.linspace(0.0, 1.0, width, dtype=np.float32)
+    y = np.linspace(0.0, 1.0, height, dtype=np.float32)
+    xv, yv = np.meshgrid(x, y)
+    return xv, yv
 
 
-def _create_coords(width: int, height: int, layer: LayerData) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Create normalized coordinate grids with transform applied.
-    
-    Returns:
-        (nx, ny): Coordinate arrays of shape (height, width)
-    """
-    # Base grid [0, 1]
-    x = np.linspace(0, 1, width, dtype=np.float32)
-    y = np.linspace(0, 1, height, dtype=np.float32)
-    nx, ny = np.meshgrid(x, y)
-    
-    # Center for rotation
-    nx -= 0.5
-    ny -= 0.5
-    
-    # Rotation
-    if layer.rotation != 0:
-        rad = np.radians(layer.rotation)
-        cos_r, sin_r = np.cos(rad), np.sin(rad)
-        rx = nx * cos_r - ny * sin_r
-        ry = nx * sin_r + ny * cos_r
-        nx, ny = rx, ry
-    
-    # Offset
-    nx += layer.offset_x
-    ny += layer.offset_y
-    
-    # Scale (higher = more detail/repetitions)
-    scale = max(0.1, layer.scale)
-    nx *= scale
-    ny *= scale
-    
-    return nx, ny
+def generate(cfg: LayerConfig, width: int, height: int,
+             coords: Optional[tuple] = None,
+             node_scale: Optional[float] = None,
+             use_gpu: bool = True,
+             cancel_check=None):
+    use_gpu = bool(use_gpu and GPU_AVAILABLE)
+    xp = get_xp(use_gpu)
 
+    if coords is None:
+        u, v = _create_uv_grid(width, height)
+        coords = (u, v)
 
-# ============ NOISE GENERATORS ============
+    t = cfg.type.lower()
+    if node_scale is None:
+        node_scale = 1.0 if t in ["gradient", "white_noise"] else cfg.noise_scale
 
-def _gen_perlin(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate Perlin noise."""
-    if not HAS_NOISE:
-        return _gen_fallback(coords, layer)
-    
-    nx, ny = coords
-    height, width = nx.shape
-    result = np.zeros((height, width), dtype=np.float32)
-    
-    for y in range(height):
-        for x in range(width):
-            result[y, x] = noise.pnoise2(
-                nx[y, x], ny[y, x],
-                octaves=layer.octaves,
-                persistence=layer.persistence,
-                lacunarity=layer.lacunarity,
-                base=layer.seed
-            )
-    
-    # Normalize [-1, 1] -> [0, 1]
-    return (result + 1.0) * 0.5
+    if t in ["fbm", "perlin", "simplex"]:
+        detail = float(np.clip(cfg.detail, 0.0, 15.0))
+        roughness = float(max(cfg.roughness, 0.0))
+        lacunarity = float(cfg.lacunarity)
+        noise_type = getattr(cfg, "noise_type", "FBM")
+        coords_local = coords
+        if coords_local is not None and len(coords_local) == 2:
+            evolution = float(getattr(cfg, "evolution", 0.0))
+            if evolution != 0.0:
+                zero = xp.zeros_like(coords_local[0])
+                evo = xp.full_like(coords_local[0], evolution)
+                coords_local = (coords_local[0], coords_local[1], zero, evo)
+        if use_gpu:
+            return perlin_fractal_distorted_gpu(
+                coords_local, detail=detail, roughness=roughness, lacunarity=lacunarity,
+                offset=cfg.noise_offset, gain=cfg.noise_gain, distortion=cfg.distortion,
+                noise_type=noise_type, normalize=cfg.normalize, seed=cfg.seed,
+                cancel_check=cancel_check)
+        return perlin_fractal_distorted(
+            coords_local, detail=detail, roughness=roughness, lacunarity=lacunarity,
+            offset=cfg.noise_offset, gain=cfg.noise_gain, distortion=cfg.distortion,
+            noise_type=noise_type, normalize=cfg.normalize, seed=cfg.seed,
+            cancel_check=cancel_check)
 
+    if t == "wave":
+        if use_gpu:
+            return wave_texture_gpu(coords, wave_type=cfg.wave_type,
+                                   bands_dir=cfg.wave_dir, rings_dir=cfg.wave_rings_dir,
+                                   profile=cfg.wave_profile, phase=cfg.phase_offset, seed=cfg.seed,
+                                   distortion=cfg.distortion, detail=cfg.detail,
+                                   detail_scale=cfg.wave_detail_scale,
+                                   detail_roughness=cfg.wave_detail_roughness)
+        return wave_texture(coords, wave_type=cfg.wave_type,
+                           bands_dir=cfg.wave_dir, rings_dir=cfg.wave_rings_dir,
+                           profile=cfg.wave_profile, phase=cfg.phase_offset, seed=cfg.seed,
+                           distortion=cfg.distortion, detail=cfg.detail,
+                           detail_scale=cfg.wave_detail_scale,
+                           detail_roughness=cfg.wave_detail_roughness)
 
-def _gen_simplex(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate Simplex noise."""
-    if not HAS_NOISE:
-        return _gen_fallback(coords, layer)
-    
-    nx, ny = coords
-    height, width = nx.shape
-    result = np.zeros((height, width), dtype=np.float32)
-    
-    for y in range(height):
-        for x in range(width):
-            result[y, x] = noise.snoise2(
-                nx[y, x], ny[y, x],
-                octaves=layer.octaves,
-                persistence=layer.persistence,
-                lacunarity=layer.lacunarity,
-                base=layer.seed
-            )
-    
-    return (result + 1.0) * 0.5
+    if t == "magic":
+        if use_gpu:
+            return magic_texture_gpu(coords, depth=cfg.depth, distortion=cfg.distortion)
+        return magic_texture(coords, depth=cfg.depth, distortion=cfg.distortion)
 
+    if t == "gabor":
+        if use_gpu:
+            return gabor_texture_gpu(coords, frequency=cfg.gabor_frequency,
+                                     anisotropy=cfg.gabor_anisotropy,
+                                     orientation_deg=cfg.gabor_orientation)
+        return gabor_texture(coords, frequency=cfg.gabor_frequency,
+                             anisotropy=cfg.gabor_anisotropy,
+                             orientation_deg=cfg.gabor_orientation)
 
-def _gen_cellular(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate Cellular/Voronoi noise using grid-based approach."""
-    nx, ny = coords
-    
-    # Integer cell coordinates
-    ix = np.floor(nx).astype(np.int32)
-    iy = np.floor(ny).astype(np.int32)
-    
-    # Fractional position within cell
-    fx = nx - ix
-    fy = ny - iy
-    
-    min_dist = np.full_like(nx, 10.0)
-    seed = layer.seed
-    
-    # Check 3x3 neighborhood
-    for dy in [-1, 0, 1]:
-        for dx in [-1, 0, 1]:
-            # Neighbor cell
-            cx = ix + dx
-            cy = iy + dy
-            
-            # Hash to get random point in cell
-            px = dx + _hash2d(cx, cy, seed) 
-            py = dy + _hash2d(cx, cy, seed + 1)
-            
-            # Distance to point
-            dist = np.sqrt((fx - px)**2 + (fy - py)**2)
-            min_dist = np.minimum(min_dist, dist)
-    
-    # Normalize (typical F1 range is ~0-1.5)
-    return np.clip(min_dist, 0.0, 1.0)
+    if t == "white_noise":
+        if use_gpu:
+            return white_noise_gpu(coords, seed=cfg.seed)
+        return white_noise(coords, seed=cfg.seed)
 
+    if t == "gradient":
+        if use_gpu:
+            return gradient_texture_gpu(coords, subtype=cfg.subtype)
+        return gradient_texture(coords, subtype=cfg.subtype)
 
-def _hash2d(x: np.ndarray, y: np.ndarray, seed: int) -> np.ndarray:
-    """Simple hash function for pseudo-random values in [0, 1]."""
-    return np.mod(np.sin(x * 12.9898 + y * 78.233 + seed) * 43758.5453, 1.0)
+    if t in ["voronoi", "cellular"]:
+        if use_gpu:
+            return voronoi_texture_gpu(
+                coords, seed=cfg.seed, randomness=cfg.jitter,
+                distance_metric=cfg.distance_metric, feature=cfg.return_type,
+                smoothness=cfg.smoothness, detail=cfg.detail,
+                roughness=cfg.roughness, lacunarity=cfg.lacunarity,
+                exponent=cfg.exponent, normalize=cfg.normalize,
+                output=cfg.voronoi_output, node_scale=node_scale)
+        return voronoi_texture(
+            coords, seed=cfg.seed, randomness=cfg.jitter,
+            distance_metric=cfg.distance_metric, feature=cfg.return_type,
+            smoothness=cfg.smoothness, detail=cfg.detail,
+            roughness=cfg.roughness, lacunarity=cfg.lacunarity,
+            exponent=cfg.exponent, normalize=cfg.normalize,
+            output=cfg.voronoi_output, node_scale=node_scale)
 
+    if t == "brick":
+        if use_gpu:
+            return brick_texture_gpu(
+                coords, offset=cfg.row_offset,
+                mortar_size=cfg.mortar_size,
+                mortar_smooth=cfg.mortar_smooth, bias=0.0,
+                brick_width=cfg.brick_ratio, row_height=cfg.brick_row_height,
+                offset_frequency=cfg.brick_offset_frequency,
+                squash_amount=cfg.brick_squash,
+                squash_frequency=cfg.brick_squash_frequency)
+        return brick_texture(
+            coords, offset=cfg.row_offset,
+            mortar_size=cfg.mortar_size,
+            mortar_smooth=cfg.mortar_smooth, bias=0.0,
+            brick_width=cfg.brick_ratio, row_height=cfg.brick_row_height,
+            offset_frequency=cfg.brick_offset_frequency,
+            squash_amount=cfg.brick_squash,
+            squash_frequency=cfg.brick_squash_frequency)
 
-def _gen_fallback(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Fallback noise when library not available - simple value noise."""
-    nx, ny = coords
-    seed = layer.seed
-    
-    # Grid-based value noise
-    ix = np.floor(nx).astype(np.int32)
-    iy = np.floor(ny).astype(np.int32)
-    fx = nx - ix
-    fy = ny - iy
-    
-    # Corner values
-    v00 = _hash2d(ix, iy, seed)
-    v10 = _hash2d(ix + 1, iy, seed)
-    v01 = _hash2d(ix, iy + 1, seed)
-    v11 = _hash2d(ix + 1, iy + 1, seed)
-    
-    # Bilinear interpolation
-    sx = fx * fx * (3 - 2 * fx)  # Smoothstep
-    sy = fy * fy * (3 - 2 * fy)
-    
-    return (v00 * (1 - sx) + v10 * sx) * (1 - sy) + (v01 * (1 - sx) + v11 * sx) * sy
-
-
-# ============ PATTERN GENERATORS ============
-
-def _gen_gradient(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate linear or radial gradient."""
-    nx, ny = coords
-    
-    if layer.subtype == 'radial':
-        # Distance from center
-        dist = np.sqrt(nx**2 + ny**2)
-        # Normalize so edge of unit circle = 1
-        return np.clip(1.0 - dist * 2.0 / layer.scale, 0.0, 1.0)
-    else:
-        # Linear gradient along X axis (rotation handled in coords)
-        return np.mod(nx / layer.scale + 0.5, 1.0)
-
-
-def _gen_checker(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate checkerboard pattern."""
-    nx, ny = coords
-    
-    ix = np.floor(nx).astype(np.int32)
-    iy = np.floor(ny).astype(np.int32)
-    
-    return ((ix + iy) % 2).astype(np.float32)
-
-
-def _gen_grid(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate grid lines pattern."""
-    nx, ny = coords
-    
-    # Distance to nearest grid line
-    fx = np.abs(nx - np.round(nx))
-    fy = np.abs(ny - np.round(ny))
-    dist = np.minimum(fx, fy)
-    
-    # Line thickness based on persistence (0=thin, 1=thick)
-    thickness = layer.persistence * 0.3
-    
-    return np.clip((thickness - dist) / 0.05, 0.0, 1.0)
-
-
-def _gen_brick(coords: Tuple[np.ndarray, np.ndarray], layer: LayerData) -> np.ndarray:
-    """Generate brick pattern."""
-    nx, ny = coords
-    
-    # Stagger every other row
-    row = np.floor(ny)
-    staggered_x = nx.copy()
-    staggered_x[row.astype(np.int32) % 2 == 1] += 0.5
-    
-    # Distance to cell edge
-    fx = np.abs(staggered_x - np.round(staggered_x))
-    fy = np.abs(ny - np.round(ny))
-    dist = np.minimum(fx, fy)
-    
-    # Mortar thickness
-    mortar = layer.persistence * 0.2
-    
-    return np.clip((dist - mortar) / 0.05, 0.0, 1.0)
+    if use_gpu:
+        return xp.zeros((height, width), dtype=xp.float32)
+    return np.zeros((height, width), dtype=np.float32)
