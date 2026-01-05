@@ -274,10 +274,11 @@ def main():
         "Rembg": download_rembg(),
         "BiRefNet": download_birefnet(),
         "Marigold": download_marigold(),
-        "Upscale": download_upscale(),
         "Whisper": download_whisper(),
         "Demucs": download_demucs(),
-        "RMBG-2.0": download_rmbg20(),
+        # Skipped by default (require special setup):
+        # - Upscale: GFPGAN dependency issues
+        # - RMBG-2.0: Requires HuggingFace auth (gated model)
     }
     
     print("\n=== Model Download Summary ===")

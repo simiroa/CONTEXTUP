@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 988, in <module>
+    app = NoiseMasterWindow()
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 316, in __init__
+    self._build_ui()
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 335, in _build_ui
+    self._build_layers_panel()
+  File "C:\Users\HG_maison\Documents\CONTEXTUP\ContextUp\src\features\image\noise_master_gui.py", line 359, in _build_layers_panel
+    ctk.CTkButton(acts, text="Presets", height=28, fg_color="#333", command=self._show_presets).pack(side="left", width=70, padx=2)
+  File "C:\Users\HG_maison\AppData\Local\Programs\Python\Python312\Lib\site-packages\customtkinter\windows\widgets\core_widget_classes\ctk_base_class.py", line 298, in pack
+    return super().pack(**self._apply_argument_scaling(kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HG_maison\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 2483, in pack_configure
+    self.tk.call(
+_tkinter.TclError: bad option "-width": must be -after, -anchor, -before, -expand, -fill, -in, -ipadx, -ipady, -padx, -pady, or -side
