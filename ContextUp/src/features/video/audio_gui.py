@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import subprocess
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Add src to path
 current_dir = Path(__file__).parent
@@ -16,14 +17,17 @@ from utils.explorer import get_selection_from_explorer
 from utils.gui_lib import BaseWindow, FileListFrame, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
 
 class VideoAudioGUI(BaseWindow):
-    def __init__(self, target_path):
+    def __init__(self, target_path, selection=None):
         super().__init__(title="ContextUp Audio Tools", width=500, height=600, icon_name="video_audio_tools")
         
         self.target_path = target_path
-        self.selection = get_selection_from_explorer(target_path)
-        if not self.selection: self.selection = [target_path]
+        if isinstance(selection, (list, tuple)):
+            self.selection = [str(p) for p in selection]
+        else:
+            self.selection = get_selection_from_explorer(target_path)
+            if not self.selection: self.selection = [target_path]
         
-        self.files = [Path(p) for p in self.selection]
+        self.files = [Path(p) for p in self.selection if Path(p).exists()]
         
         self.var_new_folder = ctk.BooleanVar(value=True)
         self.create_widgets()
@@ -133,9 +137,10 @@ class VideoAudioGUI(BaseWindow):
 
     def start_thread(self, mode):
         self.btn_action.configure(state="disabled")
-        threading.Thread(target=lambda: self.process_files(mode), daemon=True).start()
+        self.cancel_flag = False
+        threading.Thread(target=lambda: self.process_parallel(mode), daemon=True).start()
 
-    def process_files(self, mode):
+    def process_parallel(self, mode):
         ffmpeg = get_ffmpeg()
         if not ffmpeg or not Path(ffmpeg).exists():
             messagebox.showerror("Error", "FFmpeg not found!")
@@ -143,55 +148,92 @@ class VideoAudioGUI(BaseWindow):
             return
 
         total = len(self.files)
-        for i, file in enumerate(self.files):
-            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {file.name}")
-            self.progress.set((i+1) / total)
-            
+        save_new_folder = self.var_new_folder.get()
+        jobs = []
+        
+        # Prepare Jobs
+        for file in self.files:
             out_dir = file.parent
-            if self.var_new_folder.get():
+            if save_new_folder:
                 out_dir = file.parent / "Audio_Output"
                 out_dir.mkdir(exist_ok=True)
             
-            try:
-                if mode == "extract":
-                    ext = self.ext_fmt.get().lower()
-                    out_file = out_dir / f"{file.stem}.{ext}"
-                    cmd = [ffmpeg, "-i", str(file), "-vn", "-acodec", "copy" if ext == "wav" else "libmp3lame", str(out_file)]
-                    subprocess.run(cmd, check=True, capture_output=True)
-                    
-                elif mode == "remove":
-                    out_file = out_dir / f"{file.stem}_no_audio{file.suffix}"
-                    cmd = [ffmpeg, "-i", str(file), "-an", "-vcodec", "copy", str(out_file)]
-                    subprocess.run(cmd, check=True, capture_output=True)
-                    
-                elif mode == "separate":
-                    voice_file = out_dir / f"{file.stem}_voice.wav"
-                    bgm_file = out_dir / f"{file.stem}_bgm.wav"
-                    # Simple bandpass for voice (300-3400 Hz) and inverse for BGM
-                    if self.sep_mode.get() == "Voice":
-                        cmd = [ffmpeg, "-i", str(file), "-af", "bandpass=f=1850:width_type=h:width=3100", str(voice_file)]
-                    else:
-                        cmd = [ffmpeg, "-i", str(file), "-af", "bandreject=f=1850:width_type=h:width=3100", str(bgm_file)]
-                    subprocess.run(cmd, check=True, capture_output=True)
-                    
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to process {file.name}: {e}")
+            job = {'src': file, 'out_dir': out_dir, 'mode': mode}
+            
+            if mode == "extract":
+                ext = self.ext_fmt.get().lower()
+                out_file = out_dir / f"{file.stem}.{ext}"
+                job['cmd'] = [ffmpeg, "-i", str(file), "-vn", "-acodec", "copy" if ext == "wav" else "libmp3lame", str(out_file), "-y"]
+            elif mode == "remove":
+                out_file = out_dir / f"{file.stem}_no_audio{file.suffix}"
+                job['cmd'] = [ffmpeg, "-i", str(file), "-an", "-vcodec", "copy", str(out_file), "-y"]
+            elif mode == "separate":
+                # Only one command per job for simplicity, create separate jobs for Voice/BGM?
+                # The UI has radio button for MODE.
+                if self.sep_mode.get() == "Voice":
+                    out_file = out_dir / f"{file.stem}_voice.wav"
+                    job['cmd'] = [ffmpeg, "-i", str(file), "-af", "bandpass=f=1850:width_type=h:width=3100", str(out_file), "-y"]
+                else:
+                    out_file = out_dir / f"{file.stem}_bgm.wav"
+                    job['cmd'] = [ffmpeg, "-i", str(file), "-af", "bandreject=f=1850:width_type=h:width=3100", str(out_file), "-y"]
+            
+            jobs.append(job)
+
+        success = 0
+        errors = []
+        completed = 0
+        
+        # Audio ops are usually I/O bound or fast CPU, but 3 is safe limit
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = [executor.submit(self._run_job, job) for job in jobs]
+            
+            for future in as_completed(futures):
+                if getattr(self, 'cancel_flag', False): break
                 
-        self.lbl_status.configure(text="Complete")
+                res = future.result()
+                completed += 1
+                if res['ok']: success += 1
+                else: errors.append(res['error'])
+                
+                self.after(0, lambda v=completed/total: self.progress.set(v))
+                self.after(0, lambda v=completed: self.lbl_status.configure(text=f"Processed {v}/{total}"))
+
+        self.after(0, lambda: self._finish(success, errors))
+
+    def _run_job(self, job):
+        if getattr(self, 'cancel_flag', False): return {'ok': False}
+        try:
+            # We don't capture output unless error to save memory/speed
+            subprocess.run(job['cmd'], check=True, capture_output=True)
+            return {'ok': True}
+        except subprocess.CalledProcessError as e:
+            return {'ok': False, 'error': f"{job['src'].name}: {e.stderr.decode() if e.stderr else str(e)}"}
+        except Exception as e:
+            return {'ok': False, 'error': f"{job['src'].name}: {str(e)}"}
+
+    def _finish(self, success, errors):
         self.progress.set(1.0)
         self.btn_action.configure(state="normal")
-        messagebox.showinfo("Done", f"Processed {total} files")
+        self.lbl_status.configure(text="Complete")
+        
+        msg = f"Processed {success}/{len(self.files)} files."
+        if errors:
+            msg += "\n\nErrors:\n" + "\n".join(errors[:5])
+            if len(errors) > 5: msg += "\n..."
+            messagebox.showwarning("Done with Errors", msg)
+        else:
+            messagebox.showinfo("Done", msg)
 
     def on_closing(self):
+        self.cancel_flag = True
         self.destroy()
 
-def run_gui(target_path):
-    app = VideoAudioGUI(target_path)
+def run_gui(target_path, selection=None):
+    app = VideoAudioGUI(target_path, selection=selection)
     app.mainloop()
 
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) > 1:
-        run_gui(sys.argv[1])
-    else:
-        print("Usage: audio_gui.py <target_path>")
+        paths = [Path(p) for p in sys.argv[1:] if Path(p).exists()]
+        if not paths: sys.exit(0)
+        run_gui(paths[0], selection=paths)

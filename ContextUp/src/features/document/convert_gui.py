@@ -1,6 +1,7 @@
 import sys
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import tkinter as tk
 from tkinter import messagebox
@@ -238,14 +239,11 @@ class DocConverterGUI(BaseWindow):
         }
 
         total = len(self.files)
-        
-        for idx, fpath in enumerate(self.files):
-            if not self._is_running:
-                break
-                
+        jobs = []
+
+        # Prepare jobs
+        for fpath in self.files:
             try:
-                self._update_status(f"Converting {idx+1}/{total}", fpath.name, idx / total)
-                
                 # Determine target extension from matrix
                 ext = fpath.suffix.lower()
                 target_ext = CONVERSIONS.get(ext, {}).get(target_label)
@@ -256,18 +254,43 @@ class DocConverterGUI(BaseWindow):
                 if use_subfolder:
                     out_dir = out_dir / "Converted_Docs"
                     out_dir.mkdir(exist_ok=True)
-
-                self.converter.convert(fpath, target_ext, out_dir, options)
-                success_count += 1
-
+                
+                jobs.append({
+                    'fpath': fpath,
+                    'target_ext': target_ext,
+                    'out_dir': out_dir,
+                    'options': options
+                })
             except Exception as e:
-                import traceback
-                print(traceback.format_exc())
                 errors.append(f"{fpath.name}: {str(e)}")
-            
-            self._update_status(f"Converting {idx+1}/{total}", fpath.name, (idx + 1) / total)
+
+        completed = 0
+        total_jobs = len(jobs)
+        
+        if total_jobs > 0:
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                # Map futures to jobs
+                future_to_job = {executor.submit(self._convert_single, job): job for job in jobs}
+                
+                for future in as_completed(future_to_job):
+                    if not self._is_running:
+                        break
+                        
+                    job = future_to_job[future]
+                    try:
+                        future.result()
+                        success_count += 1
+                    except Exception as e:
+                        errors.append(f"{job['fpath'].name}: {str(e)}")
+                    
+                    completed += 1
+                    self._update_status(f"Converting {completed}/{total_jobs}", job['fpath'].name, completed / total_jobs)
         
         self.after(0, lambda: self._finish(success_count, errors))
+
+    def _convert_single(self, job):
+        if not self._is_running: return
+        self.converter.convert(job['fpath'], job['target_ext'], job['out_dir'], job['options'])
 
     def _finish(self, count, errors):
         self._is_running = False

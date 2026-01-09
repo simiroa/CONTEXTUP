@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import subprocess
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Add src to path
 current_dir = Path(__file__).parent
@@ -19,7 +20,7 @@ from utils.i18n import t
 from core.config import MenuConfig
 
 class VideoConvertGUI(BaseWindow):
-    def __init__(self, target_path, demo=False):
+    def __init__(self, target_path, selection=None, demo=False):
         # Sync Name
         self.tool_name = "ContextUp Video Converter"
         try:
@@ -37,10 +38,12 @@ class VideoConvertGUI(BaseWindow):
             self.selection = []
             self.files = []
         else:
-            self.selection = get_selection_from_explorer(target_path)
-            
-            if not self.selection:
-                self.selection = [target_path]
+            if isinstance(selection, (list, tuple)):
+                self.selection = [str(p) for p in selection]
+            else:
+                self.selection = get_selection_from_explorer(target_path)
+                if not self.selection:
+                    self.selection = [target_path]
                 
             # Filter video files
             video_exts = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'}
@@ -52,8 +55,8 @@ class VideoConvertGUI(BaseWindow):
                 return
 
         self.var_new_folder = ctk.BooleanVar(value=True) # Default ON
-        self.cancel_flag = False  # Cancel pattern for long FFmpeg encoding
-        self.current_process = None  # Track running FFmpeg process
+        self.cancel_flag = False  # Cancel flag
+        self.active_processes = []  # Track running FFmpeg processes for bulk kill
         
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -195,160 +198,175 @@ class VideoConvertGUI(BaseWindow):
         if self.btn_convert.cget("state") == "disabled":
             self.cancel_flag = True
             self.lbl_status.configure(text=t("video_convert_gui.cancelling"))
-            # Terminate running FFmpeg process if exists
-            if self.current_process and self.current_process.poll() is None:
-                try:
-                    self.current_process.terminate()
-                except:
-                    pass
+            
+            # Terminate all running FFmpeg processes
+            for p in self.active_processes:
+                if p.poll() is None:
+                    try:
+                        p.terminate()
+                    except:
+                        pass
         else:
             self.destroy()
 
     def start_convert(self):
-        # CRITICAL: Reset cancel flag before each run
         self.cancel_flag = False
-        self.current_process = None
+        self.active_processes = []
         
-        self.btn_convert.configure(state="disabled", text=t("video_convert_gui.converting"))
+        # Limit to 3 threads for Video encoding to prevent system freeze
+        self.threads = 3
+        
+        self.btn_convert.configure(state="disabled", text=f"{t('video_convert_gui.converting')} (Max {self.threads})")
         self.btn_cancel.configure(fg_color=THEME_BTN_DANGER, hover_color=THEME_BTN_DANGER_HOVER, text_color="white")
-        threading.Thread(target=self.run_conversion, daemon=True).start()
+        threading.Thread(target=self.process_parallel, daemon=True).start()
 
-    def run_conversion(self):
+    def process_parallel(self):
         ffmpeg = get_ffmpeg()
         fmt = self.fmt_var.get()
         scale = self.scale_var.get()
         crf = int(self.crf_var.get())
         
-        total = len(self.files)
-        success = 0
-        errors = []
+        save_new_folder = self.var_new_folder.get()
+        delete_original = self.var_delete_org.get()
+        
+        # Pre-calculate jobs
+        jobs = []
         out_dir_cache = {}
         
-        for i, path in enumerate(self.files):
-            # Check cancel flag before each file
-            if self.cancel_flag:
-                break
-                
-            self.lbl_status.configure(text=t("video_convert_gui.processing_file", current=i+1, total=total, name=path.name))
-            self.progress.set(i / total)
+        for path in self.files:
+            # Output filename
+            suffix = path.suffix
+            if "MP4" in fmt: suffix = ".mp4"
+            elif "MOV" in fmt: suffix = ".mov"
+            elif "MKV" in fmt: suffix = ".mkv"
+            elif "GIF" in fmt: suffix = ".gif"
             
-            try:
-                cmd = [ffmpeg, "-i", str(path)]
+            # Determine output directory
+            if save_new_folder:
+                base_dir = path.parent / "Converted"
+                if base_dir not in out_dir_cache:
+                    safe_dir = base_dir if not base_dir.exists() else get_safe_path(base_dir)
+                    safe_dir.mkdir(exist_ok=True)
+                    out_dir_cache[base_dir] = safe_dir
+                out_dir = out_dir_cache[base_dir]
+                out_name = f"{path.stem}{suffix}" 
+            else:
+                out_dir = path.parent
+                out_name = f"{path.stem}_conv{suffix}"
+            
+            output_path = get_safe_path(out_dir / out_name)
+            
+            # Build Command
+            cmd = [ffmpeg, "-i", str(path)]
+            
+            # Video Codec
+            if "NVENC" in fmt:
+                cmd.extend(["-c:v", "h264_nvenc", "-cq", str(crf), "-preset", "p6", "-c:a", "aac"])
+            elif "H.264" in fmt:
+                cmd.extend(["-c:v", "libx264", "-crf", str(crf), "-c:a", "aac"])
+                if "Low" in fmt: cmd.extend(["-preset", "fast"])
+            elif "ProRes 422" in fmt:
+                cmd.extend(["-c:v", "prores_ks", "-profile:v", "2", "-c:a", "pcm_s16le"])
+            elif "ProRes 4444" in fmt:
+                cmd.extend(["-c:v", "prores_ks", "-profile:v", "4", "-pix_fmt", "yuva444p10le", "-c:a", "pcm_s16le"])
+            elif "DNxHD" in fmt:
+                cmd.extend(["-c:v", "dnxhd", "-profile:v", "dnxhr_hq", "-c:a", "pcm_s16le"])
+            elif "Copy" in fmt:
+                cmd.extend(["-c", "copy"])
                 
-                # Output filename
-                suffix = path.suffix
-                if "MP4" in fmt: suffix = ".mp4"
-                elif "MOV" in fmt: suffix = ".mov"
-                elif "MKV" in fmt: suffix = ".mkv"
-                elif "GIF" in fmt: suffix = ".gif"
-                
-                # Determine output directory
-                if self.var_new_folder.get():
-                    base_dir = path.parent / "Converted"
-                    if base_dir not in out_dir_cache:
-                        safe_dir = base_dir if not base_dir.exists() else get_safe_path(base_dir)
-                        safe_dir.mkdir(exist_ok=True)
-                        out_dir_cache[base_dir] = safe_dir
-                    out_dir = out_dir_cache[base_dir]
-                    out_name = f"{path.stem}{suffix}" 
-                else:
-                    out_dir = path.parent
-                    out_name = f"{path.stem}_conv{suffix}"
-                
-                output_path = get_safe_path(out_dir / out_name)
-                
-                # Video Codec
-                if "NVENC" in fmt:
-                    # NVENC doesn't support CRF in the same way, usually uses -cq or -qp.
-                    # Simplified: -c:v h264_nvenc -cq <crf> -preset p7
-                    # 18(High) -> roughly 19-20? 
-                    # Let's map CRF to CQ roughly.
-                    cmd.extend(["-c:v", "h264_nvenc", "-cq", str(crf), "-preset", "p6", "-c:a", "aac"])
-                    
-                elif "H.264" in fmt:
-                    cmd.extend(["-c:v", "libx264", "-crf", str(crf), "-c:a", "aac"])
-                    if "Low" in fmt: cmd.extend(["-preset", "fast"])
-                    
-                elif "ProRes 422" in fmt:
-                    cmd.extend(["-c:v", "prores_ks", "-profile:v", "2", "-c:a", "pcm_s16le"])
-                elif "ProRes 4444" in fmt:
-                    cmd.extend(["-c:v", "prores_ks", "-profile:v", "4", "-pix_fmt", "yuva444p10le", "-c:a", "pcm_s16le"])
-                elif "DNxHD" in fmt:
-                    cmd.extend(["-c:v", "dnxhd", "-profile:v", "dnxhr_hq", "-c:a", "pcm_s16le"])
-                elif "Copy" in fmt:
-                    cmd.extend(["-c", "copy"])
-                    
-                elif "GIF" in fmt:
-                    # High quality GIF generation
-                    # 1. Palette gen
-                    # 2. Palette use
-                    # We need a complex filter.
-                    
-                    # Determining Scale first to inject into filter
-                    scale_filter = ""
-                    if scale == "50%": scale_filter = ",scale=iw/2:-1"
-                    elif scale == "25%": scale_filter = ",scale=iw/4:-1"
-                    elif scale == "Custom Width":
-                        try:
-                            w = int(self.entry_width.get())
-                            scale_filter = f",scale={w}:-1"
-                        except: pass
-                    
-                    # Full filter chain
-                    # fps=15 (good balance), flags=lanczos
-                    filter_str = f"fps=15{scale_filter}:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"
-                    
-                    cmd.extend(["-vf", filter_str, "-c:v", "gif"])
-                
-                # Scaling for non-GIF (GIF handled scaling in filter above)
-                if "GIF" not in fmt:
-                    vf = []
-                    if scale == "50%": vf.append("scale=iw/2:-2")
-                    elif scale == "25%": vf.append("scale=iw/4:-2")
-                    elif scale == "Custom Width":
-                        try:
-                            w = int(self.entry_width.get())
-                            vf.append(f"scale={w}:-2")
-                        except: pass
-                    
-                    if vf: cmd.extend(["-vf", ",".join(vf)])
-                
-                cmd.extend(["-y", str(output_path)])
-                
-                # Check cancel before running FFmpeg
-                if self.cancel_flag:
-                    break
-                
-                # Run without startupinfo for now to debug 0xC0000135
-                self.current_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                self.current_process.wait()
-                
-                if self.cancel_flag:
-                    break
-                    
-                if self.current_process.returncode != 0:
-                    _, stderr = self.current_process.communicate()
-                    raise subprocess.CalledProcessError(self.current_process.returncode, cmd, stderr=stderr.decode() if stderr else "")
-                
-                self.current_process = None
-                success += 1
-                
-                # Handle Deletion
-                if self.var_delete_org.get() and path.exists():
+            elif "GIF" in fmt:
+                scale_filter = ""
+                if scale == "50%": scale_filter = ",scale=iw/2:-1"
+                elif scale == "25%": scale_filter = ",scale=iw/4:-1"
+                elif scale == "Custom Width":
                     try:
-                        import os
-                        os.remove(path)
-                    except Exception as e:
-                        errors.append(f"Delete failed: {path.name} ({str(e)})")
+                        w = int(self.entry_width.get())
+                        scale_filter = f",scale={w}:-1"
+                    except: pass
                 
-            except subprocess.CalledProcessError as e:
-                errors.append(f"{path.name}: {e.stderr}")
-            except Exception as e:
-                errors.append(f"{path.name}: {str(e)}")
+                filter_str = f"fps=15{scale_filter}:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"
+                cmd.extend(["-vf", filter_str, "-c:v", "gif"])
+            
+            if "GIF" not in fmt:
+                vf = []
+                if scale == "50%": vf.append("scale=iw/2:-2")
+                elif scale == "25%": vf.append("scale=iw/4:-2")
+                elif scale == "Custom Width":
+                    try:
+                        w = int(self.entry_width.get())
+                        vf.append(f"scale={w}:-2")
+                    except: pass
                 
+                if vf: cmd.extend(["-vf", ",".join(vf)])
+            
+            cmd.extend(["-y", str(output_path)])
+            
+            jobs.append({
+                'src': path,
+                'cmd': cmd,
+                'delete': delete_original
+            })
+
+        total = len(jobs)
+        success = 0
+        errors = []
+        completed = 0
+        
+        with ThreadPoolExecutor(max_workers=self.threads) as executor:
+            futures = [executor.submit(self._run_single_job, job) for job in jobs]
+            
+            for future in as_completed(futures):
+                if self.cancel_flag:
+                    break
+                    
+                result = future.result()
+                completed += 1
+                
+                if result['ok']:
+                    success += 1
+                else:
+                    errors.append(result['error'])
+                
+                self.after(0, lambda v=completed/total: self.progress.set(v))
+                if completed < total:
+                    self.after(0, lambda v=completed: self.lbl_status.configure(text=f"Processed {v}/{total}"))
+
+        self.after(0, lambda: self._finish(success, errors))
+    
+    def _run_single_job(self, job):
+        if self.cancel_flag: return {'ok': False, 'error': 'Cancelled'}
+        
+        try:
+            # Run without startupinfo for now to debug 0xC0000135
+            p = subprocess.Popen(job['cmd'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # Register process
+            self.active_processes.append(p)
+            
+            _, stderr = p.communicate()
+            
+            if p in self.active_processes:
+                self.active_processes.remove(p)
+            
+            if p.returncode != 0:
+                return {'ok': False, 'error': f"{job['src'].name}: {stderr.decode() if stderr else 'Unknown error'}"}
+            
+            if job['delete'] and job['src'].exists():
+                try:
+                    import os
+                    os.remove(job['src'])
+                except Exception as e:
+                    return {'ok': False, 'error': f"Delete failed: {job['src'].name}"}
+                    
+            return {'ok': True}
+            
+        except Exception as e:
+            return {'ok': False, 'error': f"{job['src'].name}: {str(e)}"}
+
+    def _finish(self, success, errors):
         self.progress.set(1.0)
         self.btn_convert.configure(state="normal", text=t("video_convert_gui.start_conversion"))
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color=THEME_TEXT_DIM)
+        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color=THEME_TEXT_DIM)
         
         if self.cancel_flag:
             self.lbl_status.configure(text=t("common.cancelled"))
@@ -356,7 +374,7 @@ class VideoConvertGUI(BaseWindow):
         else:
             self.lbl_status.configure(text=t("video_convert_gui.conversion_complete"))
             
-            msg = f"Converted {success}/{total} files."
+            msg = f"Converted {success}/{len(self.files)} files."
             if errors:
                 msg += "\n\n" + t("common.errors") + ":\n" + "\n".join(errors[:5])
                 messagebox.showwarning(t("dialogs.operation_complete"), msg)
@@ -364,11 +382,14 @@ class VideoConvertGUI(BaseWindow):
                 messagebox.showinfo(t("common.success"), msg)
                 self.destroy()
 
+    # Legacy method removed
+    def run_conversion(self): pass
+
     def on_closing(self):
         self.destroy()
 
-def run_gui(target_path):
-    app = VideoConvertGUI(target_path)
+def run_gui(target_path, selection=None):
+    app = VideoConvertGUI(target_path, selection=selection)
     app.mainloop()
 
 if __name__ == "__main__":
@@ -377,14 +398,9 @@ if __name__ == "__main__":
         app = VideoConvertGUI(None, demo=True)
         app.mainloop()
     elif len(sys.argv) > 1:
-        anchor = sys.argv[1]
-        
-        # Mutex - ensure only one GUI window opens
-        from utils.batch_runner import collect_batch_context
-        if collect_batch_context("video_convert", anchor, timeout=0.2) is None:
-            sys.exit(0)
-        
-        run_gui(anchor)
+        # Use all command line arguments
+        paths = [Path(p) for p in sys.argv[1:] if Path(p).exists()]
+        run_gui(paths[0] if paths else None, selection=paths)
     else:
         run_gui(str(Path.home() / "Videos"))
 

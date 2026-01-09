@@ -275,14 +275,9 @@ def main():
             def convert_single_v2(args):
                 path, target_fmt, resize_size, out_path = args
                 try:
-                    # >>> UNIFIED LOADER <<<
-                    from utils.image_utils import load_image_unified
-                    img = load_image_unified(path)
-                    
-                    if img is None:
-                        raise Exception("Loader returned None")
-                    
-                    img.load() # Ensure loaded
+                    # LOAD
+                    img = Image.open(path)
+                    img.load()
 
                     # Handle alpha for matching formats
                     if target_fmt in ['jpeg', 'bmp'] and img.mode in ('RGBA', 'LA', 'P'):
@@ -377,23 +372,15 @@ def main():
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        anchor = sys.argv[1]
+        # Use all provided arguments as files
+        from pathlib import Path
+        all_files = [Path(p) for p in sys.argv[1:] if Path(p).exists()]
         
-        # INSTANT: Get all selected files via Explorer COM
-        all_files = get_all_selected_files(anchor)
-        
-        # Quick mutex check (minimal delay)
-        from utils.batch_runner import collect_batch_context
-        if collect_batch_context("image_convert", anchor, timeout=0.2) is None:
-            sys.exit(0)
-        
-        # Load GUI and run
+        # If any of them are directories, expanding is handled by scan_for_images inside the GUI
         ImageConverterGUI = main()
         app = ImageConverterGUI(all_files)
         app.mainloop()
     else:
         ImageConverterGUI = main()
-        # Mocking selection for testing if run directly
         app = ImageConverterGUI([])
         app.mainloop()
-
