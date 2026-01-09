@@ -15,7 +15,7 @@ sys.path.append(str(src_dir))
 
 from utils.ai_runner import run_ai_script
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
+from utils.gui_lib import BaseWindow, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER, THEME_TEXT_DIM
 
 class TaggingGUI(BaseWindow):
     def __init__(self, target_path):
@@ -69,7 +69,7 @@ class TaggingGUI(BaseWindow):
         # Bottom
         btn_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=20, pady=10)
-        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color="gray", command=self.destroy).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Close", fg_color="transparent", border_width=1, border_color=THEME_TEXT_DIM, command=self.destroy).pack(side="right", padx=5)
         
     def start_tagging(self):
         self.btn_run.configure(state="disabled", text="Running...")

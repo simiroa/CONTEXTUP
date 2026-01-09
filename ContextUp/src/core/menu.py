@@ -136,7 +136,9 @@ def build_handler_map():
         "normal_flip_green": _lazy("features.image.normal", "flip_normal_green"),
         "simple_normal_roughness": _lazy("features.image.normal", "generate_simple_normal_roughness"),
         "image_compare": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "compare_gui.py"), *( [str(i) for i in s] if s else [str(p)] )]),
-        "noise_master": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "noise_master_gui.py")]),
+        "image_metadata": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "metadata_gui.py"), str(p)]),
+        "rigreader_vectorizer": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "vectorizer" / "vectorizer_gui.py"), str(p)]),
+        "noise_master": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "tools" / "noise_master" / "main.py")]),
 
         # === AI ===
         "whisper_subtitle": _lazy("features.ai.subtitle", "generate_subtitles"),

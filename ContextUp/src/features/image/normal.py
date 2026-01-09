@@ -13,7 +13,7 @@ sys.path.append(str(src_dir))
 
 from core.logger import setup_logger
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_TEXT_MAIN, THEME_TEXT_DIM
 import customtkinter as ctk
 from PIL import Image
 

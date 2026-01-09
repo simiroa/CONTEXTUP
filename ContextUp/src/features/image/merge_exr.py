@@ -16,7 +16,7 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent.parent  # features/image -> src
 sys.path.append(str(src_dir))
 
-from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER, THEME_TEXT_DIM
 from utils.files import get_safe_path
 from utils.image_utils import scan_for_images
 
@@ -70,7 +70,7 @@ class ChannelRow(ctk.CTkFrame):
             self.opt_file.pack(fill="x",  pady=2)
 
         # Col 2: Arrow
-        ctk.CTkLabel(self, text="➜", text_color="gray", width=COL_CONFIG[2]["width"]).grid(row=0, column=2)
+        ctk.CTkLabel(self, text="➜", text_color=THEME_TEXT_DIM, width=COL_CONFIG[2]["width"]).grid(row=0, column=165)
 
         # Col 3: Target Layer Name
         self.entry_name = ctk.CTkEntry(self, placeholder_text="Layer Name", height=28)
@@ -99,7 +99,7 @@ class ChannelRow(ctk.CTkFrame):
         self.on_toggle()
 
     def on_toggle(self):
-        color = "white" if self.var_include.get() else "gray"
+        color = "white" if self.var_include.get() else THEME_TEXT_DIM
         if hasattr(self, 'lbl_source'): self.lbl_source.configure(text_color=color)
 
     def get_config(self):
@@ -162,13 +162,13 @@ class ExrChannelPackerGUI(BaseWindow):
             table_header.grid_columnconfigure(col, minsize=cfg["width"], weight=cfg["weight"])
 
         # Labels - SAME PADDING AS ROWS (padx=2)
-        ctk.CTkLabel(table_header, text="Use", text_color="#aaa", font=("", 11)).grid(row=0, column=0, padx=2)
-        ctk.CTkLabel(table_header, text="Source File", anchor="w", text_color="#aaa", font=("", 11)).grid(row=0, column=1, padx=2, sticky="ew")
+        ctk.CTkLabel(table_header, text="Use", text_color=THEME_TEXT_DIM, font=("", 11)).grid(row=0, column=0, padx=2)
+        ctk.CTkLabel(table_header, text="Source File", anchor="w", text_color=THEME_TEXT_DIM, font=("", 11)).grid(row=0, column=1, padx=2, sticky="ew")
         ctk.CTkLabel(table_header, text="", width=20).grid(row=0, column=2)
-        ctk.CTkLabel(table_header, text="Target Layer Name", anchor="w", text_color="#aaa", font=("", 11)).grid(row=0, column=3, padx=5, sticky="ew") # Slightly more pad for Entry text match
-        ctk.CTkLabel(table_header, text="Mode", text_color="#aaa", font=("", 11)).grid(row=0, column=4, padx=2)
-        ctk.CTkLabel(table_header, text="Options", text_color="#aaa", font=("", 11)).grid(row=0, column=5, padx=2)
-        ctk.CTkLabel(table_header, text="Del", text_color="#aaa", font=("", 11)).grid(row=0, column=6, padx=2)
+        ctk.CTkLabel(table_header, text="Target Layer Name", anchor="w", text_color=THEME_TEXT_DIM, font=("", 11)).grid(row=0, column=3, padx=5, sticky="ew") # Slightly more pad for Entry text match
+        ctk.CTkLabel(table_header, text="Mode", text_color=THEME_TEXT_DIM, font=("", 11)).grid(row=0, column=4, padx=2)
+        ctk.CTkLabel(table_header, text="Options", text_color=THEME_TEXT_DIM, font=("", 11)).grid(row=0, column=5, padx=2)
+        ctk.CTkLabel(table_header, text="Del", text_color=THEME_TEXT_DIM, font=("", 11)).grid(row=0, column=6, padx=2)
 
         # 3. Scroll Area
         self.channel_scroll = ctk.CTkScrollableFrame(self.main_frame, fg_color="transparent")
@@ -193,7 +193,7 @@ class ExrChannelPackerGUI(BaseWindow):
                                         command=self.start_export)
         self.btn_export.pack(fill="x")
         
-        self.lbl_status = ctk.CTkLabel(self.footer, text="Ready", text_color="gray", font=("", 11))
+        self.lbl_status = ctk.CTkLabel(self.footer, text="Ready", text_color=THEME_TEXT_DIM, font=("", 11))
         self.lbl_status.pack(pady=(2, 0))
 
     def add_channel(self, source_filename):

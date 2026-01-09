@@ -13,7 +13,7 @@ src_dir = current_dir.parent.parent  # features/system -> src
 sys.path.append(str(src_dir))
 
 from utils.explorer import get_selection_from_explorer
-from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER, THEME_TEXT_MAIN
+from utils.gui_lib import BaseWindow, THEME_CARD, THEME_BORDER, THEME_BTN_PRIMARY, THEME_BTN_HOVER, THEME_DROPDOWN_FG, THEME_DROPDOWN_BTN, THEME_DROPDOWN_HOVER, THEME_TEXT_MAIN, THEME_TEXT_DIM
 from utils.i18n import t
 from utils.files import shell_rename
 

@@ -74,6 +74,7 @@ BASE_CORE = [
     "numpy<2",
     "tqdm",
     "holidays",
+    "PySide6",
 ]
 
 # 미디어 편집용 패키지 (Image/Video/Audio 중 하나라도 선택 시)

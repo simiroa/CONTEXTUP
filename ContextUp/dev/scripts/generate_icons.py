@@ -16,7 +16,9 @@ TOOLS = {
     "tray": {"color": "#3498DB", "text": "TR"},
     "youtube": {"color": "#E74C3C", "text": "YT"},
     "translator": {"color": "#1ABC9C", "text": "TL"},
-    "mayo": {"color": "#95A5A6", "text": "MY"}
+    "mayo": {"color": "#95A5A6", "text": "MY"},
+    "image_metadata": {"color": "#3498DB", "text": "EXIF"},
+    "vectorizer": {"color": "#9B59B6", "text": "VEC"}
 }
 
 def generate_icons():

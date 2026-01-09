@@ -162,5 +162,47 @@
         "external_tools": [],
         "order": 408,
         "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "image_metadata",
+        "name": "Image Metadata Tool",
+        "icon": "assets/icons/icon_image_metadata.ico",
+        "types": ".jpg;.jpeg;.png;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "piexif",
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "order": 409,
+        "gui": true
+    },
+    {
+        "category": "Image",
+        "id": "rigreader_vectorizer",
+        "name": "RigReady Vectorizer",
+        "icon": "assets/icons/icon_vectorizer.ico",
+        "types": ".psd;.psb;.jpg;.jpeg;.png",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "vtracer",
+            "psd-tools",
+            "rembg",
+            "Pillow",
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "order": 410,
+        "gui": true
     }
 ]

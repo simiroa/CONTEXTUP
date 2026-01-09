@@ -78,11 +78,6 @@ def build_menu(icon_ref=None, reload_callback=None, exit_callback=None):
 
     # 1. Load tray modules (Recent Folders, Copy My Info, Clipboard Opener)
     try:
-        # agent_wrapper = TrayAgentWrapper(icon_ref) if icon_ref else None # This line is now handled above
-        
-        # if icon_ref and not hasattr(icon_ref, '_modules'): # This line is now handled above
-        #     icon_ref._modules = []
-
         # --- Recent Folders ---
         try:
             from tray.modules.recent_folders import RecentFolders

@@ -15,6 +15,13 @@ send2trash
 piexif
 pyperclip  # Clipboard handling
 xxhash  # Fast hashing for Finder (10x faster than MD5)
+PySide6
+moderngl
+glcontext
+
+# --- Vectorizer (RigReady) ---
+vtracer
+psd-tools
 
 # --- Multimedia & File Handling ---
 Pillow
