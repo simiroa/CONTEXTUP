@@ -285,7 +285,7 @@ class SubtitleGUI(BaseWindow):
         
     def finish_batch(self):
         self.btn_run.configure(state="normal", text="Generate Subtitles")
-        self.btn_cancel.configure(text="Cancel", fg_color="transparent", hover_color=None, text_color="gray")
+        self.btn_cancel.configure(text="Cancel", fg_color="transparent", hover_color="gray25", text_color="gray")
         
         if self.cancel_flag:
             self.status_label.configure(text="Cancelled.")

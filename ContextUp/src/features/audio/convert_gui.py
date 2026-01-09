@@ -29,10 +29,13 @@ class AudioConvertGUI(BaseWindow):
             self.selection = []
             self.files = []
         else:
-            self.selection = get_selection_from_explorer(target_path)
-            
-            if not self.selection:
-                self.selection = [target_path]
+            if isinstance(target_path, (list, tuple)):
+                self.selection = [str(p) for p in target_path]
+            else:
+                # Fallback to Explorer COM if needed, but menu.py should have passed selection
+                self.selection = get_selection_from_explorer(target_path)
+                if not self.selection:
+                    self.selection = [target_path]
                 
             # Filter audio files
             audio_exts = {'.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac', '.wma', '.aiff'}
@@ -245,7 +248,7 @@ class AudioConvertGUI(BaseWindow):
                 
         self.progress.set(1.0)
         self.btn_convert.configure(state="normal", text=t("audio_convert_gui.convert"))
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color=THEME_TEXT_DIM)
+        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color=THEME_TEXT_DIM)
         
         if self.cancel_flag:
             self.lbl_status.configure(text=t("common.cancelled"))
@@ -281,14 +284,9 @@ if __name__ == "__main__":
         app = AudioConvertGUI(None, demo=True)
         app.mainloop()
     elif len(sys.argv) > 1:
-        anchor = sys.argv[1]
-        
-        # Mutex - ensure only one GUI window opens
-        from utils.batch_runner import collect_batch_context
-        if collect_batch_context("audio_convert", anchor, timeout=0.2) is None:
-            sys.exit(0)
-        
-        run_gui(anchor)
+        # Use all command line arguments
+        paths = [Path(p) for p in sys.argv[1:] if Path(p).exists()]
+        run_gui(paths if len(paths) > 1 else paths[0])
     else:
         # Debug
         run_gui(str(Path.home() / "Music"))

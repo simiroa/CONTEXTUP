@@ -348,7 +348,7 @@ class ImageResizeGUI(BaseWindow):
         
         self.progress.set(1.0)
         self.btn_resize.configure(state="normal", text="Start Resize")
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color="gray")
+        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color="gray")
         
         if self.cancel_flag:
             self.lbl_status.configure(text="Cancelled")

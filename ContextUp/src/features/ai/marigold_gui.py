@@ -488,7 +488,7 @@ class MarigoldGUI(BaseWindow):
         self.progress.set(0)
         self.lbl_status.configure(text=t("common.cancelled"))
         self.btn_run.configure(state="normal", text=t("marigold_gui.generate_pbr"))
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color="gray")
+        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color="gray")
         messagebox.showinfo(t("common.cancelled"), t("video_convert_gui.conversion_cancelled"))
 
     def finish_success(self, output):
@@ -496,7 +496,7 @@ class MarigoldGUI(BaseWindow):
         self.progress.set(1)
         self.lbl_status.configure(text=t("common.complete"))
         self.btn_run.configure(state="normal", text=t("marigold_gui.generate_pbr"))
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color="gray")
+        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color="gray")
         self.save_settings() # Save on success
         
         # Load generated images into Preview
@@ -546,7 +546,7 @@ class MarigoldGUI(BaseWindow):
         self.progress.set(0)
         self.lbl_status.configure(text=t("common.error"))
         self.btn_run.configure(state="normal", text=t("marigold_gui.generate_pbr"))
-        self.btn_cancel.configure(fg_color="transparent", hover_color=None, text_color="gray")
+        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color="gray")
         
         clean_msg = self.clean_error_message(error_msg)
         if not clean_msg: clean_msg = "Unknown error (logs filtered)"
