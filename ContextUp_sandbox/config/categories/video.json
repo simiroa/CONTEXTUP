@@ -1,0 +1,102 @@
+[
+    {
+        "category": "Video",
+        "id": "video_convert",
+        "name": "Video Convert",
+        "icon": "assets/icons/icon_video_convert.ico",
+        "types": ".mp4;.mov;.avi;.mkv;.webm",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 102,
+        "gui": true
+    },
+    {
+        "category": "Video",
+        "id": "extract_audio",
+        "name": "Extract Audio",
+        "icon": "assets/icons/icon_video_audio_tools.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 103,
+        "gui": false
+    },
+    {
+        "category": "Video",
+        "id": "interpolate_30fps",
+        "name": "Interpolate 30fps",
+        "icon": "assets/icons/icon_video_frame_interp.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 105,
+        "gui": false
+    },
+    {
+        "category": "Video",
+        "id": "create_proxy",
+        "name": "Create Proxy",
+        "icon": "assets/icons/icon_video_proxy.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 106,
+        "gui": false
+    },
+    {
+        "category": "Video",
+        "id": "remove_audio",
+        "name": "Remove Audio",
+        "icon": "assets/icons/icon_video_mute.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 107,
+        "gui": false
+    }
+]

@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter.messagebox
 from tkinter import Menu
 from manager.ui.dialogs.item_editor import ItemEditorDialog
+from manager.ui.dialogs.manual_viewer import ManualViewerDialog
 from manager.helpers.icons import IconManager
 from manager.helpers.requirements import RequirementHelper
 from manager.ui.theme import Theme
@@ -472,9 +473,16 @@ class MenuEditorFrame(ctk.CTkFrame):
         ctk.CTkButton(row, text="Edit", width=50, height=24, fg_color=Theme.GRAY_BTN, hover_color=Theme.GRAY_BTN_HOVER,
                      command=lambda i=item: self.open_edit_dialog(i)).pack(side="left", padx=5)
                     
-        # [Location]
-        ctk.CTkLabel(row, text=item.get('submenu', 'ContextUp'), 
-                    text_color="gray", width=80).pack(side="right", padx=5)
+        # [Manual]
+        # User requested "doc icon" popup. Replacing "ContextUp" label.
+        # using emoji as icon for now, or we could load specific asset.
+        ctk.CTkButton(row, text="📄", width=40, height=24, 
+                      fg_color=Theme.GRAY_BTN, hover_color=Theme.GRAY_BTN_HOVER,
+                      command=lambda i=item: self._open_manual(i)).pack(side="right", padx=5)
+
+    def _open_manual(self, item):
+        # Toplevel window shows automatically
+        ManualViewerDialog(self.winfo_toplevel(), item)
 
     def recalculate_orders(self):
         """Force apply the category priority logic to all items.

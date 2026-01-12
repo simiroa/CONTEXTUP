@@ -1,0 +1,80 @@
+[
+    {
+        "category": "Audio",
+        "id": "audio_convert",
+        "name": "Audio Convert",
+        "icon": "assets/icons/icon_audio_convert_format.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 801,
+        "gui": true
+    },
+    {
+        "category": "Audio",
+        "id": "extract_bgm",
+        "name": "Extract BGM",
+        "icon": "assets/icons/icon_audio_extract_bgm.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 802,
+        "gui": true
+    },
+    {
+        "category": "Audio",
+        "id": "extract_voice",
+        "name": "Extract Voice",
+        "icon": "assets/icons/icon_audio_extract_voice.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 803,
+        "gui": true
+    },
+    {
+        "category": "Audio",
+        "id": "normalize_volume",
+        "name": "Normalize Volume",
+        "icon": "assets/icons/icon_audio_optimize_vol.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [],
+        "external_tools": [
+            "ffmpeg"
+        ],
+        "order": 804,
+        "gui": false
+    }
+]

@@ -53,44 +53,33 @@ from utils.gui_lib import BaseWindow
 
 ### Step 2: Implement GUI (Guidelines)
 
----
+**Use Shared UI Components** from `src/utils/`:
 
-## 1. Feature Design & Ideation
+| 모듈 | 클래스/함수 | 용도 |
+|-----|-----------|-----|
+| `gui_lib.py` | `BaseWindow` | 표준 윈도우 (타이틀바, 아이콘, 테마 자동 적용) |
+| `gui_lib.py` | `FileListFrame` | 파일 목록 스크롤 프레임 |
+| `gui_lib.py` | `PremiumScrollableFrame` | 자동 스크롤바 숨김 프레임 |
+| `gui_lib.py` | `ask_string_modern()` | 입력 다이얼로그 |
+| `progress_gui.py` | `BatchProgressGUI` | 배치 작업 진행률 창 |
+| `progress_gui.py` | `run_batch_gui()` | 배치 GUI 헬퍼 함수 |
 
-Clarify the feature's purpose and placement.
-*   **Utility**: Does this save time or solve a specific problem?
-*   **Context**: Where should this appear? (File, Folder, background, or Tray?)
-*   **Category**: Which existing category does it fit into? (image, video, ai, sequence, etc.)
-
----
-
-## 2. Step-by-Step Implementation
-
-### Step 1: Create Script & Path Management
-Create your script in `src/features/<category>/`.
-
-**CRITICAL: Use Centralized Paths**
-Instead of hardcoding paths or using `os.path`, use `src.core.paths`.
-
+**Example Usage**:
 ```python
-# --- Standard Header ---
-import sys
-from pathlib import Path
+from utils.gui_lib import BaseWindow, FileListFrame
+from utils.progress_gui import BatchProgressGUI
 
-# Add src to path if running directly
-ROOT = Path(__file__).resolve().parent
-while not (ROOT / 'src').exists() and ROOT.parent != ROOT:
-    ROOT = ROOT.parent
-if (ROOT / 'src').exists() and str(ROOT / 'src') not in sys.path:
-    sys.path.insert(0, str(ROOT / 'src'))
-
-from core.paths import USERDATA_DIR, TOOLS_DIR
-from utils.gui_lib import BaseWindow
-# -----------------------
+class MyToolGUI(BaseWindow):
+    def __init__(self, files):
+        super().__init__(title="My Tool", width=600, height=500)
+        self.add_header("My Feature")
+        FileListFrame(self.content, files).pack(fill="x")
 ```
 
-### Step 2: Implement GUI (Guidelines)
-- **Theme**: Use `customtkinter`. Never hardcode colors (use tuples for light/dark).
+**Theme Rules**:
+- Use `customtkinter`. Never hardcode colors (use tuples for light/dark).
+- Theme JSON: `src/utils/theme_contextup.json`
+- Constants: `THEME_BG`, `THEME_FG`, `THEME_BORDER` from `gui_lib.py`
 
 ### Step 3: Install Dependencies
 Install packages into the **Embedded Environment**:
@@ -98,6 +87,27 @@ Install packages into the **Embedded Environment**:
 ContextUp/tools/python/python.exe -m pip install <package>
 ```
 Update `requirements.txt` accordingly.
+
+### Step 3.5: Register in Install Script (Optional)
+If your feature requires new packages, register them in `src/setup/install.py` so they are installed automatically.
+
+**Package Groups** (Choose appropriate group):
+| 그룹 | 변수명 | 적용 조건 |
+|-----|-------|--------|
+| **Core** | `BASE_CORE` | 항상 설치 (기본 패키지) |
+| **Media** | `PKG_MEDIA` | Image/Video/Audio 카테고리 선택 시 |
+| **Document** | `PKG_DOC` | Document 카테고리 선택 시 |
+| **Tools** | `PKG_TOOLS` | Tools 카테고리 선택 시 |
+| **AI** | `TIER2_AI_PACKAGES` | AI 기능 (Tier 2 이상) |
+
+**Example**: Adding a package to Media group:
+```python
+# src/setup/install.py
+PKG_MEDIA = [
+    # ... existing packages ...
+    "my-new-package",  # My Feature - Description
+]
+```
 
 ### Step 4: Localization (i18n)
 All user-facing text must be localized using `src.utils.i18n`.
@@ -157,6 +167,32 @@ Run `manager.bat` or use CLI to refresh the context menu:
 ```powershell
 ContextUp\tools\python\python.exe ContextUp\manage.py register
 ```
+
+### Step 8: Create Manual Documentation
+Create a user manual for your feature in `docs/manuals/ko/`.
+
+1.  **Create File**: `docs/manuals/ko/<feature_id>.md`
+2.  **Follow Template**:
+    ```markdown
+    # Feature Name (한글 이름)
+
+    ## 소개
+    기능에 대한 간단한 설명.
+
+    ## 주요 기능
+    - 기능 1
+    - 기능 2
+
+    ## 사용법
+    1. 파일/폴더 선택 후 우클릭
+    2. **Category → Feature Name** 선택
+    3. 옵션 설정
+    4. 실행
+
+    ## 의존성
+    - 필요한 패키지/도구 나열
+    ```
+3.  **Link in FEATURES.md**: `docs/user/FEATURES.md`에 매뉴얼 링크 추가
 
 ### ComfyUI Feature Addendum
 When adding new ComfyUI features, follow these rules to avoid tray/GUI breakage:

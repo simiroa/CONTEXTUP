@@ -128,16 +128,16 @@ def build_handler_map():
     
     return {
         # === Image ===
-        "image_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "convert_gui.py"), str(p)]),
-        "merge_to_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "merge_exr.py"), str(p)]),
-        "resize_power_of_2": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "resize_gui.py"), str(p)]),
-        "split_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "split_image.py"), str(p)]),
-        "texture_packer_orm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "packer_gui.py"), str(p)]),
+        "image_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "convert_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "merge_to_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "merge_exr.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "resize_power_of_2": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "resize_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "split_exr": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "split_image.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "texture_packer_orm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "packer_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
         "normal_flip_green": _lazy("features.image.normal", "flip_normal_green"),
         "simple_normal_roughness": _lazy("features.image.normal", "generate_simple_normal_roughness"),
         "image_compare": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "compare_gui.py"), *( [str(i) for i in s] if s else [str(p)] )]),
         "image_metadata": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "metadata_gui.py"), str(p)]),
-        "rigreader_vectorizer": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "vectorizer" / "vectorizer_gui.py"), str(p)]),
+        "rigreader_vectorizer": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "image" / "vectorizer" / "vectorizer_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
         "noise_master": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "tools" / "noise_master" / "main.py")]),
 
         # === AI ===
@@ -146,27 +146,27 @@ def build_handler_map():
         "rmbg_background": _lazy("features.ai.tools", "remove_background"),
         "marigold_pbr": _lazy("features.ai.marigold_gui", "run_marigold_gui"),
         "prompt_master": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "prompt_master" / "main.py")]),
-        "gemini_image_tool": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "ai" / "standalone" / "gemini_img_tools.py"), str(p)]),
-        "demucs_stems": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), str(p)]),
+        "gemini_image_tool": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "ai" / "standalone" / "gemini_img_tools.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "demucs_stems": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
 
         # === Video ===
-        "video_convert": _lazy("features.video.tools", "convert_video"),
-        "extract_audio": _lazy("features.video.tools", "extract_audio"),
+        "video_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "convert_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "extract_audio": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "audio_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
         "interpolate_30fps": _lazy("features.video.tools", "frame_interp_30fps"),
-        "create_proxy": _lazy("features.video.tools", "create_proxy"),
-        "remove_audio": _lazy("features.video.tools", "remove_audio"),
+        "create_proxy": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "convert_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "remove_audio": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "audio_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
 
         # === Sequence ===
         "sequence_arrange": _lazy("features.sequence.tools", "arrange_sequences"),
         "sequence_find_missing": _lazy("features.sequence.tools", "find_missing_frames"),
         "sequence_to_video": _lazy("features.sequence.tools", "seq_to_video"),
         "sequence_analyze": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "sequence" / "analyze_gui.py"), str(p)]),
-        "sequence_renumber": _lazy("features.system.rename", "run_renumber_gui"),
+        "sequence_renumber": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "system" / "rename.py"), "renumber", *([str(i) for i in s] if s else [str(p)])]),
 
         # === Audio ===
-        "audio_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "convert_gui.py"), str(p)]),
-        "extract_bgm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), str(p), "--mode", "bgm"]),
-        "extract_voice": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), str(p), "--mode", "voice"]),
+        "audio_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "convert_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "extract_bgm": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), *([str(i) for i in s] if s else [str(p)]), "--mode", "bgm"]),
+        "extract_voice": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "audio" / "separate_gui.py"), *([str(i) for i in s] if s else [str(p)]), "--mode", "voice"]),
         "normalize_volume": _lazy("features.audio.tools", "optimize_volume"),
 
         # === System ===
@@ -178,12 +178,12 @@ def build_handler_map():
         "manager": lambda p, s=None: _open_manager(),
 
         # === 3D ===
-        "auto_lod": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "mesh" / "lod_gui.py"), str(p)]),
+        "auto_lod": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "mesh" / "lod_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
         "cad_to_obj": _lazy("features.mesh.mayo", "convert_cad"),
-        "mesh_convert": _lazy("features.mesh.blender", "convert_mesh"),
+        "mesh_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "mesh" / "blender.py"), "convert", *([str(i) for i in s] if s else [str(p)])]),
         "open_with_mayo": _lazy("features.mesh.mayo", "open_with_mayo"),
         "extract_textures": _lazy("features.mesh.blender", "extract_textures"),
-        "blender_bake_gui": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "mesh" / "bake_gui.py"), str(p)]),
+        "blender_bake_gui": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "mesh" / "bake_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
 
         # === Clipboard ===
         # copy_my_info: Launches the Info Manager GUI for editing.
@@ -196,12 +196,12 @@ def build_handler_map():
         "copy_unc_path": _lazy("features.system.tools", "copy_unc_path"),
 
         # === Document ===
-        "doc_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "document" / "convert_gui.py"), *([str(p)] + ([str(i) for i in s] if s else []))]),
+        "doc_convert": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "document" / "convert_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
         "pdf_merge": lambda p, s=None: _lazy("features.system.tools", "pdf_merge")(p, selection=s),
-        "pdf_split": _lazy("features.system.tools", "pdf_split"),
+        "pdf_split": lambda p, s=None: _lazy("features.system.tools", "pdf_split")(p, selection=s),
 
         # === Rename ===
-        "batch_rename": _lazy("features.system.rename", "run_rename_gui"),
+        "batch_rename": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "system" / "rename.py"), "rename", *([str(i) for i in s] if s else [str(p)])]),
 
         # === Tools ===
         "youtube_downloader": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "video" / "downloader_gui.py")]),
@@ -211,8 +211,8 @@ def build_handler_map():
         "context_flow": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "tools" / "context_flow" / "gui.py")]),
 
         # === ComfyUI ===
-        "seedvr2_upscaler": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "comfyui" / "seedvr2_gui.py"), str(p)]),
-        "z_image_turbo": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "comfyui" / "z_image_turbo_gui.py"), str(p)]),
+        "seedvr2_upscaler": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "comfyui" / "seedvr2_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
+        "z_image_turbo": lambda p, s=None: gui_popen([PYTHONW_EXE, str(src_dir / "features" / "comfyui" / "z_image_turbo_gui.py"), *([str(i) for i in s] if s else [str(p)])]),
     }
 
 

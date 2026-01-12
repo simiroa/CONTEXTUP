@@ -1,0 +1,121 @@
+[
+    {
+        "category": "Tools",
+        "id": "copy_my_info",
+        "name": "Copy My Info",
+        "icon": "assets/icons/icon_sys_copy_info.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "",
+        "dynamic_submenu": "copy_my_info",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "pyperclip"
+        ],
+        "external_tools": [],
+        "order": 1100,
+        "gui": true
+    },
+    {
+        "category": "Tools",
+        "id": "youtube_downloader",
+        "name": "Video Downloader",
+        "icon": "assets/icons/icon_video_downloader.ico",
+        "types": "*",
+        "scope": "background",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "yt-dlp"
+        ],
+        "external_tools": [],
+        "order": 1101,
+        "gui": true
+    },
+    {
+        "category": "Tools",
+        "id": "ai_text_lab",
+        "name": "AI Text Lab",
+        "icon": "assets/icons/icon_ai_text_lab.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter",
+            "deep-translator",
+            "ollama",
+            "google-genai"
+        ],
+        "external_tools": [],
+        "order": 1102,
+        "gui": true
+    },
+    {
+        "category": "Tools",
+        "id": "leave_manager",
+        "name": "Leave Manager",
+        "icon": "assets/icons/vacance.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "gui": true,
+        "description": "Manage your vacation days and countdown to freedom."
+    },
+    {
+        "category": "Tools",
+        "id": "prompt_master",
+        "name": "Prompt Master",
+        "icon": "assets/icons/icon_ai_prompt_master.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 606,
+        "gui": true,
+        "description": "AI-powered prompt management and refinement tool."
+    },
+    {
+        "category": "Tools",
+        "id": "context_flow",
+        "name": "ContextFlow",
+        "icon": "assets/icons/icon_context_flow.ico",
+        "types": "*",
+        "scope": "tray_only",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": true,
+        "environment": "embedded",
+        "dependencies": [
+            "PySide6",
+            "psutil",
+            "pynvml"
+        ],
+        "external_tools": [],
+        "order": 1103,
+        "gui": true,
+        "description": "System resource monitor with NVIDIA GPU support."
+    }
+]

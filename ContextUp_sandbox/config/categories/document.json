@@ -1,0 +1,62 @@
+[
+    {
+        "category": "Document",
+        "id": "pdf_merge",
+        "name": "PDF Merge",
+        "icon": "assets/icons/icon_sys_pdf_merge.ico",
+        "types": ".pdf",
+        "scope": "items",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "pypdf"
+        ],
+        "external_tools": [],
+        "order": 201,
+        "gui": false
+    },
+    {
+        "category": "Document",
+        "id": "pdf_split",
+        "name": "PDF Split",
+        "icon": "assets/icons/icon_sys_pdf_split.ico",
+        "types": ".pdf",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "pypdf"
+        ],
+        "external_tools": [],
+        "order": 202,
+        "gui": false
+    },
+    {
+        "category": "Document",
+        "id": "doc_convert",
+        "name": "Convert Docs",
+        "icon": "assets/icons/icon_doc_convert.ico",
+        "types": ".pdf",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "numpy",
+            "pdf2docx",
+            "pymupdf4llm"
+        ],
+        "external_tools": [],
+        "order": 200,
+        "gui": true
+    }
+]

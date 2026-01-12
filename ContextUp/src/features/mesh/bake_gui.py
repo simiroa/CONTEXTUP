@@ -31,17 +31,22 @@ class BlenderBakeGUI(BaseWindow):
     def __init__(self, target_path):
         super().__init__(title="ContextUp Remesh & Bake", width=550, height=855, icon_name="mesh_remesh_bake")
         
-        self.target_path = Path(target_path) if target_path else Path.cwd()
+        logging.info(f"Initializing BlenderBakeGUI with target: {target_path}")
         
-        # Check if target is a direct mesh file
-        mesh_exts = {'.obj', '.ply', '.stl', '.off', '.gltf', '.glb', '.fbx'} 
+        mesh_exts = {'.obj', '.ply', '.stl', '.off', '.gltf', '.glb', '.fbx'}
         
-        if self.target_path.is_file() and self.target_path.suffix.lower() in mesh_exts:
-            self.selection = [self.target_path]
+        if isinstance(target_path, (list, tuple)):
+            self.selection = [Path(p) for p in target_path]
         else:
-            self.selection = get_selection_from_explorer(target_path)
-            if not self.selection:
+            self.target_path = Path(target_path) if target_path else Path.cwd()
+            if self.target_path.is_file() and self.target_path.suffix.lower() in mesh_exts:
                 self.selection = [self.target_path]
+            else:
+                self.selection = get_selection_from_explorer(target_path)
+                if not self.selection:
+                    self.selection = [self.target_path]
+                
+        logging.info(f"Selection: {self.selection}")
         
         self.files = [Path(p) for p in self.selection if Path(p).suffix.lower() in mesh_exts]
         
@@ -319,7 +324,8 @@ class BlenderBakeGUI(BaseWindow):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        app = BlenderBakeGUI(sys.argv[1])
+        paths = [Path(p) for p in sys.argv[1:] if Path(p).exists()]
+        app = BlenderBakeGUI(paths if len(paths) > 1 else paths[0])
         app.mainloop()
     else:
         app = BlenderBakeGUI(None)

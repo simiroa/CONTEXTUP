@@ -41,5 +41,6 @@ class Theme:
     TEXT_DANGER = ("#e74c3c", "#e74c3c")      # Vibrant Red for Stop/Error
     TEXT_SUCCESS = ("#2ecc71", "#2ecc71")     # Vibrant Green for On/Success
     
-    # --- Accent ---
+    # --- Accent & Utilities ---
     ACCENT = PRIMARY
+    BORDER = ("#d1d5db", "#1a1a1a")

@@ -43,9 +43,12 @@ class ConvertMeshGUI(BaseWindow):
     def __init__(self, target_path):
         super().__init__(title="ContextUp Mesh Converter", width=600, height=500, icon_name="mesh_convert_format")
         
-        selection = get_selection_from_explorer(target_path)
-        if not selection:
-            selection = [target_path]
+        if isinstance(target_path, (list, tuple)):
+            selection = [Path(p) for p in target_path]
+        else:
+            selection = get_selection_from_explorer(target_path)
+            if not selection:
+                selection = [target_path]
         
         mesh_exts = {'.fbx', '.obj', '.gltf', '.glb', '.usd', '.abc', '.ply', '.stl'}
         self.files = [Path(p) for p in selection if Path(p).suffix.lower() in mesh_exts]
@@ -109,8 +112,9 @@ class ConvertMeshGUI(BaseWindow):
         total = len(self.files)
         
         for i, path in enumerate(self.files):
-            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {path.name}")
-            self.progress.set(i / total)
+            self.after(0, lambda i=i, total=total, name=path.name: 
+                         self.lbl_status.configure(text=f"Processing {i+1}/{total}: {name}"))
+            self.after(0, lambda v=i/total: self.progress.set(v))
             
             try:
                 # Determine output path
@@ -132,9 +136,9 @@ class ConvertMeshGUI(BaseWindow):
             except Exception as e:
                 errors.append(f"{path.name}: {str(e)}")
         
-        self.progress.set(1.0)
-        self.lbl_status.configure(text="Done")
-        self.btn_run.configure(state="normal", text="Start Conversion")
+        self.after(0, lambda: self.progress.set(1.0))
+        self.after(0, lambda: self.lbl_status.configure(text="Done"))
+        self.after(0, lambda: self.btn_run.configure(state="normal", text="Start Conversion"))
         
         if errors:
             msg = f"Converted {success_count}/{total} files.\n\nErrors:\n" + "\n".join(errors[:5])
@@ -152,9 +156,12 @@ class OptimizeMeshGUI(BaseWindow):
     def __init__(self, target_path):
         super().__init__(title="ContextUp Mesh Optimizer", width=500, height=400, icon_name="mesh_optimizer")
         
-        selection = get_selection_from_explorer(target_path)
-        if not selection:
-            selection = [target_path]
+        if isinstance(target_path, (list, tuple)):
+            selection = [Path(p) for p in target_path]
+        else:
+            selection = get_selection_from_explorer(target_path)
+            if not selection:
+                selection = [target_path]
         
         mesh_exts = {'.fbx', '.obj', '.gltf', '.ply', '.stl'}
         self.files = [Path(p) for p in selection if Path(p).suffix.lower() in mesh_exts]
@@ -218,8 +225,9 @@ class OptimizeMeshGUI(BaseWindow):
         total = len(self.files)
         
         for i, path in enumerate(self.files):
-            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {path.name}")
-            self.progress.set(i / total)
+            self.after(0, lambda i=i, total=total, name=path.name: 
+                         self.lbl_status.configure(text=f"Processing {i+1}/{total}: {name}"))
+            self.after(0, lambda v=i/total: self.progress.set(v))
             
             try:
                 output_path = path.with_name(f"{path.stem}_optimized{path.suffix}")
@@ -231,9 +239,9 @@ class OptimizeMeshGUI(BaseWindow):
             except Exception as e:
                 errors.append(f"{path.name}: {str(e)}")
         
-        self.progress.set(1.0)
-        self.lbl_status.configure(text="Done")
-        self.btn_run.configure(state="normal", text="Start Optimization")
+        self.after(0, lambda: self.progress.set(1.0))
+        self.after(0, lambda: self.lbl_status.configure(text="Done"))
+        self.after(0, lambda: self.btn_run.configure(state="normal", text="Start Optimization"))
         
         if errors:
             msg = f"Optimized {success_count}/{total} files.\n\nErrors:\n" + "\n".join(errors[:5])
@@ -247,22 +255,22 @@ class OptimizeMeshGUI(BaseWindow):
     def on_closing(self):
         self.destroy()
 
-def convert_mesh(target_path: str):
+def convert_mesh(target_path: str, selection=None):
     """Convert mesh between formats."""
     try:
         get_blender()  # Early check
-        app = ConvertMeshGUI(target_path)
+        app = ConvertMeshGUI(selection if selection else target_path)
         app.mainloop()
     except FileNotFoundError:
         _show_blender_install_guide()
     except Exception as e:
         messagebox.showerror("Error", f"Failed: {e}")
 
-def optimize_mesh(target_path: str):
+def optimize_mesh(target_path: str, selection=None):
     """Optimize mesh using decimation."""
     try:
         get_blender()  # Early check
-        app = OptimizeMeshGUI(target_path)
+        app = OptimizeMeshGUI(selection if selection else target_path)
         app.mainloop()
     except FileNotFoundError:
         _show_blender_install_guide()
@@ -295,3 +303,18 @@ def extract_textures(target_path: str):
     except Exception as e:
         messagebox.showerror("Error", f"Failed: {e}")
 
+
+if __name__ == "__main__":
+    if len(sys.argv) > 2:
+        cmd = sys.argv[1]
+        paths = [Path(p) for p in sys.argv[2:] if Path(p).exists()]
+        if not paths: sys.exit(0)
+        
+        if cmd == "convert":
+            convert_mesh(paths[0], selection=paths)
+        elif cmd == "optimize":
+            optimize_mesh(paths[0], selection=paths)
+    else:
+        # For testing
+        # convert_mesh(None)
+        pass

@@ -75,6 +75,9 @@ BASE_CORE = [
     "tqdm",
     "holidays",
     "PySide6",
+    "qtawesome",  # Icon library for Monitor Widget
+    "moderngl",   # OpenGL rendering (Noise Master)
+    "glcontext",  # OpenGL context support
 ]
 
 # 미디어 편집용 패키지 (Image/Video/Audio 중 하나라도 선택 시)
@@ -86,6 +89,8 @@ PKG_MEDIA = [
     "rawpy",
     "pillow-heif",
     "opencv-python",
+    "vtracer",  # Vectorizer (RigReady) - Image to SVG
+    "psd-tools",  # PSD file parsing for Vectorizer
 ]
 
 # 문서 처리 패키지

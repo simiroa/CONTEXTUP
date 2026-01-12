@@ -99,9 +99,9 @@
     },
     {
         "category": "Tools",
-        "id": "context_flow",
-        "name": "ContextFlow",
-        "icon": "assets/icons/icon_context_flow.ico",
+        "id": "monitor_widget",
+        "name": "Monitor Widget",
+        "icon": "assets/icons/monitor_widget.png",
         "types": "*",
         "scope": "tray_only",
         "enabled": true,

@@ -160,11 +160,12 @@ class UpscaleGUI(BaseWindow):
         for i, img_path in enumerate(self.files_to_process):
             # Check cancel flag
             if self.cancel_flag:
-                self.lbl_status.configure(text=f"Cancelled after {success_count} images")
+                self.after(0, lambda: self.lbl_status.configure(text=f"Cancelled after {success_count} images"))
                 break
                 
-            self.lbl_status.configure(text=f"Processing {i+1}/{total}: {img_path.name}")
-            self.progress.set(i / total)
+            self.after(0, lambda i=i, total=total, name=img_path.name: 
+                         self.lbl_status.configure(text=f"Processing {i+1}/{total}: {name}"))
+            self.after(0, lambda v=i/total: self.progress.set(v))
             
             try:
                 # Build arguments
@@ -195,9 +196,9 @@ class UpscaleGUI(BaseWindow):
             except Exception as e:
                 errors.append(f"{img_path.name}: {str(e)[:100]}")
         
-        self.progress.set(1.0)
-        self.lbl_status.configure(text="Done")
-        self.btn_run.configure(state="normal", text="Start Upscale")
+        self.after(0, lambda: self.progress.set(1.0))
+        self.after(0, lambda: self.lbl_status.configure(text="Done"))
+        self.after(0, lambda: self.btn_run.configure(state="normal", text="Start Upscale"))
         
         # Show results
         if errors:
@@ -215,12 +216,12 @@ class UpscaleGUI(BaseWindow):
     def on_closing(self):
         self.destroy()
 
-def upscale_image(target_path: str):
+def upscale_image(target_path: str, selection=None):
     """
     Upscale image using AI.
     """
     try:
-        app = UpscaleGUI(target_path)
+        app = UpscaleGUI(selection or target_path)
         app.mainloop()
             
     except Exception as e:

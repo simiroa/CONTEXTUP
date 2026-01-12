@@ -220,51 +220,61 @@ def pdf_merge(target_path: str, selection=None):
     except Exception as e:
         messagebox.showerror("Error", f"Merge failed: {e}")
 
-def pdf_split(target_path: str):
+def pdf_split(target_path: str, selection=None):
     try:
-        path = Path(target_path)
-        if path.suffix.lower() != '.pdf': return
-        
+        from pathlib import Path
+        if not selection:
+            from utils.explorer import get_selection_from_explorer
+            selection = get_selection_from_explorer(target_path)
+            if not selection:
+                selection = [Path(target_path)]
+            else:
+                selection = [Path(p) for p in selection]
+        else:
+            selection = [Path(p) for p in selection]
+
+        pdfs = [p for p in selection if p.suffix.lower() == '.pdf']
+        if not pdfs:
+            messagebox.showinfo("Info", "No PDF files selected.")
+            return
+
         root = _get_root()
         
-        # Ask for mode
-        mode = simpledialog.askstring("Split PDF", "Enter mode: 'pdf' (split pages) or 'png' (convert to images):", parent=root)
+        # Ask for mode once for the whole batch
+        mode = simpledialog.askstring("Split PDF", f"Mode for {len(pdfs)} files: 'pdf' (split) or 'png' (convert):", parent=root)
         if not mode: return
         mode = mode.lower()
         
-        output_dir = get_safe_path(path.parent / path.stem)
-        output_dir.mkdir(exist_ok=True)
-        
-        if 'pdf' in mode:
-            try:
+        count = 0
+        for path in pdfs:
+            output_dir = get_safe_path(path.parent / path.stem)
+            output_dir.mkdir(exist_ok=True)
+            
+            if 'pdf' in mode:
                 from pypdf import PdfReader, PdfWriter
-            except ImportError:
-                 messagebox.showerror("Error", "pypdf module not found. Please install it.")
-                 return
-
-            reader = PdfReader(str(path))
-            for i, page in enumerate(reader.pages):
-                writer = PdfWriter()
-                writer.add_page(page)
-                out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.pdf")
-                with open(out_path, "wb") as f:
-                    writer.write(f)
-            messagebox.showinfo("Success", f"Split into {len(reader.pages)} PDFs in {output_dir.name}")
-            
-        elif 'png' in mode:
-            # Requires poppler installed and in PATH
-            try:
+                reader = PdfReader(str(path))
+                for i, page in enumerate(reader.pages):
+                    writer = PdfWriter()
+                    writer.add_page(page)
+                    out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.pdf")
+                    with open(out_path, "wb") as f:
+                        writer.write(f)
+                count += 1
+            elif 'png' in mode or 'image' in mode:
                 from pdf2image import convert_from_path
-                images = convert_from_path(str(path))
-                for i, img in enumerate(images):
-                    out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.png")
-                    img.save(out_path, "PNG")
-                messagebox.showinfo("Success", f"Converted to {len(images)} PNGs in {output_dir.name}")
-            except Exception as e:
-                messagebox.showerror("Error", f"PNG conversion failed (Poppler installed?): {e}")
-        else:
-            messagebox.showwarning("Warning", "Unknown mode. Use 'pdf' or 'png'.")
-            
+                try:
+                    images = convert_from_path(str(path))
+                    for i, image in enumerate(images):
+                        out_path = get_safe_path(output_dir / f"{path.stem}_page_{i+1:03d}.png")
+                        image.save(str(out_path), "PNG")
+                    count += 1
+                except Exception as e:
+                    logging.error(f"PNG conversion failed for {path.name}: {e}")
+            else:
+                messagebox.showwarning("Warning", f"Unknown mode '{mode}' for {path.name}")
+
+        messagebox.showinfo("Success", f"Split {count} PDF files.")
+        
     except Exception as e:
         messagebox.showerror("Error", f"Split failed: {e}")
 

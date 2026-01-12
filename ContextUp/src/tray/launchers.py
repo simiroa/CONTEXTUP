@@ -67,6 +67,8 @@ def find_script_path(tool_id: str, tool_script: str = None) -> Path:
         search_paths.extend([
             src_dir / "features" / cat / f"{tool_id}.py",
             src_dir / "features" / cat / f"{tool_id}_gui.py",
+            src_dir / "features" / cat / tool_id / "gui.py",  # Added this line
+            src_dir / "features" / cat / tool_id / "__init__.py",  # Added this line
         ])
     
     # Package-based paths

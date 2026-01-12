@@ -217,7 +217,7 @@ class ImageResizeGUI(BaseWindow):
                 break
                 
             self.after(0, lambda p=path.name: self.lbl_status.configure(text=f"Processing: {p}"))
-            self.progress.set((i) / total)
+            self.after(0, lambda v=(i) / total: self.progress.set(v))
             try:
                 # Output setup
                 save_new_folder = self.var_new_folder.get()
@@ -346,24 +346,24 @@ class ImageResizeGUI(BaseWindow):
                 errors.append(f"{path.name}: {e}")
                 print(e)
         
-        self.progress.set(1.0)
-        self.btn_resize.configure(state="normal", text="Start Resize")
-        self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color="gray")
+        self.after(0, lambda: self.progress.set(1.0))
+        self.after(0, lambda: self.btn_resize.configure(state="normal", text="Start Resize"))
+        self.after(0, lambda: self.btn_cancel.configure(fg_color="transparent", hover_color="gray25", text_color="gray"))
         
         if self.cancel_flag:
-            self.lbl_status.configure(text="Cancelled")
-            messagebox.showinfo("Cancelled", "Processing was cancelled.")
+            self.after(0, lambda: self.lbl_status.configure(text="Cancelled"))
+            self.after(0, lambda: messagebox.showinfo("Cancelled", "Processing was cancelled."))
         else:
-            self.lbl_status.configure(text="Complete")
+            self.after(0, lambda: self.lbl_status.configure(text="Complete"))
             
             msg = f"Processed {success}/{total} images."
             if errors:
-                msg += f"\nErrors: {len(errors)}\n\n" + "\n".join(errors[:5])
-                if len(errors) > 5: msg += "\n..."
-                messagebox.showwarning("Completed with Errors", msg)
+                final_msg = msg + f"\nErrors: {len(errors)}\n\n" + "\n".join(errors[:5])
+                if len(errors) > 5: final_msg += "\n..."
+                self.after(0, lambda m=final_msg: messagebox.showwarning("Completed with Errors", m))
             else:
-                messagebox.showinfo("Success", msg)
-                self.destroy()
+                self.after(0, lambda m=msg: messagebox.showinfo("Success", m))
+                self.after(0, self.destroy)
 
     def on_closing(self):
         self.destroy()

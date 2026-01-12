@@ -1,0 +1,68 @@
+{
+    "_comment": "설치 티어별 카테고리 정의. install.py에서 읽어와 사용합니다.",
+    "tiers": {
+        "minimal": {
+            "name": "최소 설치",
+            "description": "핵심 기능만 (빠름, ~200MB)",
+            "categories": [
+                "System",
+                "Rename",
+                "Clipboard",
+                "Document"
+            ]
+        },
+        "standard": {
+            "name": "표준 설치",
+            "description": "일반 기능 + 미디어 편집 (권장, ~500MB)",
+            "categories": [
+                "System",
+                "Rename",
+                "Clipboard",
+                "Document",
+                "Image",
+                "Video",
+                "Audio",
+                "Tools",
+                "Sequence"
+            ],
+            "ai": "light"
+        },
+        "full": {
+            "name": "전체 설치",
+            "description": "모든 기능 + 로컬 AI (~8-10GB)",
+            "categories": [
+                "System",
+                "Rename",
+                "Clipboard",
+                "Document",
+                "Image",
+                "Video",
+                "Audio",
+                "Tools",
+                "Sequence",
+                "3D",
+                "ComfyUI"
+            ],
+            "ai": "heavy"
+        }
+    },
+    "category_descriptions": {
+        "System": "파일 관리 (폴더 정리, 심볼릭 링크 등)",
+        "Rename": "파일 이름 일괄 변경",
+        "Clipboard": "클립보드 유틸리티",
+        "Document": "문서 변환 (PDF 분할/병합 등)",
+        "Image": "이미지 편집 (형식 변환, 리사이즈, 워터마크 등)",
+        "Video": "비디오 처리 (변환, 자르기, GIF 생성) - FFmpeg 필요",
+        "Audio": "오디오 편집 (변환, 볼륨 조절) - FFmpeg 필요",
+        "3D": "3D 도구 (모델 변환, 리메시)",
+        "Tools": "유틸리티 (번역기 등)",
+        "Sequence": "시퀀스 도구 (이미지 시퀀스 관리, 비디오 변환)",
+        "ComfyUI": "ComfyUI 통합 (생성형 AI) - ComfyUI 설치 필요"
+    },
+    "core_categories": [
+        "System",
+        "Rename",
+        "Clipboard",
+        "Document"
+    ]
+}

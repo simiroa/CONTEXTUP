@@ -1,0 +1,117 @@
+{
+    "category": "ComfyUI",
+    "id": "comfyui",
+    "name": "ComfyUI Tools",
+    "enabled": true,
+    "submenu": "ContextUp",
+    "show_in_tray": false,
+    "environment": "embedded",
+    "dependencies": [],
+    "external_tools": [],
+    "show_in_context_menu": false,
+    "features": [
+        {
+            "category": "ComfyUI",
+            "id": "seedvr2_upscaler",
+            "name": "SeedVR2 Video Upscaler",
+            "icon": "assets/icons/icon_video_upscale_ai.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "embedded",
+            "dependencies": [
+                "requests"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Upscale videos using SeedVR2 (ComfyUI)",
+            "script": "src.features.comfyui.seedvr2_gui",
+            "show_in_context_menu": false
+        },
+        {
+            "category": "ComfyUI",
+            "id": "creative_studio_z",
+            "name": "ComfyUI Creative Studio (Z)",
+            "icon": "assets/icons/icon_art.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "embedded",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "Pillow"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Unified workspace for prompt layers, icon generation, and asset creation (Z-Turbo).",
+            "script": "src.features.comfyui.creative_studio_z_gui",
+            "show_in_context_menu": false
+        },
+        {
+            "category": "ComfyUI",
+            "id": "creative_studio_advanced",
+            "name": "ComfyUI Creative Studio (Advanced)",
+            "icon": "assets/icons/icon_art_advanced.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "embedded",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "Pillow"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Professional workspace with Checkpoint, LoRA Stacking, FaceDetailer & SUPIR.",
+            "script": "src.features.comfyui.creative_studio_advanced_gui",
+            "show_in_context_menu": false
+        },
+        {
+            "category": "ComfyUI",
+            "id": "ace_audio_editor",
+            "name": "Creative Audio Studio (ACE)",
+            "icon": "assets/icons/icon_music.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "embedded",
+            "dependencies": [
+                "requests",
+                "customtkinter",
+                "pygame"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "AI Audio Generation & Editing using ACE Step",
+            "script": "src.features.comfyui.ace_audio_edit_gui",
+            "scope": "file",
+            "types": ".mp3;.wav;.flac;.ogg;.m4a",
+            "show_in_context_menu": false
+        },
+        {
+            "category": "ComfyUI",
+            "id": "comfyui_dashboard",
+            "name": "Open Web UI",
+            "icon": "assets/icons/icon_comfyui.ico",
+            "enabled": true,
+            "submenu": "ContextUp",
+            "show_in_tray": true,
+            "environment": "embedded",
+            "dependencies": [
+                "requests"
+            ],
+            "external_tools": [
+                "ComfyUI"
+            ],
+            "description": "Open ComfyUI Web UI (starts server if needed)",
+            "script": "src.features.comfyui.open_dashboard",
+            "show_in_context_menu": false
+        }
+    ]
+}

@@ -18,24 +18,23 @@ from utils.i18n import t
 from utils.files import shell_rename
 
 class RenameGUI(BaseWindow):
-    def __init__(self, target_path, mode="prefix"):
+    def __init__(self, target_path, mode="prefix", selection=None):
         super().__init__(title=t("rename_gui.title"), width=450, height=600, icon_name="sys_batch_rename")
         
         self.target_path = target_path
-        self.selection = get_selection_from_explorer(target_path)
         
-        # Strict check: If no selection, do not run.
+        if isinstance(selection, (list, tuple)):
+            self.selection = [Path(p) for p in selection]
+        else:
+            self.selection = get_selection_from_explorer(target_path)
+            if not self.selection:
+                p = Path(target_path)
+                if p.is_file():
+                    self.selection = [p]
+        
         if not self.selection:
-            # If target_path is a file, use it.
-            p = Path(target_path)
-            if p.is_file():
-                self.selection = [p]
-            else:
-                # Nothing selected, and target is likely a folder (background click)
-                # User requested: "If nothing selected, do not expose this function"
-                # We destroy and return.
-                self.destroy()
-                return
+            self.destroy()
+            return
 
         self.preview_data = [] # List of (original, new) tuples
         self.mode = mode
@@ -229,23 +228,22 @@ class RenameGUI(BaseWindow):
 
 
 class RenumberGUI(BaseWindow):
-    def __init__(self, target_path):
+    def __init__(self, target_path, selection=None):
         super().__init__(title="ContextUp Renumber Tool", width=400, height=600, icon_name="sequence_renumber")
         
         self.target_path = Path(target_path)
         
-        # Determine if folder mode or selection mode
-        self.selection = get_selection_from_explorer(target_path)
+        if isinstance(selection, (list, tuple)):
+            self.selection = [Path(p) for p in selection]
+        else:
+            self.selection = get_selection_from_explorer(target_path)
+            if not self.selection:
+                if self.target_path.is_file():
+                    self.selection = [self.target_path]
         
-        # If no selection, check if target_path is a file
         if not self.selection:
-            if self.target_path.is_file():
-                self.selection = [self.target_path]
-            else:
-                # Nothing selected, and target is likely a folder (background click)
-                # User requested: "If nothing selected, do not expose this function"
-                self.destroy()
-                return
+            self.destroy()
+            return
 
         # If selection is just the folder itself, treat as folder mode (process all files inside)
         if len(self.selection) == 1 and self.selection[0] == self.target_path and self.target_path.is_dir():
@@ -442,19 +440,21 @@ class RenumberGUI(BaseWindow):
     def on_closing(self):
         self.destroy()
 
-def run_rename_gui(target_path, mode="prefix"):
-    app = RenameGUI(target_path, mode)
+def run_rename_gui(target_path, mode="prefix", selection=None):
+    app = RenameGUI(target_path, mode, selection)
     app.mainloop()
 
-def run_renumber_gui(target_path):
-    app = RenumberGUI(target_path)
+def run_renumber_gui(target_path, selection=None):
+    app = RenumberGUI(target_path, selection)
     app.mainloop()
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
         cmd = sys.argv[1]
-        path = sys.argv[2]
+        paths = [Path(p) for p in sys.argv[2:] if Path(p).exists()]
+        if not paths: sys.exit(0)
+        
         if cmd == "rename":
-            run_rename_gui(path)
+            run_rename_gui(paths[0], selection=paths)
         elif cmd == "renumber":
-            run_renumber_gui(path)
+            run_renumber_gui(paths[0], selection=paths)

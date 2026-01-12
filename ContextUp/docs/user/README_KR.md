@@ -1,12 +1,12 @@
 # ContextUp (한국어)
 
-![Version](https://img.shields.io/badge/version-4.0.2-green.svg)
+![Version](https://img.shields.io/badge/version-4.1.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)
 
 **ContextUp**은 Windows 오른쪽 클릭 메뉴를 생산성 허브로 바꿔 주는 올인원 도구입니다.
 
-> [Changelog](../../CHANGELOG.md) | [전체 기능 보기](FEATURES.md)
+> [Changelog](../../CHANGELOG.md) | [전체 기능 보기](FEATURES.md) | [📖 매뉴얼](../manuals/ko/)
 
 ---
 
@@ -14,8 +14,8 @@
 
 | 카테고리 | 예시 기능 |
 |----------|-----------|
-| AI | 배경 제거, 업스케일(ComfyUI 호환), PBR 생성, 자막 생성, AI Text Lab(Gemini/Ollama), **Creative Studio (Z/Advanced)** |
-| 이미지 | 포맷 변환(DDS/EXR/WebP 등), EXR 병합/분리, 텍스처 패커, 2의 거듭제곱 리사이즈, **노이즈 마스터(레이어 절차적 생성)** |
+| AI | [배경 제거](../manuals/ko/image_remove_bg_ai.md), [업스케일](../manuals/ko/esrgan_upscale.md), [PBR 생성](../manuals/ko/marigold_pbr.md), [자막 생성](../manuals/ko/whisper_subtitle.md), [AI Text Lab](../manuals/ko/ai_text_lab.md), [Creative Studio](../manuals/ko/creative_studio_z.md) |
+| 이미지 | [포맷 변환](../manuals/ko/image_convert.md), [EXR 병합](../manuals/ko/merge_to_exr.md)/[분리](../manuals/ko/split_exr.md), [텍스처 패커](../manuals/ko/texture_packer_orm.md), [2의 거듭제곱 리사이즈](../manuals/ko/resize_power_of_2.md), [벡터화](../manuals/ko/rigreader_vectorizer.md) |
 | 시퀀스 | 렌더링 시퀀스 정렬, 누락 프레임 탐색, 영상 변환, 분석 및 리넘버링 |
 | 비디오 | ProRes 변환, 프록시 생성, 프레임 보간(30fps), 오디오 추출/제거, 유튜브 다운로더 |
 | 오디오 | 포맷 변환, 보컬/배경 분리, 볼륨 정규화 |

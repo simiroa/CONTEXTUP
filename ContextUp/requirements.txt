@@ -16,6 +16,7 @@ piexif
 pyperclip  # Clipboard handling
 xxhash  # Fast hashing for Finder (10x faster than MD5)
 PySide6
+qtawesome  # Icon library for Monitor Widget
 moderngl
 glcontext
 

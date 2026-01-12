@@ -108,7 +108,10 @@ class VectorizerGUI(BaseWindow):
         self.create_widgets()
         
         if initial_path:
-            self.load_file(initial_path)
+            if isinstance(initial_path, (list, tuple)):
+                self.load_multiple_files(initial_path)
+            else:
+                self.load_file(initial_path)
     
     def create_widgets(self):
         # Header
@@ -404,7 +407,7 @@ class VectorizerGUI(BaseWindow):
                 self.lbl_status.configure(text=t("rigready_vectorizer_gui.error"))
                 return
         else:
-            # Single image
+            # Single image - use a more robust image loader/checker
             try:
                 self.psd_data = None
                 self._clear_layer_widgets()
@@ -424,6 +427,33 @@ class VectorizerGUI(BaseWindow):
         # Set default output path
         if not self.var_output.get():
             self.var_output.set(str(path.parent / "vectorized"))
+
+    def load_multiple_files(self, paths: list[Path]):
+        """Load multiple image files as 'layers' for vectorization."""
+        self._clear_layer_widgets()
+        self.psd_data = None
+        
+        valid_paths = [Path(p) for p in paths if Path(p).exists() and Path(p).suffix.lower() in ('.png', '.jpg', '.jpeg', '.bmp', '.tga', '.webp')]
+        
+        if not valid_paths:
+            messagebox.showwarning("Warning", "No valid image files found in selection.")
+            return
+
+        self.lbl_file.configure(text=f"Multiple Files ({len(valid_paths)})")
+        
+        for p in valid_paths:
+            try:
+                with Image.open(p) as img:
+                    w, h = img.size
+                    self._add_layer_row(p.stem, w, h, p, str(p))
+            except:
+                continue
+        
+        if valid_paths and not self.var_output.get():
+            self.var_output.set(str(valid_paths[0].parent / "vectorized"))
+        
+        self._update_layer_count()
+        self.lbl_status.configure(text=f"Loaded {len(self.layers)} images")
 
     def _clear_layer_widgets(self):
         """Destroy all layer widgets and clear caches."""
@@ -1012,6 +1042,12 @@ class VectorizerGUI(BaseWindow):
 
 
 if __name__ == "__main__":
-    initial = Path(sys.argv[1]) if len(sys.argv) > 1 else None
-    app = VectorizerGUI(initial)
+    if len(sys.argv) > 1:
+        paths = [Path(p) for p in sys.argv[1:]]
+        if len(paths) == 1:
+            app = VectorizerGUI(paths[0])
+        else:
+            app = VectorizerGUI(paths)
+    else:
+        app = VectorizerGUI(None)
     app.mainloop()

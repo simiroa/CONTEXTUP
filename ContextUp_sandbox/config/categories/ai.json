@@ -1,0 +1,138 @@
+[
+    {
+        "category": "AI",
+        "id": "whisper_subtitle",
+        "name": "Whisper Subtitle AI",
+        "icon": "assets/icons/icon_video_generate_subtitle.ico",
+        "types": ".mp4;.mov;.avi;.mkv",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "faster-whisper",
+            "customtkinter"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 602,
+        "gui": true
+    },
+    {
+        "category": "AI",
+        "id": "esrgan_upscale",
+        "name": "ESRGAN Upscale",
+        "icon": "assets/icons/icon_image_upscale_ai.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.bmp",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "opencv-python",
+            "numpy",
+            "torch",
+            "realesrgan",
+            "gfpgan",
+            "basicsr"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 603,
+        "gui": false
+    },
+    {
+        "category": "AI",
+        "id": "rmbg_background",
+        "name": "RMBG Background Removal",
+        "icon": "assets/icons/icon_image_remove_bg_ai.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.bmp",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "customtkinter",
+            "kornia",
+            "torch",
+            "transformers"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 604,
+        "gui": false
+    },
+    {
+        "category": "AI",
+        "id": "marigold_pbr",
+        "name": "Marigold PBR Generator",
+        "icon": "assets/icons/icon_ai_pbr.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.tga;.bmp",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "Pillow",
+            "accelerate",
+            "customtkinter",
+            "diffusers",
+            "numpy",
+            "torch"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 605,
+        "gui": true
+    },
+    {
+        "category": "AI",
+        "id": "gemini_image_tool",
+        "name": "Gemini Image Tool",
+        "icon": "assets/icons/icon_ai_gemini_vision.ico",
+        "types": ".jpg;.jpeg;.png;.webp;.tga;.tif;.tiff",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "google-genai",
+            "Pillow",
+            "customtkinter",
+            "opencv-python",
+            "numpy"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 607,
+        "gui": true
+    },
+    {
+        "category": "AI",
+        "id": "demucs_stems",
+        "name": "Demucs Stem Separation",
+        "icon": "assets/icons/icon_audio_separate_stems.ico",
+        "types": ".wav;.mp3;.ogg;.flac;.m4a",
+        "scope": "file",
+        "enabled": true,
+        "submenu": "ContextUp",
+        "show_in_tray": false,
+        "environment": "embedded",
+        "dependencies": [
+            "customtkinter",
+            "demucs"
+        ],
+        "external_tools": [],
+        "is_extension": true,
+        "order": 608,
+        "gui": true
+    }
+]

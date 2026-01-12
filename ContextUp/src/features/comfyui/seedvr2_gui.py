@@ -130,7 +130,7 @@ class SeedVR2_GUI(PremiumComfyWindow):
             workflow_utils.update_node_value(workflow, "4", "max_resolution", res)
             
             def on_prog(val, max_v):
-                self.progress_bar.set(val/max_v)
+                self.after(0, lambda v=val/max_v: self.progress_bar.set(v))
                 
             self.client.generate_image(workflow, progress_callback=on_prog)
             

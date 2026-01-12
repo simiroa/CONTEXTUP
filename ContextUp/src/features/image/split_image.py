@@ -410,12 +410,12 @@ class ImageSplitGUI(BaseWindow):
     def run_extraction(self):
         try:
             self.update_status("Preparing batch...")
-            self.btn_extract.configure(state="disabled")
+            self.after(0, lambda: self.btn_extract.configure(state="disabled"))
             
             selected_layers = [l for l, v in self.layer_vars.items() if v.get()]
             if not selected_layers:
                 self.update_status("No layers selected")
-                self.btn_extract.configure(state="normal")
+                self.after(0, lambda: self.btn_extract.configure(state="normal"))
                 return
             
             out_format = self.format_var.get().lower()
@@ -445,18 +445,18 @@ class ImageSplitGUI(BaseWindow):
                     print(f"Failed to process {f_path.name}: {e}")
                     # Continue to next file?
                     
-                self.progress.set((f_idx + 1) / total_files)
+                self.after(0, lambda v=(f_idx + 1) / total_files: self.progress.set(v))
             
-            self.progress.set(1.0)
+            self.after(0, lambda: self.progress.set(1.0))
             self.update_status("Batch Complete!")
-            self.btn_extract.configure(state="normal")
-            messagebox.showinfo("Success", f"Processed {total_files} files.")
+            self.after(0, lambda: self.btn_extract.configure(state="normal"))
+            self.after(0, lambda: messagebox.showinfo("Success", f"Processed {total_files} files."))
             
         except Exception as e:
             print(f"Extraction Error: {e}")
             self.update_status(f"Error: {str(e)}")
-            self.btn_extract.configure(state="normal")
-            messagebox.showerror("Error", str(e))
+            self.after(0, lambda: self.btn_extract.configure(state="normal"))
+            self.after(0, lambda: messagebox.showerror("Error", str(e)))
 
     def _get_out_filename(self, file_path, layer_name):
         suffix = self.suffix_vars.get(layer_name, ctk.StringVar(value=f"_{layer_name}")).get()
@@ -588,7 +588,7 @@ class ImageSplitGUI(BaseWindow):
 
 
     def update_status(self, text):
-        self.lbl_status.configure(text=text)
+        self.after(0, lambda: self.lbl_status.configure(text=text))
 
     def on_closing(self):
         self.destroy()

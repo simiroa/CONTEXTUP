@@ -35,7 +35,6 @@ class AutoLODGUI(BaseWindow):
             logging.info("BaseWindow init complete")
             
             self.demo_mode = demo
-            self.target_path = Path(target_path) if target_path else Path.cwd()
             
             # Demo mode: skip validation
             if demo:
@@ -45,18 +44,18 @@ class AutoLODGUI(BaseWindow):
                 self.protocol("WM_DELETE_WINDOW", self.on_closing)
                 return
             
-            # Check if target is a direct mesh file
-            mesh_exts = {'.obj', '.ply', '.stl', '.off', '.gltf', '.glb', '.fbx'} 
-            
-            if self.target_path.is_file() and self.target_path.suffix.lower() in mesh_exts:
-                logging.info(f"Target is a direct mesh file: {self.target_path}")
-                self.selection = [self.target_path]
+            # Handle multiple targets
+            if isinstance(target_path, (list, tuple)):
+                self.selection = [Path(p) for p in target_path]
             else:
-                # Fallback to explorer selection or directory scan
-                logging.info("Target is directory or non-mesh, checking explorer selection")
-                self.selection = get_selection_from_explorer(target_path)
-                if not self.selection:
+                self.target_path = Path(target_path) if target_path else Path.cwd()
+                mesh_exts = {'.obj', '.ply', '.stl', '.off', '.gltf', '.glb', '.fbx'} 
+                if self.target_path.is_file() and self.target_path.suffix.lower() in mesh_exts:
                     self.selection = [self.target_path]
+                else:
+                    self.selection = get_selection_from_explorer(target_path)
+                    if not self.selection:
+                        self.selection = [self.target_path]
             
             logging.info(f"Selection: {self.selection}")
             
@@ -365,7 +364,8 @@ if __name__ == "__main__":
         app = AutoLODGUI(None, demo=True)
         app.mainloop()
     elif len(sys.argv) > 1:
-        app = AutoLODGUI(sys.argv[1])
+        paths = [Path(p) for p in sys.argv[1:] if Path(p).exists()]
+        app = AutoLODGUI(paths if len(paths) > 1 else paths[0])
         app.mainloop()
     else:
         app = AutoLODGUI(str(Path.cwd()))

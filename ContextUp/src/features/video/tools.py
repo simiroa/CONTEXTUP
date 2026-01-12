@@ -7,22 +7,22 @@ from tkinter import messagebox
 from utils.external_tools import get_ffmpeg
 from utils.files import get_safe_path
 
-def extract_audio(target_path: str):
+def extract_audio(target_path: str, selection=None):
     from . import audio_gui
-    audio_gui.run_gui(target_path)
+    audio_gui.run_gui(selection if selection else target_path)
 
-def remove_audio(target_path: str):
+def remove_audio(target_path: str, selection=None):
     from . import audio_gui
-    audio_gui.run_gui(target_path)
+    audio_gui.run_gui(selection if selection else target_path)
 
-def convert_video(target_path: str):
+def convert_video(target_path: str, selection=None):
     from . import convert_gui
-    convert_gui.run_gui(target_path)
+    convert_gui.run_gui(target_path, selection=selection)
 
-def create_proxy(target_path: str):
+def create_proxy(target_path: str, selection=None):
     # Proxy is just a preset in convert_video now
     from . import convert_gui
-    convert_gui.run_gui(target_path)
+    convert_gui.run_gui(target_path, selection=selection)
 
 def seq_to_video(target_path: str):
     from features.sequence import to_video_gui

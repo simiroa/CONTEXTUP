@@ -15,7 +15,7 @@ def _log(msg):
     except:
         pass
 
-def collect_batch_context(item_id: str, target_path: str, timeout: float = 0.3) -> list[Path] | None:
+def collect_batch_context(item_id: str, target_path: str, timeout: float = 1.5) -> list[Path] | None:
     """
     Coordinates multiple processes launched by Windows Context Menu into a single batch.
     Uses dynamic waiting - keeps waiting while new files are still being added.
@@ -41,7 +41,7 @@ def collect_batch_context(item_id: str, target_path: str, timeout: float = 0.3) 
         # 1. Register myself
         start_time = time.time()
         registered = False
-        while time.time() - start_time < 1.0:
+        while time.time() - start_time < 0.5:
             try:
                 with open(lock_file, "a", encoding="utf-8") as f:
                     f.write(f"{target}\n")
@@ -57,16 +57,19 @@ def collect_batch_context(item_id: str, target_path: str, timeout: float = 0.3) 
             _log(f"FAILED TO REGISTER: {target.name}")
             return [target]
             
-        # 2. Dynamic wait - keep waiting while new files are being added
-        _log(f"WAITING (dynamic, max {timeout}s)...")
+        # 2. Dynamic wait - keep waiting as long as new files are appearing
+        # stable_threshold: If no new files for this long, we assume we have them all.
+        # hard_max: Physical safety limit to prevent infinite loops.
+        _log(f"WAITING (dynamic stabilization)...")
         
         last_count = 0
-        stable_time = 0
-        check_interval = 0.2
-        stable_threshold = 1.0  # Consider stable if no new files for 1.0s
+        last_change_time = time.time()
+        check_interval = 0.05
+        stable_threshold = 0.2 
+        hard_max = max(5.0, timeout) # Allow up to 5s or requested timeout for massive sets
         
         wait_start = time.time()
-        while time.time() - wait_start < timeout:
+        while time.time() - wait_start < hard_max:
             try:
                 with open(lock_file, "r", encoding="utf-8") as f:
                     current_count = len([l for l in f.readlines() if l.strip()])
@@ -74,13 +77,12 @@ def collect_batch_context(item_id: str, target_path: str, timeout: float = 0.3) 
                 if current_count > last_count:
                     _log(f"New files detected: {last_count} -> {current_count}")
                     last_count = current_count
-                    stable_time = 0
+                    last_change_time = time.time()
                 else:
-                    stable_time += check_interval
-                    if stable_time >= stable_threshold:
+                    # Proceed if no change for stable_threshold
+                    if time.time() - last_change_time >= stable_threshold:
                         _log(f"Stable at {current_count} files, proceeding...")
                         break
-                        
             except:
                 pass
             
@@ -88,6 +90,9 @@ def collect_batch_context(item_id: str, target_path: str, timeout: float = 0.3) 
         
         # 3. Read and Determine Leader
         try:
+            # Final tiny grace
+            time.sleep(0.05)
+            
             if not lock_file.exists():
                 _log(f"FOLLOWER (file gone): {target.name}")
                 return None
@@ -105,6 +110,7 @@ def collect_batch_context(item_id: str, target_path: str, timeout: float = 0.3) 
                 
             if target == paths[0]:
                 _log(f"LEADER: {target.name} with {len(paths)} files")
+                time.sleep(0.1) # Let others finish reading
                 try:
                     lock_file.unlink()
                 except:
