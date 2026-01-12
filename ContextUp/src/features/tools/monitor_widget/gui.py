@@ -6,40 +6,107 @@ Monitor Widget GUI v9.0 - Modular Architecture
 """
 import sys
 import os
-import psutil
-import qtawesome as qta
 
-from PySide6.QtCore import Qt, Signal, QObject, QPoint
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QSlider, QCheckBox, QStackedWidget
-)
-
-# Handle imports for both package and direct execution
+# DEBUG: Early crash detection
 try:
-    from .theme import Theme
-    from .engine import MonitorEngine, SystemStats
-    from .process_manager import ProcessManager
-    from .components.sidebar import SidebarItem
-    from .pages.process_page import ProcessListPage
-    from .pages.disk_page import DiskPage
-    from .pages.net_page import NetPage
-    from .pages.server_page import ServerPage
-except (ImportError, ValueError):
+    with open(os.path.join(os.path.dirname(__file__), "monitor_boot_debug.log"), "a") as f:
+        f.write(f"Booting: {sys.executable}\n")
+        f.write(f"Script: {sys.argv}\n")
+        f.write(f"CWD: {os.getcwd()}\n")
+        f.write(f"Path: {sys.path}\n")
+        f.write(f"__file__: {__file__}\n")
+except: pass
+
+try:
     from pathlib import Path
-    src_dir = Path(__file__).resolve().parent.parent.parent.parent
-    if str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
-    
+    import platform
+    import time
+    import logging
+    import psutil
+    import qtawesome as qta
+
+    from PySide6.QtCore import Qt, QTimer, QPoint, QSize, Signal, QObject
+    from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
+                                 QHBoxLayout, QLabel, QFrame, QSystemTrayIcon, QMenu,
+                                 QPushButton, QSlider, QCheckBox, QStackedWidget)
+    from PySide6.QtGui import QIcon, QCursor, QAction, QColor
+
     from features.tools.monitor_widget.theme import Theme
     from features.tools.monitor_widget.engine import MonitorEngine, SystemStats
     from features.tools.monitor_widget.process_manager import ProcessManager
     from features.tools.monitor_widget.components.sidebar import SidebarItem
     from features.tools.monitor_widget.pages.process_page import ProcessListPage
+    from features.tools.monitor_widget.pages.gpu_page import GpuPage
     from features.tools.monitor_widget.pages.disk_page import DiskPage
     from features.tools.monitor_widget.pages.net_page import NetPage
     from features.tools.monitor_widget.pages.server_page import ServerPage
+    from features.tools.monitor_widget.monitor_controls import MonitorController
 
+    # Success Logic
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "monitor_boot_debug.log"), "a") as f:
+            f.write("Imports SUCCESS.\n")
+    except: pass
+
+except Exception as e:
+    import traceback
+    
+    # Log the initial failure
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "monitor_boot_debug.log"), "a") as f:
+            f.write(f"Initial Import Failed: {e}\nAttempting path fix...\n")
+    except: pass
+
+    # Path Fix Logic
+    try:
+        from pathlib import Path
+        current_file = Path(__file__).resolve()
+        # file: src/features/tools/monitor_widget/gui.py
+        # src: current_file.parent.parent.parent.parent
+        src_dir = current_file.parent.parent.parent.parent
+        
+        if str(src_dir) not in sys.path:
+            sys.path.insert(0, str(src_dir))
+            
+        # Re-attempt imports with fixed path
+        from features.tools.monitor_widget.theme import Theme
+        from features.tools.monitor_widget.engine import MonitorEngine, SystemStats
+        from features.tools.monitor_widget.process_manager import ProcessManager
+        from features.tools.monitor_widget.components.sidebar import SidebarItem
+        from features.tools.monitor_widget.pages.process_page import ProcessListPage
+        from features.tools.monitor_widget.pages.gpu_page import GpuPage
+        from features.tools.monitor_widget.pages.disk_page import DiskPage
+        from features.tools.monitor_widget.pages.net_page import NetPage
+        from features.tools.monitor_widget.pages.server_page import ServerPage
+        from features.tools.monitor_widget.monitor_controls import MonitorController
+        
+        with open(os.path.join(os.path.dirname(__file__), "monitor_boot_debug.log"), "a") as f:
+            f.write("Imports SUCCESS (Recovered).\n")
+            
+    except Exception as e2:
+        # If it still fails, log everything and crash
+        with open(os.path.join(os.path.dirname(__file__), "monitor_boot_debug.log"), "a") as f:
+            f.write(f"CRITICAL IMPORT ERROR AFTER FIX: {e2}\n{traceback.format_exc()}\n")
+        pass
+
+
+
+# Global Debug Path
+DEBUG_LOG_PATH = os.path.join(os.path.dirname(__file__), "monitor_debug.log")
+BOOT_LOG_PATH = os.path.join(os.path.dirname(__file__), "monitor_boot_debug.log")
+
+# Configure Standard Logging for Imported Modules
+logging.basicConfig(
+    filename=DEBUG_LOG_PATH,
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+def trace(msg):
+    try:
+        with open(BOOT_LOG_PATH, "a") as f:
+            f.write(f"{msg}\n")
+    except: pass
 
 def is_admin():
     """Check if running with admin privileges."""
@@ -55,9 +122,22 @@ def restart_as_admin():
     import ctypes
     from pathlib import Path
     
-    project_root = Path(__file__).resolve().parent.parent.parent.parent
+    # Adaptive Root Finding
+    current = Path(__file__).resolve()
+    project_root = current.parent.parent.parent.parent # Default fallback
+    
+    # Walk up to find 'src' or 'ContextUp' or 'MonitorWidget_Standalone'
+    temp = current
+    while temp.parent != temp:
+        if temp.name in ['src', 'ContextUp', 'MonitorWidget_Standalone']:
+            project_root = temp.parent
+            break
+        temp = temp.parent
+        
     python_path = sys.executable
     script_path = str(Path(__file__).resolve())
+    
+    trace(f"Restarting... Root: {project_root}")
     
     ret = ctypes.windll.shell32.ShellExecuteW(
         None, "runas", python_path, f'"{script_path}"', str(project_root), 1
@@ -65,6 +145,9 @@ def restart_as_admin():
     if ret > 32:
         sys.exit(0)
 
+
+# DEBUG: Trace
+trace("Defining Classes...")
 
 class StatsBridge(QObject):
     """Bridge to safely pass stats from background thread to UI thread."""
@@ -149,13 +232,13 @@ class MonitorWidgetWindow(QMainWindow):
         self.btn_close.hide()
 
         # Sidebar items
-        self.btn_c = SidebarItem("C", "cpu")
-        self.btn_r = SidebarItem("R", "ram")
-        self.btn_g = SidebarItem("G", "gpu")
-        self.btn_v = SidebarItem("V", "vram")
-        self.btn_d = SidebarItem("D", "disk")
-        self.btn_n = SidebarItem("N", "net")
-        self.btn_s = SidebarItem("S", "server")
+        self.btn_c = SidebarItem("CPU", "cpu")
+        self.btn_r = SidebarItem("RAM", "ram")
+        self.btn_g = SidebarItem("GPU", "gpu")
+        self.btn_v = SidebarItem("VRAM", "vram")
+        self.btn_d = SidebarItem("DISK", "disk")
+        self.btn_n = SidebarItem("NET", "net")
+        self.btn_s = SidebarItem("SRV", "server")
         
         self.items = [self.btn_c, self.btn_r, self.btn_g, self.btn_v, self.btn_d, self.btn_n, self.btn_s]
         
@@ -173,21 +256,33 @@ class MonitorWidgetWindow(QMainWindow):
         self.content_panel.setVisible(False)
         
         self.stack = QStackedWidget(self.content_panel)
-        self.pages = [
-            ProcessListPage("CPU Usage", "cpu", self.engine, self.process_manager),
-            ProcessListPage("RAM Usage", "ram", self.engine, self.process_manager),
-            ProcessListPage("GPU Usage", "gpu", self.engine, self.process_manager),
-            ProcessListPage("VRAM Usage", "vram", self.engine, self.process_manager),
-            DiskPage(self.engine),
-            NetPage(self.engine),
-            ServerPage(self.engine, self.process_manager)
-        ]
+        # Monitor Controller
+        self.controller = MonitorController()
+        
+        # Pages
+        # C, R: ProcessList
+        self.page_c = ProcessListPage("CPU Usage", "cpu", self.engine, self.process_manager)
+        self.page_r = ProcessListPage("RAM Usage", "ram", self.engine, self.process_manager)
+        
+        # G: GPU Page (Monitoring + Controls)
+        self.page_g = GpuPage("GPU Monitor", self.engine, self.controller)
+        
+        # V: ProcessList (VRAM)
+        self.page_v = ProcessListPage("VRAM Usage", "vram", self.engine, self.process_manager)
+        
+        # D, N, S: Dedicated
+        self.page_d = DiskPage("Disk Usage", self.engine)
+        self.page_n = NetPage("Network Usage", self.engine)
+        self.page_s = ServerPage("Local Servers", self.engine, self.process_manager)
+        
+        self.pages = [self.page_c, self.page_r, self.page_g, self.page_v, self.page_d, self.page_n, self.page_s]
         
         for p in self.pages:
             self.stack.addWidget(p)
-            # Connect page controls to window functions
+            # Connect opacity slider
             if hasattr(p, 'opacity_slider'):
                 p.opacity_slider.valueChanged.connect(lambda v: self._update_opacity(v/100.0))
+            # Connect close button
             if hasattr(p, 'btn_close'):
                 p.btn_close.clicked.connect(self.close)
             
@@ -196,10 +291,15 @@ class MonitorWidgetWindow(QMainWindow):
         c_layout.addWidget(self.stack)
         
         # Enable dragging on content panel
-        self.content_panel.mousePressEvent = self._start_drag
         self.content_panel.mouseMoveEvent = self._do_drag
         
         self.main_layout.addWidget(self.content_panel)
+
+    def closeEvent(self, event):
+        """Handle window close event."""
+        if hasattr(self, 'controller'):
+            self.controller.restore_state()
+        super().closeEvent(event)
     
     def _collapse_panel(self):
         """Collapse the expanded panel."""
@@ -280,8 +380,17 @@ class MonitorWidgetWindow(QMainWindow):
             
             self.current_page = index
             self.stack.setCurrentIndex(index)
+            
+            # Sync opacity slider of the current page
+            current_page_widget = self.pages[index]
+            if hasattr(current_page_widget, 'opacity_slider'):
+                # Block signals to prevent feedback loop
+                current_page_widget.opacity_slider.blockSignals(True)
+                current_page_widget.opacity_slider.setValue(int(self.opacity_val * 100))
+                current_page_widget.opacity_slider.blockSignals(False)
+            
             stats = self.engine.get_stats()
-            self.pages[index].update_stats(stats)
+            current_page_widget.update_stats(stats)
             
     def _on_stats_update(self, stats: SystemStats):
         """Handle stats update from engine."""
@@ -352,10 +461,11 @@ class MonitorWidgetWindow(QMainWindow):
         super().closeEvent(event)
 
 
+
 def log_debug(msg):
     """Write debug message to log file."""
     try:
-        with open("monitor_debug.log", "a", encoding="utf-8") as f:
+        with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(f"{msg}\n")
     except:
         pass
@@ -384,6 +494,8 @@ def kill_existing_instances():
 
 
 if __name__ == "__main__":
+    trace("Entering Main Block.")
+    
     # Hide console window on Windows
     if sys.platform == "win32":
         try:
@@ -397,10 +509,10 @@ if __name__ == "__main__":
     kill_existing_instances()
     
     try:
-        with open("monitor_debug.log", "w") as f:
+        with open(DEBUG_LOG_PATH, "w") as f:
             f.write("Startup...\n")
     except:
-        pass
+        trace("Failed to init main log.")
 
     try:
         log_debug(f"Checking admin... is_admin={is_admin()}")
@@ -408,6 +520,7 @@ if __name__ == "__main__":
             log_debug("Restarting as admin...")
             restart_as_admin()
             log_debug("Restart triggered.")
+            sys.exit(0)
             
         log_debug("Creating QApplication...")
         app = QApplication(sys.argv)
@@ -421,7 +534,12 @@ if __name__ == "__main__":
         sys.exit(app.exec())
     except Exception as e:
         import traceback
-        tb = traceback.format_exc()
-        log_debug(f"CRASH: {e}\n{tb}")
-        input("Press Enter to exit...")
+        err_msg = f"CRITICAL CRASH IN MAIN: {e}\n{traceback.format_exc()}"
+        try:
+            with open(DEBUG_LOG_PATH, "a") as f:
+                f.write(err_msg)
+        except: pass
+        
+        trace(err_msg)
+        sys.exit(1)
 

@@ -18,8 +18,8 @@ from ..components.base_page import BasePage
 class ServerPage(BasePage):
     """Page showing local servers and open ports."""
     
-    def __init__(self, engine, process_manager, parent=None):
-        super().__init__("Local Servers", parent, add_stretch=False)
+    def __init__(self, title, engine, process_manager, parent=None):
+        super().__init__(title, parent, add_stretch=False)
         self.engine = engine
         self.process_manager = process_manager
         self._all_points = []

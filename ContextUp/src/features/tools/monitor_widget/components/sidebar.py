@@ -32,11 +32,11 @@ class SidebarItem(QPushButton):
         layout.setContentsMargins(8, 0, 8, 0)
         
         self.lbl_name = QLabel(label)
-        self.lbl_name.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        self.lbl_name.setFont(QFont("Segoe UI", 9, QFont.Bold))
         self.lbl_name.setStyleSheet(f"color: {Theme.TEXT_DIM}; background: transparent;")
         
         self.lbl_value = QLabel(self._value_text)
-        self.lbl_value.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        self.lbl_value.setFont(QFont("Segoe UI", 9, QFont.Bold))
         self.lbl_value.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.lbl_value.setStyleSheet(f"color: {Theme.TEXT_MAIN}; background: transparent;")
         
@@ -50,9 +50,9 @@ class SidebarItem(QPushButton):
         self._value_text = text if text else f"{int(percent)}%"
         self._color = color if color else Theme.get_color(percent)
         
-        # S label should always be green
+        # SRV label should always be green
         label_color = self._color
-        if self.lbl_name.text() == "S":
+        if self.lbl_name.text() == "SRV":
             label_color = Theme.GREEN
 
         self.lbl_name.setStyleSheet(f"color: {label_color}; background: transparent; font-weight: bold;")

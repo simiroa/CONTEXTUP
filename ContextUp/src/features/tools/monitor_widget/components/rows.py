@@ -24,11 +24,11 @@ class ProcessRow(QWidget):
         
         self.lbl_name = QLabel(f"{name}")
         self.lbl_name.setToolTip(f"PID: {pid}")
-        self.lbl_name.setStyleSheet(f"color: {Theme.TEXT_MAIN}; font-size: 11px;")
+        self.lbl_name.setStyleSheet(f"color: {Theme.TEXT_DIM}; font-size: 11px;")
         
         self.lbl_usage = QLabel(usage_text)
         self.lbl_usage.setFixedWidth(70)
-        self.lbl_usage.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 11px;")
+        self.lbl_usage.setStyleSheet(f"color: {Theme.TEXT_MAIN}; font-weight: bold; font-size: 11px;")
         self.lbl_usage.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         
         btn_kill = QPushButton()
@@ -49,46 +49,61 @@ class DriveRow(QWidget):
     def __init__(self, info, parent=None):
         super().__init__(parent)
         self._mountpoint = info.mountpoint
+        self.setFixedHeight(30) # Increased height
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 4, 0, 4)
-        layout.setSpacing(8)
+        layout.setContentsMargins(4, 2, 4, 2) # More breathing room
+        layout.setSpacing(10)
         
-        # Drive letter
-        lbl_name = QLabel(f"{info.mountpoint[0]}:")
-        lbl_name.setStyleSheet(f"color: {Theme.ACCENT}; font-weight: bold; font-size: 12px;")
-        lbl_name.setFixedWidth(24)
+        # Drive letter (Clickable)
+        btn_name = QPushButton(f"{info.mountpoint[0]}:")
+        btn_name.setCursor(Qt.PointingHandCursor)
+        btn_name.setFixedWidth(24)
+        btn_name.setFlat(True)
+        btn_name.setStyleSheet(f"""
+            QPushButton {{ 
+                color: {Theme.ACCENT}; 
+                font-weight: bold; 
+                font-size: 12px; 
+                border: none; 
+                background: transparent; 
+                text-align: left;
+            }}
+            QPushButton:hover {{ color: {Theme.TEXT_MAIN}; }}
+        """)
+        btn_name.clicked.connect(self._open_mountpoint)
         
-        # Usage bar (compact)
+        # Usage bar (Thinner, Brighter Background)
         bar = QProgressBar()
-        bar.setFixedHeight(12)
-        bar.setFixedWidth(100)
+        bar.setFixedHeight(6) # Thinner
         bar.setTextVisible(False)
         bar.setRange(0, 100)
         bar.setValue(int(info.percent))
         color = Theme.get_color(info.percent)
-        # Use solid color for progress bar background
+        
+        # Brighter background for better visibility
+        bg_color = Theme.hex_to_rgba(Theme.TEXT_DIM, 0.2) 
+        
         bar.setStyleSheet(f"""
-            QProgressBar {{ background: {Theme.BG_SECTION}; border-radius: 6px; border: none; }}
-            QProgressBar::chunk {{ background: {color}; border-radius: 6px; }}
+            QProgressBar {{ 
+                background: {bg_color}; 
+                border-radius: 3px; 
+                border: none; 
+            }}
+            QProgressBar::chunk {{ 
+                background: {color}; 
+                border-radius: 3px; 
+            }}
         """)
         
-        # Usage text
-        lbl_usage = QLabel(f"{info.used_gb:.1f}/{info.total_gb:.0f} GB")
-        lbl_usage.setStyleSheet(f"color: {Theme.TEXT_DIM}; font-size: 10px;")
+        # Usage text (Monospaced for alignment)
+        lbl_usage = QLabel(f"{info.used_gb:>5.1f} / {info.total_gb:>4.0f} GB")
+        lbl_usage.setFixedWidth(100) # Fixed width for alignment
+        lbl_usage.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        lbl_usage.setStyleSheet(f"color: {Theme.TEXT_MAIN}; font-size: 10px; font-family: Consolas, monospace;")
         
-        # Open button (Icon)
-        btn_open = QPushButton()
-        btn_open.setIcon(qta.icon('fa5s.folder-open', color=Theme.ACCENT))
-        btn_open.setCursor(Qt.PointingHandCursor)
-        btn_open.setFixedSize(20, 20)
-        btn_open.setStyleSheet("background: transparent; border: none;")
-        btn_open.clicked.connect(self._open_mountpoint)
-        
-        layout.addWidget(lbl_name)
-        layout.addWidget(bar)
+        layout.addWidget(btn_name)
+        layout.addWidget(bar, 1) # Expand to fill space
         layout.addWidget(lbl_usage)
-        layout.addStretch()
-        layout.addWidget(btn_open)
 
     def _open_mountpoint(self):
         """Open the drive mountpoint; ignore failures to avoid UI crash."""

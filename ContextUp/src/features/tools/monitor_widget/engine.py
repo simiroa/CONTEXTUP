@@ -44,6 +44,8 @@ class SystemStats:
     vram_percent: float = 0.0
     vram_used_gb: float = 0.0
     vram_total_gb: float = 0.0
+    gpu_clock_mhz: float = 0.0
+    gpu_power_w: float = 0.0
     disk_read_speed: float = 0.0  # MB/s
     disk_write_speed: float = 0.0  # MB/s
     drives: List['DriveInfo'] = field(default_factory=list)
@@ -67,6 +69,7 @@ class ProcessInfo:
     is_server: bool = False
     server_ports: List[int] = field(default_factory=list)
     is_leak_suspect: bool = False
+    is_gpu: bool = False
     is_whitelisted: bool = False
     icon_path: Optional[str] = None
 
@@ -326,7 +329,20 @@ class NvidiaMonitor:
             vram_total_gb = mem_info.total / (1024 ** 3)
             vram_percent = (mem_info.used / mem_info.total) * 100 if mem_info.total > 0 else 0
             
-            return gpu_load, gpu_temp, vram_percent, vram_used_gb, vram_total_gb
+            # Clock and Power
+            try:
+                gpu_clock = pynvml.nvmlDeviceGetClockInfo(self.handle, pynvml.NVML_CLOCK_GRAPHICS)
+            except:
+                gpu_clock = 0
+                
+            try:
+                # Returns milliwatts
+                power_mw = pynvml.nvmlDeviceGetPowerUsage(self.handle)
+                gpu_power = power_mw / 1000.0
+            except:
+                gpu_power = 0.0
+            
+            return gpu_load, gpu_temp, vram_percent, vram_used_gb, vram_total_gb, gpu_clock, gpu_power
         except Exception:
             return 0.0, 0.0, 0.0, 0.0, 0.0
     
@@ -357,6 +373,11 @@ class NvidiaMonitor:
                             result[proc.pid] += mem_mb
                         else:
                             result[proc.pid] = mem_mb
+                    else:
+                        # Process detected but memory usage unknown/unreported (common on WDDM)
+                        # Ensure it's in the list so we know it's a GPU process
+                        if proc.pid not in result:
+                            result[proc.pid] = 0.0
             except pynvml.NVMLError:
                 pass
             except Exception:
@@ -574,10 +595,8 @@ class ServerDetector:
                 server_type = self._detect_server_type(name, exe_path, cmdline, ports)
                 
                 # Filter internal/background ports for game engines
-                if server_type == 'unity' and not (8080 <= port <= 8090):
-                    # Unity Editor often opens many random high ports for internal comms
-                    # Only keep standard web server ports if present, or just the first one found
-                    pass
+                # Filter internal/background ports for game engines
+                # (Logic moved inside port loop)
                 
                 for port in ports:
                     # Specific port filtering
@@ -726,7 +745,12 @@ class ProcessAnalyzer:
                 gpu_percent = gpu_util.get(pid, 0.0)
                 
                 # Filter noise
-                if cpu_p < 0.1 and ram_mb < 2.0 and vram_mb < 1.0 and gpu_percent < 0.5:
+                
+                # If process is in vram_usage (detected by NVML), keep it regardless of usage value
+                # because NVML might report None/0 for VRAM even if active (on WDDM)
+                is_gpu_proc = pid in (vram_usage or {})
+                
+                if not is_gpu_proc and cpu_p < 0.1 and ram_mb < 2.0 and gpu_percent < 0.5:
                     continue
                     
                 all_processes.append(ProcessInfo(
@@ -735,6 +759,7 @@ class ProcessAnalyzer:
                     is_server=self.server_detector.is_server(pid),
                     server_ports=self.server_detector.get_listening_ports(pid),
                     is_leak_suspect=self.leak_detector.is_leaking(pid),
+                    is_gpu=is_gpu_proc,
                     is_whitelisted=name in self.WHITELIST
                 ))
             except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -817,7 +842,7 @@ class MonitorEngine:
         self.server_detector.update()
         # Update system stats
         cpu_percent, cpu_temp, ram_percent, ram_used_gb, ram_total_gb = self.system_monitor.update()
-        gpu_load, gpu_temp, vram_percent, vram_used_gb, vram_total_gb = self.nvidia_monitor.update()
+        gpu_load, gpu_temp, vram_percent, vram_used_gb, vram_total_gb, gpu_clock, gpu_power = self.nvidia_monitor.update()
         disk_read, disk_write = self.disk_monitor.update()
         net_recv, net_sent = self.net_monitor.update()
         drives = self.drive_monitor.update()
@@ -834,6 +859,8 @@ class MonitorEngine:
             vram_percent=vram_percent,
             vram_used_gb=vram_used_gb,
             vram_total_gb=vram_total_gb,
+            gpu_clock_mhz=gpu_clock,
+            gpu_power_w=gpu_power,
             disk_read_speed=disk_read,
             disk_write_speed=disk_write,
             drives=drives,
@@ -862,10 +889,10 @@ class MonitorEngine:
                 self._cached_processes['cpu'] = sorted(all_procs, key=lambda x: x.cpu_percent, reverse=True)
                 self._cached_processes['ram'] = sorted(all_procs, key=lambda x: x.ram_mb, reverse=True)
                 
-                # Filter for VRAM/GPU (only processes using VRAM)
-                vram_procs = [p for p in all_procs if p.vram_mb > 0]
+                # Filter for VRAM/GPU (only processes using VRAM or tagged as GPU)
+                vram_procs = [p for p in all_procs if p.vram_mb > 0 or p.is_gpu]
                 self._cached_processes['vram'] = sorted(vram_procs, key=lambda x: x.vram_mb, reverse=True)
-                gpu_procs = [p for p in all_procs if p.gpu_percent > 0 or p.vram_mb > 0]
+                gpu_procs = [p for p in all_procs if p.gpu_percent > 0 or p.vram_mb > 0 or p.is_gpu]
                 if any(p.gpu_percent > 0 for p in gpu_procs):
                     self._cached_processes['gpu'] = sorted(gpu_procs, key=lambda x: x.gpu_percent, reverse=True)
                 else:

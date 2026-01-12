@@ -18,9 +18,9 @@ logs/
 install_log.txt
 
 # Tools and bulky binaries
-tools/
-!tools/python/
-!tools/python/**
+/tools/
+!/tools/python/
+!/tools/python/**
 
 # Backups
 backups/
