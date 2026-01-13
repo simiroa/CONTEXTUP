@@ -61,22 +61,19 @@ class GpuPage(BasePage):
         ctrl_layout.setContentsMargins(0, 4, 0, 0)
         ctrl_layout.setSpacing(10)
         
-        # 1. First Row: Night Mode & Monitor Sleep
+        # 1. First Row: Night Mode & Monitor Sleep (Text-based Buttons)
         row1_layout = QHBoxLayout()
         
-        # Night Mode
-        self.btn_night = QPushButton()
+        # Night Mode Toggle Button
+        self.btn_night = QPushButton("Night mode")
         self.btn_night.setCheckable(True)
-        self.btn_night.setFixedSize(55, 22)
+        self.btn_night.setFixedSize(90, 22)
         self.btn_night.setCursor(Qt.PointingHandCursor)
         self.btn_night.toggled.connect(self._on_night_toggle)
         
-        lbl_night = QLabel("Night Mode")
-        lbl_night.setStyleSheet(f"color: {Theme.TEXT_MAIN}; font-size: 11px;")
-        
-        # Monitor Sleep
-        btn_sleep = QPushButton("Sleep")
-        btn_sleep.setFixedSize(55, 22)
+        # Monitor Sleep Button
+        btn_sleep = QPushButton("Monitor sleep")
+        btn_sleep.setFixedSize(100, 22)
         btn_sleep.setCursor(Qt.PointingHandCursor)
         btn_sleep.setStyleSheet(f"""
             QPushButton {{
@@ -91,13 +88,8 @@ class GpuPage(BasePage):
         """)
         btn_sleep.clicked.connect(self.controller.turn_off_monitor)
         
-        lbl_sleep = QLabel("Mon Sleep")
-        lbl_sleep.setStyleSheet(f"color: {Theme.TEXT_MAIN}; font-size: 11px;")
-        
-        row1_layout.addWidget(lbl_night)
         row1_layout.addWidget(self.btn_night)
-        row1_layout.addSpacing(15)
-        row1_layout.addWidget(lbl_sleep)
+        row1_layout.addSpacing(10)
         row1_layout.addWidget(btn_sleep)
         row1_layout.addStretch()
         ctrl_layout.addLayout(row1_layout)
@@ -142,13 +134,24 @@ class GpuPage(BasePage):
         ctrl_layout.addLayout(rate_layout)
         
         self.content_area.addWidget(self.controls_container)
+        
+        # 4. Safety Notice Footer
         self.content_area.addStretch()
+        lbl_notice = QLabel("프로그램이 열린 동안에만 적용되니 안심하고 사용하세요")
+        lbl_notice.setAlignment(Qt.AlignCenter)
+        lbl_notice.setStyleSheet(f"color: {Theme.TEXT_DIM}; font-size: 9px; margin-bottom: 4px;")
+        self.content_area.addWidget(lbl_notice)
         
         # Init Controls
-        self._update_night_btn_style(False)
         self._init_controls()
 
     def _init_controls(self):
+        # Night mode toggle sync
+        self.btn_night.blockSignals(True)
+        self.btn_night.setChecked(self.controller._night_mode_active)
+        self._update_night_btn_style(self.controller._night_mode_active)
+        self.btn_night.blockSignals(False)
+        
         # Brightness
         b = self.controller.get_brightness()
         self.slider_bright.setValue(b)
@@ -208,15 +211,20 @@ class GpuPage(BasePage):
         self.controller.toggle_night_mode(checked)
 
     def _update_night_btn_style(self, checked):
-        color = Theme.ACCENT if checked else Theme.BG_SIDEBAR
-        text = "ON" if checked else "OFF"
-        self.btn_night.setText(text)
+        bg_color = Theme.ACCENT if checked else Theme.BG_SIDEBAR
+        fg_color = Theme.BG_MAIN if checked else Theme.TEXT_MAIN
+        border_color = Theme.ACCENT if checked else Theme.BG_SECTION
+        
         self.btn_night.setStyleSheet(f"""
             QPushButton {{
-                background-color: {color};
-                color: {Theme.BG_MAIN if checked else Theme.TEXT_DIM};
-                border-radius: 10px;
+                background-color: {bg_color};
+                color: {fg_color};
+                border-radius: 11px;
                 font-weight: bold;
                 font-size: 10px;
+                border: 1px solid {border_color};
+            }}
+            QPushButton:hover {{ 
+                background-color: {Theme.ACCENT if checked else Theme.GRAY_BTN_HOVER}; 
             }}
         """)
