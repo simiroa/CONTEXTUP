@@ -40,7 +40,7 @@
 | **Clipboard** | <img src="../../assets/icons/icon_sys_copy_my_info.png" width="24"> | [**Copy My Info**](../manuals/ko/copy_my_info.md) | 내 정보 복사 | 자주 사용하는 텍스트 정보를 등록하고 빠르게 복사 | 트레이 |
 | **Document** | <img src="../../assets/icons/icon_sys_pdf_merge.png" width="24"> | [**PDF Merge**](../manuals/ko/pdf_merge.md) | PDF 병합 | 여러 개의 PDF 문서를 하나의 무결성 있는 파일로 통합 | pypdf |
 | **Document** | <img src="../../assets/icons/icon_sys_pdf_split.png" width="24"> | [**PDF Split**](../manuals/ko/pdf_split.md) | PDF 분할 | 다페이지 PDF를 개별 페이지 또는 지정 범위로 정밀 분할 | pypdf |
-| **Tools** | <img src="../../assets/icons/icon_video_downloader.png" width="24"> | [**Video Downloader**](../manuals/ko/youtube_downloader.md) | 영상 다운로드 | 스트리밍 영상 및 음원을 로컬 환경으로 저장 | yt-dlp |
+| **Utilities** | <img src="../../assets/icons/icon_video_downloader.png" width="24"> | [**Video Downloader**](../manuals/ko/youtube_downloader.md) | 영상 다운로드 | 스트리밍 영상 및 음원을 로컬 환경으로 저장 | yt-dlp |
 
 
 ---
@@ -64,8 +64,8 @@
 | **Audio** | <img src="../../assets/icons/icon_audio_normalize.png" width="24"> | [**Normalize Volume**](../manuals/ko/normalize_volume.md) | 볼륨 정규화 | 오디오 파일 볼륨 평준화 | FFmpeg |
 | **Sequence** | <img src="../../assets/icons/icon_seq_video.png" width="24"> | [**Seq to Video**](../manuals/ko/sequence_to_video.md) | 시퀀스→비디오 | 이미지 시퀀스를 비디오로 인코딩 | FFmpeg |
 | **Sequence** | <img src="../../assets/icons/icon_seq_analyze.png" width="24"> | [**Seq Analyze**](../manuals/ko/sequence_analyze.md) | 시퀀스 분석 | 시퀀스 정보 및 누락 프레임 확인 | 기본 내장 |
-| **Tools** | <img src="../../assets/icons/icon_ai_text_lab.ico" width="24"> | [**AI Text Lab**](../manuals/ko/ai_text_lab.md) | 텍스트 연구소 | Gemini/Ollama 기반 텍스트 번역, 정제 및 스타일 변환 | API Key |
-| **Tools** | <img src="../../assets/icons/vacance.ico" width="24"> | [**Leave Manager**](../manuals/ko/leave_manager.md) | 휴가 관리 | 연차/휴가 사용 내역을 시각적으로 관리하고 잔여일 계산 | 트레이 전용 |
+| **Utilities** | <img src="../../assets/icons/icon_ai_text_lab.ico" width="24"> | [**AI Text Lab**](../manuals/ko/ai_text_lab.md) | 텍스트 연구소 | Gemini/Ollama 기반 텍스트 번역, 정제 및 스타일 변환 | API Key |
+| **Utilities** | <img src="../../assets/icons/vacance.ico" width="24"> | [**Leave Manager**](../manuals/ko/leave_manager.md) | 휴가 관리 | 연차/휴가 사용 내역을 시각적으로 관리하고 잔여일 계산 | 트레이 전용 |
 | **Document** | <img src="../../assets/icons/icon_doc_convert.png" width="24"> | [**Doc Convert**](../manuals/ko/doc_convert.md) | 문서 변환 | PDF를 워드로 변환하거나 이미지/PDF에서 텍스트 추출 | pdf2docx |
 | **AI Light** | <img src="../../assets/icons/icon_ai_gemini_vision.png" width="24"> | [**Gemini Tool**](../manuals/ko/gemini_image_tool.md) | Gemini AI 분석 | 클라우드 기반 비전 AI를 활용한 이미지 맥락 분석 및 데이터 추출 | Gemini API |
 

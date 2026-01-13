@@ -4,6 +4,24 @@ All notable changes to ContextUp will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.0.3] - 2026-01-13
+
+### 🏗️ Architectural Renaming & Safety
+- **Architectural Renaming**: Renamed `features.tools` to `features.utilities` across codebase, config, and documentation.
+- **Improved Launcher**: Updated `launchers.py` to correctly search the new `utilities` category for tray and quick menu items.
+- **Safety Audit**: Performed a structural risk audit (Git collisions, hardcoded paths) and mitigated identified risks.
+- **Monitor Widget**: Refined GPU page controls (Text-based toggles) and verified state persistence across tab switches.
+- **Clean Installation**: Updated `install.py` tiers to reflect the new "Utilities" nomenclature.
+- **Structural Risk Audit**: Performed a comprehensive audit of path resolution and registry stability.
+- **Legacy Cleanup**: Removed unused `noise_master` feature folder.
+
+### 🖥️ Monitor Widget
+- **Refined Controls**: Replaced "Night Mode" and "Monitor Sleep" icons with text-based toggle buttons for better visibility.
+- **State Persistence**: Verified and ensured control states (Night mode, Brightness) are preserved during tab switches.
+- **Safety Disclaimer**: Added a safety notice footer regarding semi-permanent monitor settings.
+
+---
+
 ## [4.0.2] - 2026-01-03
 
 ### Image

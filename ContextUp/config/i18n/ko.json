@@ -49,7 +49,7 @@
     "audio": "오디오",
     "clipboard": "클립보드",
     "system": "시스템",
-    "tools": "도구"
+    "utilities": "기타 도구"
   },
   "features": {
     "video": {
@@ -132,7 +132,7 @@
       "batch_rename": "일괄 이름 변경",
       "recent_folders": "최근 폴더"
     },
-    "tools": {
+    "utilities": {
       "copy_my_info": "내 정보 복사",
       "manage_info": "정보 관리...",
       "youtube_downloader": "비디오 다운로더",

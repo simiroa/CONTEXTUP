@@ -62,7 +62,7 @@ HANDLER_MAP = {
     "youtube_downloader": "features/video/downloader_gui.py",
     "vacance": "features/vacance/gui.py",
     "translator": "features/system/translator.py",
-    "ai_text_refine": "features/tools/ai_text_refine.py",
+    "ai_text_lab": "features/utilities/ai_text_lab.py",
 }
 
 # Libraries to track
@@ -87,7 +87,7 @@ LIB_MAP = {
 }
 
 # Features that should definitely have show_in_tray: true
-TRAY_FEATURES = {"ai_text_refine", "translator", "vacance", "copy_my_info", "open_from_clipboard"}
+TRAY_FEATURES = {"ai_text_lab", "translator", "vacance", "copy_my_info", "open_from_clipboard"}
 
 def get_actual_imports(script_path):
     if not script_path.exists():

@@ -338,7 +338,7 @@ class RegistryManager:
                     manage_cmd = f'"{python_bin}" "{script}" "--manage"'
                     
                     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, manage_key) as k:
-                        manage_label = i18n.t("features.tools.manage_info", "Manage Info...")
+                        manage_label = i18n.t("features.utilities.manage_info", "Manage Info...")
                         winreg.SetValue(k, "", winreg.REG_SZ, manage_label)
                         winreg.SetValueEx(k, "MUIVerb", 0, winreg.REG_SZ, manage_label)
                          # Use gear icon or similar if available, else generic shell32

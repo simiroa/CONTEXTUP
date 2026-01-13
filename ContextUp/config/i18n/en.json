@@ -48,7 +48,7 @@
         "audio": "Audio",
         "clipboard": "Clipboard",
         "system": "System",
-        "tools": "Tools"
+        "utilities": "Utilities"
     },
     "features": {
         "video": {
@@ -131,7 +131,7 @@
             "create_symlink": "Create Symlink",
             "manager": "Manager"
         },
-        "tools": {
+        "utilities": {
             "copy_my_info": "Copy My Info",
             "manage_info": "Manage Info...",
             "youtube_downloader": "Video Downloader",

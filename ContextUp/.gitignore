@@ -24,6 +24,7 @@ install_log.txt
 
 # Backups
 backups/
+exported/
 
 # Local workspace files
 .vscode/

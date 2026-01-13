@@ -12,7 +12,7 @@ logger = setup_logger("launchers")
 
 # Standard search directories for tool scripts
 FEATURE_CATEGORIES = [
-    "tools",
+    "utilities",
     "ai", 
     "system",
     "comfyui",

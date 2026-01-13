@@ -97,7 +97,7 @@ If your feature requires new packages, register them in `src/setup/install.py` s
 | **Core** | `BASE_CORE` | 항상 설치 (기본 패키지) |
 | **Media** | `PKG_MEDIA` | Image/Video/Audio 카테고리 선택 시 |
 | **Document** | `PKG_DOC` | Document 카테고리 선택 시 |
-| **Tools** | `PKG_TOOLS` | Tools 카테고리 선택 시 |
+| **Utilities** | `PKG_TOOLS` | Utilities 카테고리 선택 시 |
 | **AI** | `TIER2_AI_PACKAGES` | AI 기능 (Tier 2 이상) |
 
 **Example**: Adding a package to Media group:
@@ -131,7 +131,7 @@ Edit the JSON file in `config/categories/` (e.g., `image.json`).
 
 ```json
 {
-    "category": "Tools",
+    "category": "Utilities",
     "id": "my_feature",
     "name": "My Tool Name",
     "icon": "assets/icons/icon_my_tool.ico",

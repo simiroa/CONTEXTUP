@@ -47,7 +47,7 @@ OPTIONAL_CATEGORIES = {
     "Video": "비디오 처리 (변환, 자르기, GIF 생성) - FFmpeg 필요",
     "Audio": "오디오 편집 (변환, 볼륨 조절) - FFmpeg 필요",
     "3D": "3D 도구 (모델 변환, 리메쉬)",
-    "Tools": "유틸리티 (번역기 등)",
+    "Utilities": "유틸리티 (번역기 등)",
     "Sequence": "시퀀스 도구 (이미지 시퀀스 관리, 비디오 변환)",
     "ComfyUI": "ComfyUI 통합 (생성형 AI) - ComfyUI 설치 필요",
 }
@@ -281,7 +281,7 @@ def install_packages(py_exe: Path, categories: dict[str, bool]) -> bool:
     
     if categories.get("Document"):
         pkgs += PKG_DOC
-    if categories.get("Tools"):
+    if categories.get("Utilities"):
         pkgs += PKG_TOOLS
     if categories.get("3D"):
         pkgs += PKG_3D
@@ -530,7 +530,7 @@ def load_tiers() -> dict:
     return {
         "tiers": {
             "minimal": {"categories": CORE_CATEGORIES},
-            "standard": {"categories": CORE_CATEGORIES + ["Image", "Video", "Audio", "Tools", "Sequence"], "ai": "light"},
+            "standard": {"categories": CORE_CATEGORIES + ["Image", "Video", "Audio", "Utilities", "Sequence"], "ai": "light"},
             "full": {"categories": list(CORE_CATEGORIES) + list(OPTIONAL_CATEGORIES.keys()), "ai": "heavy"}
         },
         "core_categories": CORE_CATEGORIES,
