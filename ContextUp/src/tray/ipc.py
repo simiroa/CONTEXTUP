@@ -34,7 +34,7 @@ def write_handshake(port: int):
         HANDSHAKE_FILE.parent.mkdir(exist_ok=True, parents=True)
         with open(HANDSHAKE_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f)
-        logger.info(f"Handshake written: {data}")
+        logger.info(f"Handshake file successfully written to {HANDSHAKE_FILE} (PID: {data['pid']}, Port: {port})")
     except Exception as e:
         logger.error(f"Failed to write handshake: {e}")
 

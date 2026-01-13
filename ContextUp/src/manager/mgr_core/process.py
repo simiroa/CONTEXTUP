@@ -88,7 +88,7 @@ class TrayProcessManager:
             return False, f"Failed to launch process: {e}"
 
         # Wait for handshake
-        timeout = 10.0  # Increased from 5.0s
+        timeout = 15.0  # Increased from 10.0s for robustness on slow systems
         start_time = time.time()
         while time.time() - start_time < timeout:
             if self.handshake_file.exists():
@@ -104,7 +104,7 @@ class TrayProcessManager:
         # Timeout but process is still running?
         if proc.poll() is None:
             # User requested "Let it run" even if handshake is slow/missing
-            logger.warning("Tray Agent started but handshake timed out. UDP features may be unavailable.")
+            logger.warning(f"Tray Agent (PID {proc.pid}) started but handshake file ({self.handshake_file}) not found within {timeout}s.")
             return True, "Tray Agent started (Handshake delayed/missing)."
             
         # Timeout and process dead

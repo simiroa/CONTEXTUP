@@ -14,9 +14,20 @@ from ..components.rows import ProcessRow
 
 
 def get_cpu_name():
-    """Get CPU name using various methods."""
-    # Try WMI on Windows
+    """Get CPU name using various methods, prioritizing Registry for accuracy."""
     if platform.system() == "Windows":
+        # 1. Try Registry (Most detailed and standard)
+        try:
+            import winreg
+            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"HARDWARE\DESCRIPTION\System\CentralProcessor\0")
+            name, _ = winreg.QueryValueEx(key, "ProcessorNameString")
+            winreg.CloseKey(key)
+            if name:
+                return _clean_cpu_name(name)
+        except Exception:
+            pass
+
+        # 2. Try WMI
         try:
             result = subprocess.run(
                 ['wmic', 'cpu', 'get', 'name'],
@@ -26,13 +37,7 @@ def get_cpu_name():
             if len(lines) >= 2:
                 name = lines[1].strip()
                 if name:
-                    # Robust cleaning
-                    name = name.replace('(R)', '').replace('(TM)', '')
-                    name = name.replace('Processor', '').replace('CPU', '')
-                    name = name.replace('12th Gen', '').replace('13th Gen', '').replace('14th Gen', '')
-                    import re
-                    name = re.sub(r'\s+', ' ', name) # Remove double spaces
-                    return name.strip()
+                    return _clean_cpu_name(name)
         except Exception:
             pass
     
@@ -42,6 +47,17 @@ def get_cpu_name():
         return name
     
     return "CPU"
+
+
+def _clean_cpu_name(name: str) -> str:
+    """Robust cleaning of CPU model names."""
+    name = name.replace('(R)', '').replace('(TM)', '')
+    name = name.replace('Processor', '').replace('CPU', '')
+    # Remove Generation clutter
+    name = name.replace('12th Gen', '').replace('13th Gen', '').replace('14th Gen', '')
+    import re
+    name = re.sub(r'\s+', ' ', name) # Remove double spaces
+    return name.strip()
 
 
 class ProcessListPage(BasePage):
